@@ -1,0 +1,572 @@
+import 'dart:io';
+import 'package:app_tracking_transparency/app_tracking_transparency.dart';
+import 'package:audioplayers/audioplayers.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_tts/flutter_tts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:vibration/vibration.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'common_widget.dart';
+import 'extension.dart';
+import 'constant.dart';
+import 'main.dart';
+import 'my_menu.dart';
+
+class MyHomePage extends HookConsumerWidget {
+  const MyHomePage({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+
+    final isMenu = ref.watch(isMenuProvider);
+    final floorNumbers = ref.watch(floorNumbersProvider);
+    final roomImages = ref.watch(roomImagesProvider);
+    final point = ref.watch(pointProvider);
+
+    final counter = useState(1);
+    final nextFloor = useState(1);
+    final isMoving = useState(false);
+    final isEmergency = useState(false);
+    final isDoorState = useState(closedState); //[opened, closed, opening, closing]
+    final isPressedOperationButtons = useState([false, false, false]);  //open, close, alert
+    final isAboveSelectedList = useState(List.generate(max + 1, (_) => false));
+    final isUnderSelectedList = useState(List.generate(min * (-1) + 1, (_) => false));
+    final isSoundOn = useState(true);
+
+    final FlutterTts flutterTts = FlutterTts();
+    final AudioPlayer audioPlayer = AudioPlayer();
+
+    useEffect(() {
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        if (Platform.isIOS || Platform.isMacOS) await initPlugin(context);
+        "$floorNumbers".debugPrint();
+        "$roomImages".debugPrint();
+        "point: $point".debugPrint();
+        await flutterTts.setSharedInstance(true);
+        await flutterTts.setIosAudioCategory(
+          IosTextToSpeechAudioCategory.playback,
+          [
+            IosTextToSpeechAudioCategoryOptions.allowBluetooth,
+            IosTextToSpeechAudioCategoryOptions.allowBluetoothA2DP,
+            IosTextToSpeechAudioCategoryOptions.mixWithOthers,
+            IosTextToSpeechAudioCategoryOptions.defaultToSpeaker
+          ]
+        );
+        await flutterTts.setVolume(1);
+        await flutterTts.setLanguage(context.ttsLang());
+        await flutterTts.setVoice({
+          "name": context.voiceName(Platform.isAndroid),
+          "locale": context.ttsVoice()}
+        );
+        await flutterTts.setSpeechRate(0.5);
+        await audioPlayer.setReleaseMode(ReleaseMode.loop);
+        await audioPlayer.setVolume(0.5);
+        context.pushNumber().speakText(flutterTts, isSoundOn.value);
+      });
+      return null;
+    }, []);
+
+    /// 上の階へ行く
+    counterUp() async {
+      context.upFloor().speakText(flutterTts, isSoundOn.value);
+      int count = 0;
+      isMoving.value = true;
+      if (isDoorState.value != closedState) isDoorState.value = closedState;
+      final prefs = await SharedPreferences.getInstance();
+      await Future.delayed(const Duration(seconds: waitTime)).then((_) {
+        Future.forEach(counter.value.upFromToNumber(nextFloor.value), (int i) async {
+          await Future.delayed(Duration(milliseconds: i.elevatorSpeed(count, nextFloor.value))).then((_) async {
+            if (isMoving.value) count++;
+            if (isMoving.value) ref.read(pointProvider.notifier).state++;
+            if (isMoving.value && counter.value < nextFloor.value && nextFloor.value < max + 1) counter.value = counter.value + 1;
+            if (counter.value == 0) counter.value = 1;
+            if (isMoving.value && (counter.value == nextFloor.value || counter.value == max)) {
+              context.openingSound(counter.value, counter.value.roomImageFile(floorNumbers, roomImages)).speakText(flutterTts, isSoundOn.value);
+              counter.value.clearLowerFloor(isAboveSelectedList.value, isUnderSelectedList.value);
+              nextFloor.value = counter.value.upNextFloor(isAboveSelectedList.value, isUnderSelectedList.value);
+              isMoving.value = false;
+              isEmergency.value = false;
+              isDoorState.value = openingState;
+              "isDoorState: ${isDoorState.value}".debugPrint();
+              "$nextString${nextFloor.value}".debugPrint();
+              final newPoint = ref.read(pointProvider.notifier).state;
+              ref.read(pointProvider.notifier).state == newPoint;
+              await "pointKey".setSharedPrefInt(prefs, newPoint);
+              "point: $newPoint".debugPrint();
+            }
+          });
+        });
+      });
+    }
+
+    /// 下の階へ行く
+    counterDown() async {
+      context.downFloor().speakText(flutterTts, isSoundOn.value);
+      int count = 0;
+      isMoving.value = true;
+      if (isDoorState.value != closedState) isDoorState.value = closedState;
+      final prefs = await SharedPreferences.getInstance();
+      await Future.delayed(const Duration(seconds: waitTime)).then((_) {
+        Future.forEach(counter.value.downFromToNumber(nextFloor.value), (int i) async {
+          await Future.delayed(Duration(milliseconds: i.elevatorSpeed(count, nextFloor.value))).then((_) async {
+            if (isMoving.value) count++;
+            if (isMoving.value) ref.read(pointProvider.notifier).state++;
+            if (isMoving.value && min - 1 < nextFloor.value && nextFloor.value < counter.value) counter.value = counter.value - 1;
+            if (counter.value == 0) counter.value = -1;
+            if (isMoving.value && (counter.value == nextFloor.value || counter.value == min)) {
+              context.openingSound(counter.value, counter.value.roomImageFile(floorNumbers, roomImages)).speakText(flutterTts, isSoundOn.value);
+              counter.value.clearUpperFloor(isAboveSelectedList.value, isUnderSelectedList.value);
+              nextFloor.value = counter.value.downNextFloor(isAboveSelectedList.value, isUnderSelectedList.value);
+              isMoving.value = false;
+              isEmergency.value = false;
+              isDoorState.value = openingState;
+              "isDoorState: ${isDoorState.value}".debugPrint();
+              "$nextString${nextFloor.value}".debugPrint();
+              final newPoint = ref.read(pointProvider.notifier).state;
+              ref.read(pointProvider.notifier).state == newPoint;
+              await "pointKey".setSharedPrefInt(prefs, newPoint);
+              "point: $newPoint".debugPrint();
+            }
+          });
+        });
+      });
+    }
+
+    /// ドアを閉じる
+    doorsClosing() async {
+      if (!isMoving.value && !isEmergency.value && isDoorState.value != closedState && isDoorState.value != closingState) {
+        isDoorState.value = closingState;
+        "isDoorState: ${isDoorState.value}".debugPrint();
+        await context.closeDoor().speakText(flutterTts, isSoundOn.value);
+        await Future.delayed(const Duration(seconds: waitTime)).then((_) {
+          if (!isMoving.value && !isEmergency.value && isDoorState.value == closingState) {
+            isDoorState.value = closedState;
+            "isDoorState: ${isDoorState.value}".debugPrint();
+            (counter.value < nextFloor.value) ? counterUp() :
+            (counter.value > nextFloor.value) ? counterDown() :
+            context.pushNumber().speakText(flutterTts, isSoundOn.value);
+          }
+        });
+      }
+    }
+
+    ///Pressed open button action
+    pressedOpenAction(bool isOn) async {
+      isPressedOperationButtons.value = [isOn, false, false];
+      if (isOn) {
+        selectButton.playAudio(audioPlayer, isSoundOn.value);
+        Vibration.vibrate(duration: vibTime, amplitude: vibAmp);
+        if (!isMoving.value && !isEmergency.value && isDoorState.value != openedState && isDoorState.value != openingState) {
+          Future.delayed(const Duration(milliseconds: flashTime)).then((_) async {
+            if (!isMoving.value && !isEmergency.value  && isDoorState.value != openedState && isDoorState.value != openingState) {
+              context.openDoor().speakText(flutterTts, isSoundOn.value);
+              isDoorState.value = openingState;
+              "isDoorState: ${isDoorState.value}".debugPrint();
+              await Future.delayed(const Duration(seconds: waitTime)).then((_) {
+                if (!isMoving.value && !isEmergency.value && isDoorState.value == openingState) {
+                  isDoorState.value = openedState;
+                  "isDoorState: ${isDoorState.value}".debugPrint();
+                }
+              });
+            }
+          });
+        }
+      }
+    }
+
+    ///Pressed close button action
+    pressedCloseAction(bool isOn) async {
+      isPressedOperationButtons.value = [false, isOn, false];
+      if (isOn) {
+        selectButton.playAudio(audioPlayer, isSoundOn.value);
+        Vibration.vibrate(duration: vibTime, amplitude: vibAmp);
+        if (!isMoving.value && !isEmergency.value && isDoorState.value != closedState && isDoorState.value != closingState) {
+          Future.delayed(const Duration(milliseconds: flashTime)).then((_) => doorsClosing());
+        }
+      }
+    }
+
+    ///Long pressed alert button action
+    pressedAlertAction(bool isOn, isLongPressed) async {
+      isPressedOperationButtons.value = [false, false, isOn];
+      if (isOn) {
+        selectButton.playAudio(audioPlayer, isSoundOn.value);
+        Vibration.vibrate(duration: vibTime, amplitude: vibAmp);
+        if (isLongPressed) {
+          if (isMoving.value) isEmergency.value = true;
+          if (isEmergency.value && isMoving.value) {
+            callSound.playAudio(audioPlayer, isSoundOn.value);
+            await Future.delayed(const Duration(seconds: waitTime)).then((_) {
+              context.emergency().speakText(flutterTts, isSoundOn.value);
+              nextFloor.value = counter.value;
+              isMoving.value = false;
+              isEmergency.value = true;
+              counter.value.clearLowerFloor(
+                  isAboveSelectedList.value, isUnderSelectedList.value);
+              counter.value.clearUpperFloor(
+                  isAboveSelectedList.value, isUnderSelectedList.value);
+            });
+            await Future.delayed(const Duration(seconds: openTime)).then((
+                _) async {
+              context.return1st().speakText(flutterTts, isSoundOn.value);
+            });
+            await Future.delayed(const Duration(seconds: waitTime * 2)).then((
+                _) async {
+              if (counter.value != 1) {
+                nextFloor.value = 1;
+                "$nextString${nextFloor.value}".debugPrint();
+                (counter.value < nextFloor.value) ? counterUp() : counterDown();
+              } else {
+                context.openDoor().speakText(flutterTts, isSoundOn.value);
+                isDoorState.value = openingState;
+                "isDoorState: ${isDoorState.value}".debugPrint();
+              }
+            });
+          }
+        }
+      }
+    }
+
+    ///Button action list
+    List<dynamic> pressedButtonAction(bool isOn, isLongPressed) => [
+      (isOn && isLongPressed) ? () => pressedOpenAction(isOn): (_) => pressedOpenAction(isOn),
+      (isOn && isLongPressed) ? () => pressedCloseAction(isOn): (_) => pressedCloseAction(isOn),
+      (isOn && isLongPressed) ? () => pressedAlertAction(isOn, isLongPressed): (_) => pressedAlertAction(isOn, isLongPressed),
+    ];
+
+    ///行き先階ボタンを選択する
+    floorSelected(int i, bool selectFlag) async {
+      if (!isEmergency.value) {
+        if (i == counter.value) {
+          if (!isMoving.value && i == nextFloor.value) context.pushNumber().speakText(flutterTts, isSoundOn.value);
+        } else if (!selectFlag) {
+          //止まらない階の場合のメッセージ
+          context.notStop().speakText(flutterTts, isSoundOn.value);
+        } else if (!i.isSelected(isAboveSelectedList.value, isUnderSelectedList.value)) {
+          selectButton.playAudio(audioPlayer, isSoundOn.value);
+          Vibration.vibrate(duration: vibTime, amplitude: vibAmp);
+          i.trueSelected(isAboveSelectedList.value, isUnderSelectedList.value);
+          if (counter.value < i && i < nextFloor.value) nextFloor.value = i;
+          if (counter.value > i && i > nextFloor.value) nextFloor.value = i;
+          if (i.onlyTrue(isAboveSelectedList.value, isUnderSelectedList.value)) nextFloor.value = i;
+          "$nextString${nextFloor.value}".debugPrint();
+          await Future.delayed(const Duration(seconds: waitTime)).then((_) async {
+            if (!isMoving.value && !isEmergency.value && isDoorState.value == closedState) {
+              (counter.value < nextFloor.value) ? counterUp() :
+              (counter.value > nextFloor.value) ? counterDown() :
+              context.pushNumber().speakText(flutterTts, isSoundOn.value);
+            }
+          });
+        }
+      }
+    }
+
+    ///Deselect floor buttongit remote add origin
+    floorCanceled(int i) async {
+      if (i.isSelected(isAboveSelectedList.value, isUnderSelectedList.value) && i != nextFloor.value) {
+        cancelButton.playAudio(audioPlayer, isSoundOn.value);
+        Vibration.vibrate(duration: vibTime, amplitude: vibAmp);
+        i.falseSelected(isAboveSelectedList.value, isUnderSelectedList.value);
+        if (i == nextFloor.value) {
+          nextFloor.value = (counter.value < nextFloor.value) ?
+          counter.value.upNextFloor(isAboveSelectedList.value, isUnderSelectedList.value) :
+          counter.value.downNextFloor(isAboveSelectedList.value, isUnderSelectedList.value);
+        }
+        "$nextString${nextFloor.value}".debugPrint();
+      }
+    }
+
+    ///Menu button action
+    pressedMenu() async {
+      selectButton.playAudio(audioPlayer, isSoundOn.value);
+      await Vibration.vibrate(duration: vibTime, amplitude: vibAmp);
+      if (counter.value == nextFloor.value) {
+        ref.read(isMenuProvider.notifier).state = !isMenu;
+      } else {
+        final snackBar = SnackBar(
+          content: Row(children: [
+            const Spacer(flex: 1),
+            Text(context.movingElevator(),
+              style: TextStyle(
+                fontSize: context.snackBarFontSize(),
+                fontFamily: menuFont,
+                fontWeight: FontWeight.bold,
+                color: blackColor,
+              ),
+            ),
+            const Spacer(flex: 1),
+          ]),
+          backgroundColor: lampColor,
+          duration: const Duration(seconds: snackBarTime),
+        );
+        ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      }
+    }
+
+    ///Action after changing door state
+    useEffect(() {
+      if (isDoorState.value == openingState) {
+        Future.delayed(const Duration(seconds: waitTime)).then((_) {
+          isDoorState.value = openedState;
+          "isDoorState: ${isDoorState.value}".debugPrint();
+          if (!isMoving.value && !isEmergency.value && isDoorState.value == openedState) {
+            Future.delayed(const Duration(seconds: openTime)).then((_) async {
+              doorsClosing();
+            });
+          }
+        });
+      } else if (isDoorState.value == closingState) {
+        doorsClosing();
+      }
+      return null;
+    }, [isDoorState.value]);
+
+    return Scaffold(
+      backgroundColor: blackColor,
+      ///AppBar
+      appBar: AppBar(
+        backgroundColor: blackColor,
+        shadowColor: Colors.transparent,
+        title: Row(children: [
+          pointIcon(30),
+          Container(
+            height: 50,
+            margin: const EdgeInsets.only(left: 10),
+            child:useMemoized(() => HookBuilder(
+              builder: (context) => Text("$point",
+                style: const TextStyle(
+                  color: lampColor,
+                  fontSize: 40,
+                  fontWeight: FontWeight.normal,
+                  fontFamily: numberFont,
+                ),
+              ),
+            ), [point]),
+          ),
+          evMileTooltip(context),
+        ]),
+        actions: [
+          IconButton(
+            icon: menuIcon(context.menuIconSize()),
+            onPressed: () => pressedMenu()
+          ),
+          const SizedBox(width: 10),
+        ]
+      ),
+      body: SafeArea(
+        top: true,
+        bottom: true,
+        child: Stack(children: [
+          Row(children: [
+            SizedBox(width: context.sideSpacerWidth()),
+            Stack(children: [
+              ///Room Image
+              Container(
+                height: context.roomHeight(),
+                margin: EdgeInsets.only(
+                  top: context.doorMarginTop(),
+                  left: context.doorMarginLeft()
+                ),
+                child: counter.value.roomImage(floorNumbers, roomImages),
+              ),
+              ///Door Frame Image
+              upAndDownDoorFrame(context),
+              ///Left Door Frame Image
+              leftDoorFrame(context, isDoorState.value == closedState),
+              ///Right Door Frame Image
+              rightDoorFrame(context, isDoorState.value == closedState),
+              ///Left Door Image
+              leftDoorImage(context, isDoorState.value == closedState),
+              ///Right Door Image
+              rightDoorImage(context, isDoorState.value == closedState),
+              ///Elevator Frame Image
+              elevatorFrameImage(context),
+              ///Display Image
+              Container(
+                width: context.displayWidth(),
+                height: context.displayHeight(),
+                margin: EdgeInsets.only(
+                  top: context.displayMarginTop(),
+                  left: context.displayMarginLeft()
+                ),
+                color: darkBlackColor,
+                child: Row(children: [
+                  const Spacer(),
+                  ///Arrow
+                  Container(
+                    margin: EdgeInsets.only(left: context.displayArrowMargin()),
+                    width: context.displayArrowWidth(),
+                    height: context.displayArrowHeight(),
+                    child: Image.asset(counter.value.arrowImage(isMoving.value, nextFloor.value)),
+                  ),
+                  ///Floor number
+                  Container(
+                    alignment: Alignment.topRight,
+                    width: context.displayNumberWidth(),
+                    height: context.displayNumberHeight(),
+                    child: useMemoized(() => HookBuilder(
+                      builder: (context) => Text(counter.value.displayNumber(),
+                        style: TextStyle(
+                          color: lampColor,
+                          fontSize: context.displayNumberFontSize(),
+                          fontWeight: FontWeight.normal,
+                          fontFamily: numberFont,
+                        ),
+                      ),
+                    ), [counter.value]),
+                  ),
+                  const Spacer(),
+                ])
+              ),
+              ///Elevator Button Image
+              Container(
+                width: context.buttonPanelWidth(),
+                height: context.buttonPanelHeight(),
+                margin: EdgeInsets.only(
+                  top: context.buttonPanelMarginTop(),
+                  left: context.buttonPanelMarginLeft()
+                ),
+                child: Column(children: [
+                  const Spacer(flex: 3),
+                  ///Alert Buttons (Open, Close)
+                  Center(child:
+                    GestureDetector(
+                      onTapDown: pressedButtonAction(true, false)[2],
+                      onTapUp: pressedButtonAction(false, false)[2],
+                      onLongPress: pressedButtonAction(true, true)[2],
+                      onLongPressEnd: pressedButtonAction(false, true)[2],
+                      child: Container(
+                        width: context.operationButtonSize() + 2 * context.buttonBorderWidth(),
+                        height: context.operationButtonSize() + 2 * context.buttonBorderWidth(),
+                        decoration: BoxDecoration(
+                          color: transpColor,
+                          shape: BoxShape.rectangle,
+                          borderRadius: BorderRadius.circular(context.buttonBorderRadius()),
+                          border: Border.all(
+                            color: yellowColor,
+                            width: context.buttonBorderWidth(),
+                          ),
+                        ),
+                        child: Image.asset(isPressedOperationButtons.value.operateBackGround()[2]),
+                      )
+                    ),
+                  ),
+                  SizedBox(height: context.buttonMargin() * 2),
+                  ///Floor Buttons
+                  Column(children: floorNumbers.floorNumbersList().asMap().entries.map((row) =>
+                    Column(children: [
+                      SizedBox(height: context.buttonMargin()),
+                      Row(mainAxisAlignment: MainAxisAlignment.center,
+                        children: row.value.asMap().entries.map((floor) => Row(children: [
+                          SizedBox(width: context.buttonMargin()),
+                          GestureDetector(
+                            child: SizedBox(
+                              width: context.floorButtonSize(),
+                              height: context.floorButtonSize(),
+                              child: Stack(alignment: Alignment.center,
+                                children: [
+                                  Image.asset(floor.value.isSelected(isAboveSelectedList.value, isUnderSelectedList.value).numberBackground()),
+                                  Text(floor.value.buttonNumber(),
+                                    style: TextStyle(
+                                      color: (floor.value.isSelected(isAboveSelectedList.value, isUnderSelectedList.value)) ? lampColor: whiteColor,
+                                      fontSize: context.buttonNumberFontSize(),
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            onTap: () => floorSelected(floor.value, isFloors[row.key][floor.key]),
+                            onLongPress: () => floorCanceled(floor.value),
+                            onDoubleTap: () => floorCanceled(floor.value),
+                          ),
+                          if (floor.key == row.value.length - 1) SizedBox(width: context.buttonMargin()),
+                        ])).toList(),
+                      ),
+                      if (row.key == floorNumbers.length - 1) SizedBox(height: context.buttonMargin()),
+                    ])
+                  ).toList()),
+                  SizedBox(height: context.buttonMargin() * 2),
+                  ///Operation Buttons (Open, Close)
+                  Row(mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      GestureDetector(
+                        onTapDown: pressedButtonAction(true, false)[0],
+                        onTapUp: pressedButtonAction(false, false)[0],
+                        onLongPress: pressedButtonAction(true, true)[0],
+                        onLongPressEnd: pressedButtonAction(false, true)[0],
+                        child: Container(
+                          width: context.operationButtonSize() + 2 * context.buttonBorderWidth(),
+                          height: context.operationButtonSize() + 2 * context.buttonBorderWidth(),
+                          decoration: BoxDecoration(
+                            color: transpColor,
+                            shape: BoxShape.rectangle,
+                            borderRadius: BorderRadius.circular(context.buttonBorderRadius()),
+                            border: Border.all(
+                              color: greenColor,
+                              width: context.buttonBorderWidth(),
+                            ),
+                          ),
+                          child: Image.asset(isPressedOperationButtons.value.operateBackGround()[0]),
+                        ),
+                      ),
+                      SizedBox(width: context.buttonMargin()),
+                      GestureDetector(
+                        onTapDown: pressedButtonAction(true, false)[1],
+                        onTapUp: pressedButtonAction(false, false)[1],
+                        onLongPress: pressedButtonAction(true, true)[1],
+                        onLongPressEnd: pressedButtonAction(false, true)[1],
+                        child: Container(
+                          width: context.operationButtonSize() + 2 * context.buttonBorderWidth(),
+                          height: context.operationButtonSize() + 2 * context.buttonBorderWidth(),
+                          decoration: BoxDecoration(
+                            color: transpColor,
+                            shape: BoxShape.rectangle,
+                            borderRadius: BorderRadius.circular(context.buttonBorderRadius()),
+                            border: Border.all(
+                              color: whiteColor,
+                              width: context.buttonBorderWidth(),
+                            ),
+                          ),
+                          child: Image.asset(isPressedOperationButtons.value.operateBackGround()[1]),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const Spacer(flex: 1),
+                ]),
+              ),
+            ])
+          ]),
+          ///Door Cover
+          doorCover(context),
+          ///Admob Banner
+          admobBanner(),
+          ///Menu
+          if (isMenu) const MyMenuPage(isHome: true),
+        ]),
+      ),
+    );
+  }
+}
+
+/// App Tracking Transparency
+Future<void> initPlugin(BuildContext context) async {
+  final status = await AppTrackingTransparency.trackingAuthorizationStatus;
+  if (status == TrackingStatus.notDetermined && context.mounted) {
+    await showCupertinoDialog(context: context, builder: (context) => CupertinoAlertDialog(
+      title: Text(context.letsElevator()),
+      content: Text(context.thisApp()),
+      actions: [
+        CupertinoDialogAction(
+          child: const Text('OK', style: TextStyle(color: Colors.blue)),
+          onPressed: () => Navigator.pop(context),
+        )
+      ],
+    ));
+    await Future.delayed(const Duration(milliseconds: 200));
+    await AppTrackingTransparency.requestTrackingAuthorization();
+  }
+}
