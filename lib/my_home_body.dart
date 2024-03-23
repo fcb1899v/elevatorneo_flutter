@@ -282,27 +282,7 @@ class MyHomePage extends HookConsumerWidget {
     pressedMenu() async {
       selectButton.playAudio(audioPlayer, isSoundOn.value);
       await Vibration.vibrate(duration: vibTime, amplitude: vibAmp);
-      if (counter.value == nextFloor.value) {
-        ref.read(isMenuProvider.notifier).state = !isMenu;
-      } else {
-        final snackBar = SnackBar(
-          content: Row(children: [
-            const Spacer(flex: 1),
-            Text(context.movingElevator(),
-              style: TextStyle(
-                fontSize: context.snackBarFontSize(),
-                fontFamily: menuFont,
-                fontWeight: FontWeight.bold,
-                color: blackColor,
-              ),
-            ),
-            const Spacer(flex: 1),
-          ]),
-          backgroundColor: lampColor,
-          duration: const Duration(seconds: snackBarTime),
-        );
-        ScaffoldMessenger.of(context).showSnackBar(snackBar);
-      }
+      ref.read(isMenuProvider.notifier).state = !isMenu;
     }
 
     ///Action after changing door state
@@ -348,10 +328,10 @@ class MyHomePage extends HookConsumerWidget {
           evMileTooltip(context),
         ]),
         actions: [
-          IconButton(
+          (counter.value == nextFloor.value) ? IconButton(
             icon: menuIcon(context.menuIconSize()),
             onPressed: () => pressedMenu()
-          ),
+          ): SizedBox(width: context.menuIconSize()),
           const SizedBox(width: 10),
         ]
       ),
@@ -430,110 +410,47 @@ class MyHomePage extends HookConsumerWidget {
                 ),
                 child: Column(children: [
                   const Spacer(flex: 3),
-                  ///Alert Buttons (Open, Close)
+                  ///Operation Buttons (Alert: 2)
                   Center(child:
                     GestureDetector(
                       onTapDown: pressedButtonAction(true, false)[2],
                       onTapUp: pressedButtonAction(false, false)[2],
                       onLongPress: pressedButtonAction(true, true)[2],
                       onLongPressEnd: pressedButtonAction(false, true)[2],
-                      child: Container(
-                        width: context.operationButtonSize() + 2 * context.buttonBorderWidth(),
-                        height: context.operationButtonSize() + 2 * context.buttonBorderWidth(),
-                        decoration: BoxDecoration(
-                          color: transpColor,
-                          shape: BoxShape.rectangle,
-                          borderRadius: BorderRadius.circular(context.buttonBorderRadius()),
-                          border: Border.all(
-                            color: yellowColor,
-                            width: context.buttonBorderWidth(),
-                          ),
-                        ),
-                        child: Image.asset(isPressedOperationButtons.value.operateBackGround()[2]),
-                      )
+                      child: operationButtonImage(context, isPressedOperationButtons.value, 2)
                     ),
                   ),
                   SizedBox(height: context.buttonMargin() * 2),
                   ///Floor Buttons
-                  Column(children: floorNumbers.floorNumbersList().asMap().entries.map((row) =>
-                    Column(children: [
-                      SizedBox(height: context.buttonMargin()),
-                      Row(mainAxisAlignment: MainAxisAlignment.center,
-                        children: row.value.asMap().entries.map((floor) => Row(children: [
-                          SizedBox(width: context.buttonMargin()),
-                          GestureDetector(
-                            child: SizedBox(
-                              width: context.floorButtonSize(),
-                              height: context.floorButtonSize(),
-                              child: Stack(alignment: Alignment.center,
-                                children: [
-                                  Image.asset(floor.value.isSelected(isAboveSelectedList.value, isUnderSelectedList.value).numberBackground()),
-                                  Text(floor.value.buttonNumber(),
-                                    style: TextStyle(
-                                      color: (floor.value.isSelected(isAboveSelectedList.value, isUnderSelectedList.value)) ? lampColor: whiteColor,
-                                      fontSize: context.buttonNumberFontSize(),
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            onTap: () => floorSelected(floor.value, isFloors[row.key][floor.key]),
-                            onLongPress: () => floorCanceled(floor.value),
-                            onDoubleTap: () => floorCanceled(floor.value),
-                          ),
-                          if (floor.key == row.value.length - 1) SizedBox(width: context.buttonMargin()),
-                        ])).toList(),
-                      ),
-                      if (row.key == floorNumbers.length - 1) SizedBox(height: context.buttonMargin()),
-                    ])
-                  ).toList()),
+                  Column(children: floorNumbers.floorNumbersList().asMap().entries.map((row) => Column(children: [
+                    SizedBox(height: context.buttonMargin()),
+                    Row(mainAxisAlignment: MainAxisAlignment.center,
+                      children: row.value.asMap().entries.map((floor) => Row(children: [
+                        SizedBox(width: context.buttonMargin()),
+                        GestureDetector(
+                          child: floorButtonImage(context, floor.value, floor.value.isSelected(isAboveSelectedList.value, isUnderSelectedList.value)),
+                          onTap: () => floorSelected(floor.value, isFloors[row.key][floor.key]),
+                          onLongPress: () => floorCanceled(floor.value),
+                          onDoubleTap: () => floorCanceled(floor.value),
+                        ),
+                        if (floor.key == row.value.length - 1) SizedBox(width: context.buttonMargin()),
+                      ])).toList(),
+                    ),
+                    if (row.key == floorNumbers.length - 1) SizedBox(height: context.buttonMargin()),
+                  ])).toList()),
                   SizedBox(height: context.buttonMargin() * 2),
-                  ///Operation Buttons (Open, Close)
+                  ///Operation Buttons (Close: 0, Open: 1)
                   Row(mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
+                    children: [0, 1].expand((i) => [
                       GestureDetector(
-                        onTapDown: pressedButtonAction(true, false)[0],
-                        onTapUp: pressedButtonAction(false, false)[0],
-                        onLongPress: pressedButtonAction(true, true)[0],
-                        onLongPressEnd: pressedButtonAction(false, true)[0],
-                        child: Container(
-                          width: context.operationButtonSize() + 2 * context.buttonBorderWidth(),
-                          height: context.operationButtonSize() + 2 * context.buttonBorderWidth(),
-                          decoration: BoxDecoration(
-                            color: transpColor,
-                            shape: BoxShape.rectangle,
-                            borderRadius: BorderRadius.circular(context.buttonBorderRadius()),
-                            border: Border.all(
-                              color: greenColor,
-                              width: context.buttonBorderWidth(),
-                            ),
-                          ),
-                          child: Image.asset(isPressedOperationButtons.value.operateBackGround()[0]),
-                        ),
+                        onTapDown: pressedButtonAction(true, false)[i],
+                        onTapUp: pressedButtonAction(false, false)[i],
+                        onLongPress: pressedButtonAction(true, true)[i],
+                        onLongPressEnd: pressedButtonAction(false, true)[i],
+                        child: operationButtonImage(context, isPressedOperationButtons.value, i),
                       ),
-                      SizedBox(width: context.buttonMargin()),
-                      GestureDetector(
-                        onTapDown: pressedButtonAction(true, false)[1],
-                        onTapUp: pressedButtonAction(false, false)[1],
-                        onLongPress: pressedButtonAction(true, true)[1],
-                        onLongPressEnd: pressedButtonAction(false, true)[1],
-                        child: Container(
-                          width: context.operationButtonSize() + 2 * context.buttonBorderWidth(),
-                          height: context.operationButtonSize() + 2 * context.buttonBorderWidth(),
-                          decoration: BoxDecoration(
-                            color: transpColor,
-                            shape: BoxShape.rectangle,
-                            borderRadius: BorderRadius.circular(context.buttonBorderRadius()),
-                            border: Border.all(
-                              color: whiteColor,
-                              width: context.buttonBorderWidth(),
-                            ),
-                          ),
-                          child: Image.asset(isPressedOperationButtons.value.operateBackGround()[1]),
-                        ),
-                      ),
-                    ],
+                      if (i != 1) SizedBox(width: context.buttonMargin()),
+                    ]).toList()
                   ),
                   const Spacer(flex: 1),
                 ]),

@@ -116,6 +116,42 @@ Row doorCover(BuildContext context) =>
       ),
     ]);
 
+///Button
+//Open or Close Button (Close: 0, Open: 1, Alert:2)
+Container operationButtonImage(BuildContext context, List<bool> isPressedList, int number) =>
+    Container(
+      width: context.operationButtonSize() + 2 * context.buttonBorderWidth(),
+      height: context.operationButtonSize() + 2 * context.buttonBorderWidth(),
+      decoration: BoxDecoration(
+        color: transpColor,
+        shape: BoxShape.rectangle,
+        borderRadius: BorderRadius.circular(context.buttonBorderRadius()),
+        border: Border.all(
+          color: (number == 1) ? whiteColor: (number == 2) ? yellowColor: greenColor,
+          width: context.buttonBorderWidth(),
+        ),
+      ),
+      child: Image.asset(isPressedList.operateBackGround()[number]),
+    );
+//Floor Button
+SizedBox floorButtonImage(BuildContext context, int floorNumber, bool isSelected) =>
+    SizedBox(
+      width: context.floorButtonSize(),
+      height: context.floorButtonSize(),
+      child: Stack(alignment: Alignment.center,
+        children: [
+          Image.asset(isSelected.numberBackground()),
+          Text(floorNumber.buttonNumber(),
+            style: TextStyle(
+              color: isSelected ? lampColor: whiteColor,
+              fontSize: context.buttonNumberFontSize(),
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
+    );
+
 ///Admob Banner
 Center admobBanner() =>
     const Center(child:

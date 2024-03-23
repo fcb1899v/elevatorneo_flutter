@@ -262,8 +262,6 @@ extension ContextExt on BuildContext {
   double sideFrameWidth() => widthResponsible() * sideFrameWidthRate;
   double sideSpacerWidth() => (width() - elevatorWidth()) / 2;
   double menuIconSize() => widthResponsible() * menuIconSizeRate;
-  double snackBarFontSize() => widthResponsible() * snackBarFontSizeRate;
-
 
   ///Display
   double displayHeight() => widthResponsible() * displayHeightRate;

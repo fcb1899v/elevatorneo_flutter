@@ -24,7 +24,6 @@ class MyMenuPage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
 
-
     final floorNumbers = ref.watch(floorNumbersProvider);
     final roomImages = ref.watch(roomImagesProvider);
     final point = ref.watch(pointProvider);
