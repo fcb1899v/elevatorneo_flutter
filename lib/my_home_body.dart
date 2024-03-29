@@ -364,42 +364,7 @@ class MyHomePage extends HookConsumerWidget {
               ///Elevator Frame Image
               elevatorFrameImage(context),
               ///Display Image
-              Container(
-                width: context.displayWidth(),
-                height: context.displayHeight(),
-                margin: EdgeInsets.only(
-                  top: context.displayMarginTop(),
-                  left: context.displayMarginLeft()
-                ),
-                color: darkBlackColor,
-                child: Row(children: [
-                  const Spacer(),
-                  ///Arrow
-                  Container(
-                    margin: EdgeInsets.only(left: context.displayArrowMargin()),
-                    width: context.displayArrowWidth(),
-                    height: context.displayArrowHeight(),
-                    child: Image.asset(counter.value.arrowImage(isMoving.value, nextFloor.value)),
-                  ),
-                  ///Floor number
-                  Container(
-                    alignment: Alignment.topRight,
-                    width: context.displayNumberWidth(),
-                    height: context.displayNumberHeight(),
-                    child: useMemoized(() => HookBuilder(
-                      builder: (context) => Text(counter.value.displayNumber(),
-                        style: TextStyle(
-                          color: lampColor,
-                          fontSize: context.displayNumberFontSize(),
-                          fontWeight: FontWeight.normal,
-                          fontFamily: numberFont,
-                        ),
-                      ),
-                    ), [counter.value]),
-                  ),
-                  const Spacer(),
-                ])
-              ),
+              displayNumber(context, counter.value, isMoving.value, nextFloor.value),
               ///Elevator Button Image
               Container(
                 width: context.buttonPanelWidth(),

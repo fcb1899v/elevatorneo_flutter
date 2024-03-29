@@ -159,8 +159,8 @@ const String privacyPolicyLogo = "${assetsMenu}privacyPolicy.png";
 const String nextString = "Next Floor: ";
 
 ///Web Page
-const String landingPageJa = "https://nakajimamasao-appstudio.web.app/elevator/ja/";
-const String landingPageEn = "https://nakajimamasao-appstudio.web.app/elevator/";
+const String landingPageJa = "https://nakajimamasao-appstudio.web.app/elevatorneo/ja/";
+const String landingPageEn = "https://nakajimamasao-appstudio.web.app/elevatorneo/";
 const String privacyPolicyJa = "https://nakajimamasao-appstudio.web.app/terms/ja/";
 const String privacyPolicyEn = "https://nakajimamasao-appstudio.web.app/terms/";
 const String shopLink = "https://letselevator.designstore.jp";

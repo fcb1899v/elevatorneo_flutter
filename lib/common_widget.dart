@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'admob_banner.dart';
 import 'constant.dart';
 import 'extension.dart';
@@ -115,6 +115,49 @@ Row doorCover(BuildContext context) =>
         height: context.elevatorHeight(),
       ),
     ]);
+
+///Display
+Container displayNumber(BuildContext context, int counter, bool isMoving, int nextFloor) =>
+    Container(
+        width: context.displayWidth(),
+        height: context.displayHeight(),
+        margin: EdgeInsets.only(
+            top: context.displayMarginTop(),
+            left: context.displayMarginLeft()
+        ),
+        color: darkBlackColor,
+        child: Row(children: [
+          const Spacer(),
+          ///Arrow
+          displayArrow(context, counter.arrowImage(isMoving, nextFloor)),
+          ///Floor number
+          Container(
+            alignment: Alignment.topRight,
+            width: context.displayNumberWidth(),
+            height: context.displayNumberHeight(),
+            child: useMemoized(() => HookBuilder(
+              builder: (context) => Text(counter.displayNumber(),
+                style: TextStyle(
+                  color: lampColor,
+                  fontSize: context.displayNumberFontSize(),
+                  fontWeight: FontWeight.normal,
+                  fontFamily: numberFont,
+                ),
+              ),
+            ), [counter]),
+          ),
+          const Spacer(),
+        ])
+    );
+
+Container displayArrow(BuildContext context, String arrowImage) =>
+    Container(
+      margin: EdgeInsets.only(left: context.displayArrowMargin()),
+      width: context.displayArrowWidth(),
+      height: context.displayArrowHeight(),
+      child: Image.asset(arrowImage),
+    );
+
 
 ///Button
 //Open or Close Button (Close: 0, Open: 1, Alert:2)

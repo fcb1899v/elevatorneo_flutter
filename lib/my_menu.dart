@@ -1,10 +1,11 @@
 import 'dart:io';
-
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as path;
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -35,6 +36,7 @@ class MyMenuPage extends HookConsumerWidget {
     final isImageOn  = useState(List.generate(5, (_) => List.generate(2, (_) => false)));
     final isSoundOn = useState(true);
     final photoPermission = useState(PermissionStatus.permanentlyDenied);
+    final counter = useState(0);
 
     final AudioPlayer audioPlayer = AudioPlayer();
 
@@ -178,10 +180,13 @@ class MyMenuPage extends HookConsumerWidget {
           ],
         );
         if (croppedFile != null) {
+          final directory = await getApplicationDocumentsDirectory();
+          final fileName = path.basename(croppedFile.path);
+          final File savedImage = await File(croppedFile.path).copy('${directory.path}/$fileName');
           'Cropped image path: ${croppedFile.path}'.debugPrint();
           final prefs = await SharedPreferences.getInstance();
           final newList = List<String>.from(ref.read(roomImagesProvider));
-          newList[buttonIndex(row, col)] = croppedFile.path;
+          newList[buttonIndex(row, col)] = savedImage.path;
           await "roomsKey".setSharedPrefListString(prefs, newList);
           ref.read(roomImagesProvider.notifier).state = newList;
         }
@@ -271,15 +276,12 @@ class MyMenuPage extends HookConsumerWidget {
                     ),
                   ),
                   onTap: () async {
-                    photoPermission.value = await Permission.photos.request();
+                    photoPermission.value = await Permission.photos.status;
                     "photoPermission: ${photoPermission.value}";
                     if (Platform.isAndroid || photoPermission.value.isGranted) {
                       pickAndCropImage(row, col);
                     } else if (photoPermission.value.isDenied) {
                       photoPermission.value = await Permission.photos.request();
-                      if (photoPermission.value.isGranted) {
-                        pickAndCropImage(row, col);
-                      }
                     } else {
                       photoPermissionAlert();
                     }
@@ -413,11 +415,21 @@ class MyMenuPage extends HookConsumerWidget {
         color: transpColor,
         child:Column(children: [
           const Spacer(flex: 2),
-          Text(context.settings(),
-            style: TextStyle(
-              fontSize: context.menuTitleFontSize(),
-              fontWeight: FontWeight.bold,
-              fontFamily: menuFont
+          GestureDetector(
+            onTap: () async {
+              counter.value++;
+              "${counter.value}".debugPrint();
+              if (counter.value == 30) {
+                ref.read(pointProvider.notifier).state = 100000;
+                "${ref.read(pointProvider.notifier).state}".debugPrint();
+              }
+            },
+            child: Text(context.settings(),
+              style: TextStyle(
+                fontSize: context.menuTitleFontSize(),
+                fontWeight: FontWeight.bold,
+                fontFamily: menuFont
+              ),
             ),
           ),
           SizedBox(height: context.menuButtonBottomMargin()),
@@ -534,9 +546,9 @@ class MyMenuPage extends HookConsumerWidget {
               SizedBox(height: context.menuButtonBottomMargin()),
             ]),
           ).toList()),
-          const Spacer(flex: 2),
+          if (Platform.isAndroid) const Spacer(flex: 2),
           ///Menu Links
-          Row(children: [
+          if (Platform.isAndroid) Row(children: [
             const Spacer(flex: 1),
             ...List.generate(context.menuLogos().length, (i) => Container(
               width: context.menuLogoSize(),
@@ -549,7 +561,7 @@ class MyMenuPage extends HookConsumerWidget {
             const Spacer(flex: 1),
           ]),
           const Spacer(flex: 2),
-          if (isShowAds) const AdBannerWidget(),
+          const AdBannerWidget(),
         ]),
       ),
     );

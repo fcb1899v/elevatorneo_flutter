@@ -1,7 +1,7 @@
 name: letselevatorneo
 description: elevatorsimulatorneo
 publish_to: 'none'
-version: 1.0.1+8
+version: 1.0.3+12
 
 environment:
   sdk: '>=2.18.0 <4.0.0'
@@ -27,7 +27,7 @@ dependencies:
   # Vibration
   vibration: ^1.8.3
   # Game Center
-  games_services: ^4.0.0
+  #games_services: ^4.0.0
   # Connectivity
   connectivity_plus: ^6.0.1
   # Shared Preference
