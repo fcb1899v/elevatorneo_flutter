@@ -1,0 +1,13 @@
+/* 
+  InfoPlist.strings
+  Runner
+
+  Created by 中島正雄 on 2021/07/17.
+  
+*/
+
+CFBundleName = "操作乐童电梯新锐";
+CFBundleDisplayName = "操作乐童电梯";
+NSUserTrackingUsageDescription = "此应用完全依靠广告收入运营，因为它是由个人开发的。如果您同意，请点击“允许”以授权。您将看到适合您偏好的广告。";
+NSLocalNetworkUsageDescription = "为了成功检索音频，此应用需要本地网络连接。请点击“允许”以授权。";
+NSPhotoLibraryUsageDescription = "在此应用中，您可以从相册中选择您喜欢的图片，并在应用内自定义地面图片。要使用此自定义功能，需要访问您的相册。我们优先提供安全的用户体验，确保所选图片仅在设备上处理，且不会出于任何其他目的在应用外共享或传输。如果您希望使用此功能，请点击“允许”以授权。您可以随时从设置中撤销此权限。";

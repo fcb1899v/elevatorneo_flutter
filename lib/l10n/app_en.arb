@@ -1,7 +1,7 @@
 {
   "@@locale": "en",
   "letsElevator" : "LETS ELEVATOR NEO", "@LETS ELEVATOR" : {"description": "LETS ELEVATOR NEO"},
-  "thisApp": "This app is the most realistic elevator simulator.", "@thisApp": {"description": ""},
+  "thisApp": "This app is one of the most realistic elevator simulator.", "@thisApp": {"description": ""},
   "menu" : "MENU", "@menu" : {"description": "Menu"},
   "settings" : "SETTINGS", "@settings" : {"description": "Settings"},
   "aboutLetsElevator" : "About LETS ELEVATOR", "@aboutLetsElevator" : {"description": "About LETS ELEVATOR"},

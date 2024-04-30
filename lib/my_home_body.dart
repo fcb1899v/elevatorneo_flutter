@@ -1,13 +1,12 @@
 import 'dart:io';
-import 'package:app_tracking_transparency/app_tracking_transparency.dart';
 import 'package:audioplayers/audioplayers.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vibration/vibration.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'common_function.dart';
 import 'common_widget.dart';
 import 'extension.dart';
 import 'constant.dart';
@@ -36,7 +35,7 @@ class MyHomePage extends HookConsumerWidget {
     final isSoundOn = useState(true);
 
     final FlutterTts flutterTts = FlutterTts();
-    final AudioPlayer audioPlayer = AudioPlayer();
+    final AudioPlayer audioPlayer = useMemoized(() => AudioPlayer());
 
     useEffect(() {
       WidgetsBinding.instance.addPostFrameCallback((_) async {
@@ -60,12 +59,39 @@ class MyHomePage extends HookConsumerWidget {
           "name": context.voiceName(Platform.isAndroid),
           "locale": context.ttsVoice()}
         );
+        context.voiceName(Platform.isAndroid).debugPrint();
         await flutterTts.setSpeechRate(0.5);
         await audioPlayer.setReleaseMode(ReleaseMode.loop);
         await audioPlayer.setVolume(0.5);
         context.pushNumber().speakText(flutterTts, isSoundOn.value);
+        await gamesSignIn();
+        final bestScore = await getBestScore();
+        if (bestScore > point) {
+          ref.read(pointProvider.notifier).state = bestScore;
+        }
       });
       return null;
+    }, []);
+
+    useEffect(() {
+      var observer = LifecycleEventHandler(
+        resumeCallBack: () async {
+          if (isSoundOn.value) {
+            await audioPlayer.resume();
+          }
+        },
+        suspendingCallBack: () async {
+          if (isSoundOn.value) {
+            await audioPlayer.pause();
+          }
+        },
+      );
+      WidgetsBinding.instance.addObserver(observer);
+      // コンポーネントのクリーンアップ時の処理
+      return () {
+        audioPlayer.dispose();
+        WidgetsBinding.instance.removeObserver(observer);
+      };
     }, []);
 
     /// 上の階へ行く
@@ -92,8 +118,8 @@ class MyHomePage extends HookConsumerWidget {
               "isDoorState: ${isDoorState.value}".debugPrint();
               "$nextString${nextFloor.value}".debugPrint();
               final newPoint = ref.read(pointProvider.notifier).state;
-              ref.read(pointProvider.notifier).state == newPoint;
-              await "pointKey".setSharedPrefInt(prefs, newPoint);
+              if (!isAllFree) await "pointKey".setSharedPrefInt(prefs, newPoint);
+              if (!isAllFree) await gamesSubmitScore(newPoint);
               "point: $newPoint".debugPrint();
             }
           });
@@ -125,8 +151,8 @@ class MyHomePage extends HookConsumerWidget {
               "isDoorState: ${isDoorState.value}".debugPrint();
               "$nextString${nextFloor.value}".debugPrint();
               final newPoint = ref.read(pointProvider.notifier).state;
-              ref.read(pointProvider.notifier).state == newPoint;
-              await "pointKey".setSharedPrefInt(prefs, newPoint);
+              if (!isAllFree) await "pointKey".setSharedPrefInt(prefs, newPoint);
+              if (!isAllFree) await gamesSubmitScore(newPoint);
               "point: $newPoint".debugPrint();
             }
           });
@@ -242,7 +268,6 @@ class MyHomePage extends HookConsumerWidget {
         if (i == counter.value) {
           if (!isMoving.value && i == nextFloor.value) context.pushNumber().speakText(flutterTts, isSoundOn.value);
         } else if (!selectFlag) {
-          //止まらない階の場合のメッセージ
           context.notStop().speakText(flutterTts, isSoundOn.value);
         } else if (!i.isSelected(isAboveSelectedList.value, isUnderSelectedList.value)) {
           selectButton.playAudio(audioPlayer, isSoundOn.value);
@@ -263,7 +288,7 @@ class MyHomePage extends HookConsumerWidget {
       }
     }
 
-    ///Deselect floor buttongit remote add origin
+    ///Deselect floor button remote add origin
     floorCanceled(int i) async {
       if (i.isSelected(isAboveSelectedList.value, isUnderSelectedList.value) && i != nextFloor.value) {
         cancelButton.playAudio(audioPlayer, isSoundOn.value);
@@ -310,7 +335,13 @@ class MyHomePage extends HookConsumerWidget {
         backgroundColor: blackColor,
         shadowColor: Colors.transparent,
         title: Row(children: [
-          pointIcon(30),
+          GestureDetector(
+            onTap: () async => {
+              Vibration.vibrate(duration: vibTime, amplitude: vibAmp),
+              gamesShowLeaderboard(),
+            },
+            child: pointIcon(30),
+          ),
           Container(
             height: 50,
             margin: const EdgeInsets.only(left: 10),
@@ -431,24 +462,5 @@ class MyHomePage extends HookConsumerWidget {
         ]),
       ),
     );
-  }
-}
-
-/// App Tracking Transparency
-Future<void> initPlugin(BuildContext context) async {
-  final status = await AppTrackingTransparency.trackingAuthorizationStatus;
-  if (status == TrackingStatus.notDetermined && context.mounted) {
-    await showCupertinoDialog(context: context, builder: (context) => CupertinoAlertDialog(
-      title: Text(context.letsElevator()),
-      content: Text(context.thisApp()),
-      actions: [
-        CupertinoDialogAction(
-          child: const Text('OK', style: TextStyle(color: Colors.blue)),
-          onPressed: () => Navigator.pop(context),
-        )
-      ],
-    ));
-    await Future.delayed(const Duration(milliseconds: 200));
-    await AppTrackingTransparency.requestTrackingAuthorization();
   }
 }

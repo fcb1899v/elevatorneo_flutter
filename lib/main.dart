@@ -18,14 +18,14 @@ const isShowAds = true;
 final isMenuProvider = StateProvider<bool>((ref) => false);
 final floorNumbersProvider = StateProvider<List<int>>((ref) => initialFloorNumbers);
 final roomImagesProvider = StateProvider<List<String>>((ref) => initialRoomImages);
-final pointProvider = StateProvider<int>((ref) => isAllFree ? 99999: 0);
+final pointProvider = StateProvider<int>((ref) => isAllFree ? testPoint: 0);
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final prefs = await SharedPreferences.getInstance();
   final savedFloorNumbers = await "floorsKey".getSharedPrefListInt(prefs, initialFloorNumbers);
   final savedRoomImages = await "roomsKey".getSharedPrefListString(prefs, initialRoomImages);
-  final savedPointValue = await 'pointKey'.getSharedPrefInt(prefs, isAllFree ? 99999: 0);
+  final savedPointValue = await 'pointKey'.getSharedPrefInt(prefs, isAllFree ? testPoint: 0);
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]); //縦向き指定
   MobileAds.instance.initialize();
   await dotenv.load(fileName: "assets/.env");

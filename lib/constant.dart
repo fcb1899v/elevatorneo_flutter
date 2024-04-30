@@ -26,9 +26,10 @@ const List<List<int>> changePointList = [
   [10000, 20000],
   [ 1000,  2000],
   [    0,   200],
-  [ 5000, 50000],
+  [ 3000, 50000],
 ];
-const int albumImagePoint = 99999;
+const int albumImagePoint = 5000;
+const int testPoint = 999999;
 
 /// 停止する：true・しない：false
 const List<List<bool>> isFloors = [

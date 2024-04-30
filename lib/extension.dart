@@ -36,29 +36,29 @@ extension StringExt on String {
 
   //SharedPreferences this is key
   setSharedPrefString(SharedPreferences prefs, String value) {
-    "${replaceAll("Key","")}: $value".debugPrint();
+    "pref: ${replaceAll("Key","")}: $value".debugPrint();
     prefs.setString(this, value);
   }
   setSharedPrefInt(SharedPreferences prefs, int value) {
-    "${replaceAll("Key","")}: $value".debugPrint();
+    "pref: ${replaceAll("Key","")}: $value".debugPrint();
     prefs.setInt(this, value);
   }
   setSharedPrefListString(SharedPreferences prefs, List<String> list) {
-    "${replaceAll("Key","")}: $list".debugPrint();
+    "pref: ${replaceAll("Key","")}: $list".debugPrint();
     prefs.setString(this, jsonEncode(list));
   }
   setSharedPrefListInt(SharedPreferences prefs, List<int> list) {
-    "${replaceAll("Key","")}: $list".debugPrint();
+    "pref: ${replaceAll("Key","")}: $list".debugPrint();
     prefs.setString(this, jsonEncode(list));
   }
   getSharedPrefString(SharedPreferences prefs, String defaultString) {
     String data = prefs.getString(this) ?? defaultString;
-    "${replaceAll("Key","")}: $data".debugPrint();
+    "pref: ${replaceAll("Key","")}: $data".debugPrint();
     return data;
   }
   getSharedPrefInt(SharedPreferences prefs, int defaultInt) {
     int data = prefs.getInt(this) ?? defaultInt;
-    "${replaceAll("Key","")}: $data".debugPrint();
+    "pref: ${replaceAll("Key","")}: $data".debugPrint();
     return data;
   }
   getSharedPrefListString(SharedPreferences prefs, List<String> initialList) {
@@ -100,15 +100,18 @@ extension ContextExt on BuildContext {
   String ttsVoice() =>
       (lang() == "ja") ? "ja-JP":
       (lang() == "ko") ? "ko-KR":
+      (lang() == "zh") ? "zh-CN":
       "en-US";
   String voiceName(bool isAndroid) =>
       isAndroid ? (
           lang() == "ja" ? "ja-JP-language":
           lang() == "ko" ? "ko-KR-language":
+          lang() == "zh" ? "ko-CN-language":
           "en-US-language"
       ): (
           lang() == "ja" ? "Kyoko":
           lang() == "ko" ? "Yuna":
+          lang() == "zh" ? "Lili":
           "Samantha"
       );
 
@@ -230,11 +233,12 @@ extension ContextExt on BuildContext {
   String photoAccessPermission() => AppLocalizations.of(this)!.photoAccessPermission;
   String landingPageLink() => (lang() == "ja") ? landingPageJa: landingPageEn;
   String privacyPolicyLink() => (lang() == "ja") ? privacyPolicyJa: privacyPolicyEn;
+
   List<String> menuLogos() => [
     landingPageLogo,
     if (lang() == "ja") shopPageLogo,
     if (lang() == "ja") twitterLogo,
-    youtubeLogo,
+    if (Platform.isAndroid) youtubeLogo,
     if (lang() == "ja") instagramLogo,
     privacyPolicyLogo
   ];
@@ -242,7 +246,7 @@ extension ContextExt on BuildContext {
     landingPageLink(),
     if (lang() == "ja") shopLink,
     if (lang() == "ja") elevatorTwitter,
-    elevatorYoutube,
+    if (Platform.isAndroid) elevatorYoutube,
     if (lang() == "ja") elevatorInstagram,
     privacyPolicyLink()
   ];
@@ -591,3 +595,4 @@ extension ListBoolExt on List<bool> {
     this[2].phoneBackGround()
   ];
 }
+
