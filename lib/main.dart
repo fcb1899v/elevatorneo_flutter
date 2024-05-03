@@ -54,7 +54,7 @@ class MyApp extends StatelessWidget {
     theme: ThemeData(primarySwatch: Colors.grey),
     debugShowCheckedModeBanner: false,
     initialRoute: "/h",
-    routes: { "/h": (context) => const MyHomePage() },
+    routes: {"/h": (context) => const MyHomePage()},
     navigatorObservers: <NavigatorObserver>[
       FirebaseAnalyticsObserver(analytics: FirebaseAnalytics.instance),
       RouteObserver<ModalRoute>()

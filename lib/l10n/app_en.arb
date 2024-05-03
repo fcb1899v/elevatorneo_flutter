@@ -28,7 +28,7 @@
   "changeImage" : "Change floor image", "@changeImage" : {"description": "Change floor image. "},
   "selectPhoto" : "Select image from album", "@selectPhoto" : {"description": "Select image from album. "},
   "cropPhoto" : "Crop your image", "@cropPhoto" : {"description": "Crop your image"},
-  "eVMile" : "EV Mileage", "@eVMile" : {"description": "EV Mileage"},
+  "eVMile" : "Elevator Mileage", "@eVMile" : {"description": "EV Mileage"},
   "aboutEVMile" : "\nPoints earned by elevator's up and down. Accumulate points to customize floor numbers and destination images in settings.", "@aboutEVMile" : {"description": "About EV Mileage"},
   "rooftop" : "The top floor, ", "@rooftop" : {"description": "Top floor"},
   "vip" : "VIP room floor, ", "@vip" : {"description": "VIP room floor"},

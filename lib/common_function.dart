@@ -62,19 +62,17 @@ gamesSignIn() async {
 
 ///Submitting games score
 gamesSubmitScore(int value) async {
-  if (!(await GamesServices.isSignedIn)) {
-    await gamesSignIn();
-  }
+  if (!(await GamesServices.isSignedIn)) await gamesSignIn();
   if (await GamesServices.isSignedIn) {
     try {
-      await GamesServices.submitScore(
+      await Leaderboards.submitScore(
         score: Score(
           androidLeaderboardID: dotenv.get("ANDROID_LEADERBOARD_ID"),
           iOSLeaderboardID: dotenv.get("IOS_LEADERBOARD_ID"),
           value: value,
         ),
       );
-      "Success submitting leaderboard".debugPrint();
+      "Success submitting leaderboard: $value".debugPrint();
     } catch (e) {
       'Error submitting score: $e'.debugPrint();
     }
@@ -101,32 +99,33 @@ gamesShowLeaderboard() async {
 
 ///Get best score games leaderboards
 Future<int> getBestScore() async {
+  int gamesBestScore;
+  if (!(await GamesServices.isSignedIn)) await gamesSignIn();
+  if (await GamesServices.isSignedIn) {
+    try {
+      gamesBestScore = await GamesServices.getPlayerScore(
+        androidLeaderboardID: dotenv.get("ANDROID_LEADERBOARD_ID"),
+        iOSLeaderboardID: dotenv.get("IOS_LEADERBOARD_ID"),
+      ) ?? 0;
+      "gamesBestScore: $gamesBestScore".debugPrint();
+    } catch(e) {
+      "gamesBestScore: 0: Fail to get".debugPrint();
+      gamesBestScore = 0;
+    }
+  } else {
+    "gamesBestScore: 0: Can't sign in".debugPrint();
+    gamesBestScore = 0;
+  }
   final SharedPreferences prefs = await SharedPreferences.getInstance();
   final prefBestScore = prefs.getInt('bestScore') ?? 0;
   "prefBestScore: $prefBestScore".debugPrint();
-  final int gamesBestScore;
-  if (!(await GamesServices.isSignedIn)) {
-    await gamesSignIn();
-  }
-  if (await GamesServices.isSignedIn) {
-    gamesBestScore = await GamesServices.getPlayerScore(
-      iOSLeaderboardID: dotenv.get("IOS_LEADERBOARD_ID"),
-      androidLeaderboardID: dotenv.get("IOS_LEADERBOARD_ID"),
-    ) ?? 0;
-    "gamesBestScore: $gamesBestScore".debugPrint();
-  } else {
-    gamesBestScore = 0;
-  }
-  if (gamesBestScore > prefBestScore) {
-    if (!isAllFree) await "pointKey".setSharedPrefInt(prefs, gamesBestScore);
-    "bestScore: $gamesBestScore".debugPrint();
-    return gamesBestScore;
-  } else if (prefBestScore > gamesBestScore) {
-    if (!isAllFree) gamesSubmitScore(prefBestScore);
+  if (prefBestScore >= gamesBestScore) {
+    if (!isAllFree && gamesBestScore != 0) gamesSubmitScore(prefBestScore);
     "bestScore: $prefBestScore".debugPrint();
     return prefBestScore;
   } else {
-    "bestScore: 0".debugPrint();
-    return 0;
+    if (!isAllFree) await "pointKey".setSharedPrefInt(prefs, gamesBestScore);
+    "bestScore: $gamesBestScore".debugPrint();
+    return gamesBestScore;
   }
 }
