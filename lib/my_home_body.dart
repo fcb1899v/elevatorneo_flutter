@@ -12,6 +12,7 @@ import 'extension.dart';
 import 'constant.dart';
 import 'main.dart';
 import 'my_menu.dart';
+import 'my_settings.dart';
 
 class MyHomePage extends HookConsumerWidget {
   const MyHomePage({super.key});
@@ -20,6 +21,7 @@ class MyHomePage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
 
     final isMenu = ref.watch(isMenuProvider);
+    final isSettings = ref.watch(isSettingsProvider);
     final floorNumbers = ref.watch(floorNumbersProvider);
     final roomImages = ref.watch(roomImagesProvider);
     final point = ref.watch(pointProvider);
@@ -76,14 +78,10 @@ class MyHomePage extends HookConsumerWidget {
     useEffect(() {
       var observer = LifecycleEventHandler(
         resumeCallBack: () async {
-          if (isSoundOn.value) {
-            await audioPlayer.resume();
-          }
+          if (isSoundOn.value) await audioPlayer.resume();
         },
         suspendingCallBack: () async {
-          if (isSoundOn.value) {
-            await audioPlayer.pause();
-          }
+          if (isSoundOn.value) await audioPlayer.pause();
         },
       );
       WidgetsBinding.instance.addObserver(observer);
@@ -118,8 +116,8 @@ class MyHomePage extends HookConsumerWidget {
               "isDoorState: ${isDoorState.value}".debugPrint();
               "$nextString${nextFloor.value}".debugPrint();
               final newPoint = ref.read(pointProvider.notifier).state;
-              if (!isAllFree) await "pointKey".setSharedPrefInt(prefs, newPoint);
-              if (!isAllFree) await gamesSubmitScore(newPoint);
+              await "pointKey".setSharedPrefInt(prefs, newPoint);
+              await gamesSubmitScore(newPoint);
               "point: $newPoint".debugPrint();
             }
           });
@@ -151,8 +149,8 @@ class MyHomePage extends HookConsumerWidget {
               "isDoorState: ${isDoorState.value}".debugPrint();
               "$nextString${nextFloor.value}".debugPrint();
               final newPoint = ref.read(pointProvider.notifier).state;
-              if (!isAllFree) await "pointKey".setSharedPrefInt(prefs, newPoint);
-              if (!isAllFree) await gamesSubmitScore(newPoint);
+              await "pointKey".setSharedPrefInt(prefs, newPoint);
+              await gamesSubmitScore(newPoint);
               "point: $newPoint".debugPrint();
             }
           });
@@ -307,7 +305,8 @@ class MyHomePage extends HookConsumerWidget {
     pressedMenu() async {
       selectButton.playAudio(audioPlayer, isSoundOn.value);
       await Vibration.vibrate(duration: vibTime, amplitude: vibAmp);
-      ref.read(isMenuProvider.notifier).state = !isMenu;
+      ref.read(isMenuProvider.notifier).state = isSettings ? false: !isMenu;
+      ref.read(isSettingsProvider.notifier).state = false;
     }
 
     ///Action after changing door state
@@ -458,7 +457,8 @@ class MyHomePage extends HookConsumerWidget {
           ///Admob Banner
           admobBanner(),
           ///Menu
-          if (isMenu) const MyMenuPage(isHome: true),
+          if (isMenu) const MyMenuPage(),
+          if (isSettings) const MySettingsPage(),
         ]),
       ),
     );

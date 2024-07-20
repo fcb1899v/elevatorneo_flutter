@@ -200,7 +200,7 @@ Center admobBanner() =>
     const Center(child:
       Column(children: [
         Spacer(),
-        if (isShowAds) AdBannerWidget(),
+        if (!isTest) AdBannerWidget(),
       ]),
     );
 
@@ -211,37 +211,45 @@ Container evMileTooltip(BuildContext context) => Container(
   margin: const EdgeInsets.only(left: 5),
   child: Tooltip(
     richMessage: TextSpan(
-      text: context.eVMile(),
-      style: const TextStyle(
-        color: lampColor,
-        fontWeight: FontWeight.bold,
-        fontFamily: menuFont,
-        height: 2.4,
-        decoration: TextDecoration.underline,
-        decorationColor: whiteColor,
-        fontSize: 20,
-      ),
-      children: <TextSpan>[
+      children: <InlineSpan>[
+        WidgetSpan(
+          child: pointIcon(context.tooltipTitleFontSize()),
+        ),
+        TextSpan(
+          text: " ${context.eVMile()}",
+          style: TextStyle(
+            color: lampColor,
+            fontWeight: FontWeight.bold,
+            fontFamily: menuFont,
+            decorationColor: whiteColor,
+            fontSize: context.tooltipTitleFontSize(),
+          ),
+        ),
+        TextSpan(
+          text: "\n ",
+          style: TextStyle(
+            fontSize: context.tooltipTitleMargin(),
+          ),
+        ),
         TextSpan(
           text: context.aboutEVMile(),
-          style: const TextStyle(
+          style: TextStyle(
             color: whiteColor,
             fontStyle: FontStyle.normal,
             fontFamily: menuFont,
-            height: 1.5,
             decoration: TextDecoration.none,
-            fontSize: 16,
+            fontSize: context.tooltipDescFontSize(),
           ),
         ),
       ],
     ),
-    padding: const EdgeInsets.all(20), //吹き出しのpadding
-    margin: const EdgeInsets.all(20), //吹き出しのmargin
-    verticalOffset: 15, //childのwidget２ら垂直方向にどれだけ離すか
+    padding: EdgeInsets.all(context.tooltipPaddingSize()), //吹き出しのpadding
+    margin: EdgeInsets.all(context.tooltipMarginSize()), //吹き出しのmargin
+    verticalOffset: context.tooltipOffsetSize(), //childのwidget２ら垂直方向にどれだけ離すか
     preferBelow: true, //メッセージを子widgetの上に出すか下に出すか
-    decoration: const BoxDecoration(
+    decoration: BoxDecoration(
       color: transpBlackColor,
-      borderRadius: BorderRadius.all(Radius.circular(20))
+      borderRadius: BorderRadius.all(Radius.circular(context.tooltipBorderRadius()))
     ),//吹き出しの形や色の調整
     showDuration: const Duration(milliseconds: toolTipTime),
     triggerMode: TooltipTriggerMode.tap,
@@ -262,3 +270,55 @@ GestureDetector shutButton(BuildContext context) =>
         color: whiteColor,
       ),
     );
+
+///Menu Button
+SizedBox menuButton(BuildContext context, int i) => SizedBox(
+  width: context.menuButtonSize(),
+  height: context.menuButtonSize(),
+  child: Stack(
+      alignment: Alignment.center,
+      children: [
+        Image.asset(squareButton),
+        Text(context.menuTitles()[i],
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: whiteColor,
+            fontWeight: FontWeight.bold,
+            fontSize: context.menuButtonFontSize(),
+          ),
+        ),
+      ]
+  ),
+);
+
+alertLockWidget(BuildContext context)  => Container(
+  decoration: BoxDecoration(
+    color: transpBlackColor,
+    shape: BoxShape.rectangle,
+    borderRadius: BorderRadius.circular(context.settingsAlertLockBorderRadius()),
+    border: Border.all(
+      color: whiteColor,
+      width: context.settingsAlertLockBorderWidth(),
+    ),
+  ),
+  child: Column(children: [
+    SizedBox(height: context.settingsAlertLockIconSize() + context.settingsAlertLockSpaceSize()),
+    Row(children: [
+      const Spacer(flex: 1),
+      lockIcon(context.settingsAlertLockIconSize()),
+      SizedBox(width: context.settingsAlertLockSpaceSize()),
+      pointIcon(context.settingsAlertLockIconSize()),
+      SizedBox(width: context.settingsLockSpaceSize()),
+      Text("$albumImagePoint",
+        style: TextStyle(
+          color: lampColor,
+          fontSize: context.settingsAlertLockFontSize(),
+          fontWeight: FontWeight.normal,
+          fontFamily: numberFont,
+        ),
+      ),
+      const Spacer(flex: 1),
+    ]),
+  ]),
+);
+

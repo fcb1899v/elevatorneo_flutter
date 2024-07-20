@@ -129,6 +129,8 @@ extension ContextExt on BuildContext {
   String floor(String number) => AppLocalizations.of(this)!.floor(number);
   String notStop() => AppLocalizations.of(this)!.notStop;
   String eVMile() => AppLocalizations.of(this)!.eVMile;
+  String eVMileRanking() => AppLocalizations.of(this)!.eVMileRanking;
+  String earnMile() => AppLocalizations.of(this)!.earnMile;
   String aboutEVMile() => AppLocalizations.of(this)!.aboutEVMile;
 
   ///Room
@@ -219,37 +221,54 @@ extension ContextExt on BuildContext {
   String ok() => AppLocalizations.of(this)!.ok;
   String cancel() => AppLocalizations.of(this)!.cancel;
   String edit() => AppLocalizations.of(this)!.edit;
+  String ranking() => AppLocalizations.of(this)!.ranking;
   String changeNumber() => AppLocalizations.of(this)!.changeNumber;
   String changeBasementNumber() => AppLocalizations.of(this)!.changeBasementNumber;
   String changeNumberTitle(bool isBasement) => isBasement ? changeBasementNumber(): changeNumber();
   String changeImage() => AppLocalizations.of(this)!.changeImage;
   String selectPhoto() => AppLocalizations.of(this)!.selectPhoto;
   String cropPhoto() => AppLocalizations.of(this)!.cropPhoto;
-  String privacyPolicy() => AppLocalizations.of(this)!.terms;
+  String terms() => AppLocalizations.of(this)!.terms;
   String letsElevator() => AppLocalizations.of(this)!.aboutLetsElevator;
-  String onlineShop() => AppLocalizations.of(this)!.officialOnlineShop;
+  String officialPage() =>  AppLocalizations.of(this)!.officialPage;
+  String officialShop() => AppLocalizations.of(this)!.officialShop;
   String movingElevator() => AppLocalizations.of(this)!.movingElevator;
   String photoAccessRequired() => AppLocalizations.of(this)!.photoAccessRequired;
   String photoAccessPermission() => AppLocalizations.of(this)!.photoAccessPermission;
-  String landingPageLink() => (lang() == "ja") ? landingPageJa: landingPageEn;
-  String privacyPolicyLink() => (lang() == "ja") ? privacyPolicyJa: privacyPolicyEn;
+  String earnMilesAfterAdTitle() => AppLocalizations.of(this)!.earnMilesAfterAdTitle;
+  String earnMilesAfterAdDesc() => AppLocalizations.of(this)!.earnMilesAfterAdDesc;
 
-  List<String> menuLogos() => [
-    landingPageLogo,
-    if (lang() == "ja") shopPageLogo,
+  List<String> linkLogos() => [
     if (lang() == "ja") twitterLogo,
-    if (Platform.isAndroid) youtubeLogo,
     if (lang() == "ja") instagramLogo,
-    privacyPolicyLogo
+    if (Platform.isAndroid) youtubeLogo,
+    landingPageLogo,
+    privacyPolicyLogo,
+    if (lang() == "ja") shopPageLogo,
   ];
-  List<String> menuLinks() => [
-    landingPageLink(),
-    if (lang() == "ja") shopLink,
+  List<String> linkLinks() => [
     if (lang() == "ja") elevatorTwitter,
-    if (Platform.isAndroid) elevatorYoutube,
     if (lang() == "ja") elevatorInstagram,
-    privacyPolicyLink()
+    if (Platform.isAndroid) elevatorYoutube,
+    (lang() == "ja") ? landingPageJa: landingPageEn,
+    (lang() == "ja") ? privacyPolicyJa: privacyPolicyEn,
+    if (lang() == "ja") shopLink,
   ];
+  List<String> linkTitles() => [
+    if (lang() == "ja") "X",
+    if (lang() == "ja") "Instagram",
+    if (Platform.isAndroid) "Youtube",
+    officialPage(),
+    terms(),
+    if (lang() == "ja") officialShop(),
+  ];
+
+  List<String> menuTitles() => [
+    settings(),
+    eVMileRanking(),
+    earnMile(),
+  ];
+
 
   ///Responsible
   double responsible() => (height() < responsibleHeight) ? height(): responsibleHeight;
@@ -261,7 +280,6 @@ extension ContextExt on BuildContext {
   double doorWidth() => widthResponsible() * doorWidthRate;
   double doorMarginLeft() => widthResponsible() * doorMarginLeftRate;
   double doorMarginTop() => widthResponsible() * doorMarginTopRate;
-  double doorFrameMarginLeft() => widthResponsible() * doorFrameMarginLeftRate;
   double roomHeight() => widthResponsible() * roomHeightRate;
   double sideFrameWidth() => widthResponsible() * sideFrameWidthRate;
   double sideSpacerWidth() => (width() - elevatorWidth()) / 2;
@@ -291,47 +309,69 @@ extension ContextExt on BuildContext {
   double buttonBorderWidth() =>     widthResponsible() * buttonBorderWidthRate;
   double buttonBorderRadius() =>    widthResponsible() * buttonBorderRadiusRate;
 
+  ///Tooltip
+  double tooltipTitleFontSize() => widthResponsible() * tooltipTitleFontRate;
+  double tooltipDescFontSize() => widthResponsible() * tooltipDescFontRate;
+  double tooltipTitleMargin() => widthResponsible() * tooltipTitleMarginRate;
+  double tooltipPaddingSize() => widthResponsible() * tooltipPaddingSizeRate;
+  double tooltipMarginSize() => widthResponsible() * tooltipMarginSizeRate;
+  double tooltipBorderRadius() => widthResponsible() * tooltipBorderRadiusRate;
+  double tooltipOffsetSize() => widthResponsible() * tooltipOffsetSizeRate;
+
   ///Admob
   double admobHeight() => (height() < 600) ? 50: (height() < 1000) ? 50 + (height() - 600) / 8: 100;
   double admobWidth() => widthResponsible() - 100;
 
-  ///Settings
-  double menuAppBarHeight() => height() * menuAppBarHeightRate;
-  double menuTitleWidth() => height() * menuTitleWidthRate;
+  ///Menu
+  double menuTitleWidth() => widthResponsible() * menuTitleWidthRate;
   double menuTitleFontSize() => height() * menuTitleFontSizeRate;
-  double menuLockFontSize() => height() * menuLockFontSizeRate;
-  double menuLockIconSize() => height() * menuLockIconSizeRate;
-  double menuLockSpaceSize() => height() * menuLockSpaceSizeRate;
-  double menuLockWidth() => menuImageWidth() + menuEditButtonWidth() + menuButtonMargin();
+  double menuButtonSize() => widthResponsible() * menuButtonSizeRate;
+  double menuButtonFontSize() => widthResponsible() * menuButtonFontSizeRate;
+  double menuAlertTitleFontSize() => widthResponsible() * menuAlertTitleFontSizeRate;
+  double menuAlertDescFontSize() => widthResponsible() * menuAlertDescFontSizeRate;
+  double menuAlertSelectFontSize() => widthResponsible() * menuAlertSelectFontSizeRate;
 
-  double menuAlertTitleFontSize() => responsible() * menuAlertTitleFontSizeRate;
-  double menuAlertSelectNumberSize() => height() * menuAlertSelectNumberSizeRate;
-  double menuAlertIconMargin() => width() * menuAlertIconMarginRate;
-  double menuAlertLockFontSize() => height() * menuAlertLockFontSizeRate;
-  double menuAlertLockIconSize() => height() * menuAlertLockIconSizeRate;
-  double menuAlertLockBorderWidth() => height() * menuAlertLockBorderWidthRate;
-  double menuAlertLockBorderRadius() => height() * menuAlertLockBorderRadiusRate;
-  double menuAlertLockSpaceSize() => height() * menuAlertLockSpaceSizeRate;
+  ///Menu Bottom Navigation Links
+  double linksLogoWidth() => widthResponsible() * linksLogoWidthRate;
+  double linksLogoHeight() => widthResponsible() * linksLogoHeightRate;
+  double linksTitleSize() => widthResponsible() * ((lang() == "ja" && Platform.isAndroid) ? linksTitleJaFontSizeRate: linksTitleEnFontSizeRate);
+  double linksTitleMargin() => widthResponsible() * linksTitleMarginRate;
+  double linksMargin() => widthResponsible() * linksMarginRate;
 
-  double menuButtonMargin() => height() * menuButtonMarginRate;
-  double menuButtonBottomMargin() => height() * menuButtonBottomMarginRate;
-  double menuButtonSize() => height() * menuButtonSizeRate;
-  double menuButtonFontSize() => height() * menuButtonFontSizeRate;
-  double menuFloorNumberAlertHeight() => height() * menuFloorNumberAlertHeightRate;
-  double menuImageSelectAlertHeight() => height() * menuImageSelectAlertHeightRate;
-  double menuImageSelectFontSize() => responsible() * menuImageSelectFontSizeRate;
-  double menuDropdownMargin() => responsible() * menuDropdownMarginRate;
-  double menuDropdownFontSize() => responsible() * menuDropdownFontSizeRate;
-  double menuImageHeight() => height() * menuImageHeightRate;
-  double menuImageWidth() => menuImageHeight() * 9 / 16;
-  double menuEditButtonWidth() => height() * menuEditButtonWidthRate;
-  double menuEditButtonHeight() => height() * menuEditButtonHeightRate;
-  double menuEditButtonMargin() => height() * menuEditButtonMarginRate;
-  double menuEditBorderRadius() => height() * menuEditBorderRadiusRate;
-  double menuEditShadowSize() => height() * menuEditShadowSizeRate;
-  double menuEditFontSize() => height() * menuEditFontSizeRate;
-  double menuLogoSize() => responsible() * menuLogoSizeRate;
-  double menuLogoMargin() => responsible() * menuLogoMarginRate;
+  ///Settings
+  double settingsTitleFontSize() => height() * settingsTitleFontSizeRate;
+  double settingsTitleMargin() => height() * settingsTitleMarginRate;
+  double settingsButtonWidth() => height() * settingsButtonWidthRate;
+  double settingsButtonHeight() => height() * settingsButtonHeightRate;
+  double settingsButtonMargin() => height() * settingsButtonMarginRate;
+  double settingsButtonSpace() => height() * settingsButtonSpaceRate;
+  double settingsButtonSize() => height() * settingsButtonSizeRate;
+  double settingsButtonFontSize() => height() * settingsButtonFontSizeRate;
+  double settingsButtonNumberFontSize() => height() * settingsButtonNumberFontSizeRate;
+  double settingsButtonBorderRadius() => height() * settingsButtonBorderRadiusRate;
+  double settingsButtonShadowSize() => height() * settingsButtonShadowSizeRate;
+  double settingsLockFontSize() => height() * settingsLockFontSizeRate;
+  double settingsLockIconSize() => height() * settingsLockIconSizeRate;
+  double settingsLockSpaceSize() => height() * settingsLockSpaceSizeRate;
+  double settingsLockWidth() => settingsImageSelectWidth() + settingsButtonWidth() + settingsButtonMargin();
+  double settingsImageSelectHeight() => height() * settingsImageSelectHeightRate;
+  double settingsImageSelectWidth() => settingsImageSelectHeight() * 9 / 16;
+
+  ///Settings Alert Dialog
+  double settingsAlertTitleFontSize() => widthResponsible() * settingsAlertTitleFontSizeRate;
+  double settingsAlertFontSize() => widthResponsible() * settingsAlertFontSizeRate;
+  double settingsAlertSelectFontSize() => widthResponsible() * settingsAlertSelectFontSizeRate;
+  double settingsAlertFloorNumberSize() => widthResponsible() * settingsAlertFloorNumberSizeRate;
+  double settingsAlertFloorNumberHeight() => widthResponsible() * settingsAlertFloorNumberHeightRate;
+  double settingsAlertDropdownMargin() => widthResponsible() * settingsAlertDropdownMarginRate;
+  double settingsAlertImageSelectHeight() => widthResponsible() * settingsAlertImageSelectHeightRate;
+  double settingsAlertIconSize() => widthResponsible() * settingsAlertIconSizeRate;
+  double settingsAlertIconMargin() => width() * settingsAlertIconMarginRate;
+  double settingsAlertLockFontSize() => widthResponsible() * settingsAlertLockFontSizeRate;
+  double settingsAlertLockIconSize() => widthResponsible() * settingsAlertLockIconSizeRate;
+  double settingsAlertLockBorderWidth() => widthResponsible() * settingsAlertLockBorderWidthRate;
+  double settingsAlertLockBorderRadius() => widthResponsible() * settingsAlertLockBorderRadiusRate;
+  double settingsAlertLockSpaceSize() => widthResponsible() * settingsAlertLockSpaceSizeRate;
 }
 
 extension IntExt on int {

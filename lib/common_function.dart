@@ -6,7 +6,6 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:games_services/games_services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'extension.dart';
-import 'main.dart';
 
 /// App Tracking Transparency
 Future<void> initPlugin(BuildContext context) async {
@@ -120,11 +119,11 @@ Future<int> getBestScore() async {
   final prefBestScore = prefs.getInt('bestScore') ?? 0;
   "prefBestScore: $prefBestScore".debugPrint();
   if (prefBestScore >= gamesBestScore) {
-    if (!isAllFree && gamesBestScore != 0) gamesSubmitScore(prefBestScore);
+    if (gamesBestScore != 0) gamesSubmitScore(prefBestScore);
     "bestScore: $prefBestScore".debugPrint();
     return prefBestScore;
   } else {
-    if (!isAllFree) await "pointKey".setSharedPrefInt(prefs, gamesBestScore);
+    await "pointKey".setSharedPrefInt(prefs, gamesBestScore);
     "bestScore: $gamesBestScore".debugPrint();
     return gamesBestScore;
   }
