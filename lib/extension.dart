@@ -23,13 +23,14 @@ extension StringExt on String {
     if (isSoundOn) {
       debugPrint();
       await audioPlayer.stop();
-      await AudioPlayer().play(AssetSource(this));
+      await audioPlayer.play(AssetSource(this));
     }
   }
 
   Future<void> speakText(FlutterTts flutterTts, bool isSoundOn) async {
     if (isSoundOn) {
       debugPrint();
+      await flutterTts.stop();
       await flutterTts.speak(this);
     }
   }
@@ -153,6 +154,9 @@ extension ContextExt on BuildContext {
   String luxury() => AppLocalizations.of(this)!.luxury;
   String sports() => AppLocalizations.of(this)!.sports;
   String gym() => AppLocalizations.of(this)!.gym;
+  String sweets() => AppLocalizations.of(this)!.sweets;
+  String furniture() => AppLocalizations.of(this)!.furniture;
+  String cinema() => AppLocalizations.of(this)!.cinema;
 
   ///Room Image Name
   String nameParking() => AppLocalizations.of(this)!.nameParking;
@@ -174,6 +178,9 @@ extension ContextExt on BuildContext {
   String nameLuxury() => AppLocalizations.of(this)!.nameLuxury;
   String nameSports() => AppLocalizations.of(this)!.nameSports;
   String nameGym() => AppLocalizations.of(this)!.nameGym;
+  String nameSweets() => AppLocalizations.of(this)!.nameSweets;
+  String nameFurniture() => AppLocalizations.of(this)!.nameFurniture;
+  String nameCinema() => AppLocalizations.of(this)!.nameCinema;
 
   String soundPlace(String room) =>
       (room == imageParking) ? parking():
@@ -195,6 +202,9 @@ extension ContextExt on BuildContext {
       (room == imageLuxury) ? luxury():
       (room == imageSports) ? sports():
       (room == imageGym) ? gym():
+      (room == imageSweets) ? sweets():
+      (room == imageFurnit) ? furniture():
+      (room == imageCinema) ? cinema():
       "";
 
   String soundFloor(int counter) =>
@@ -210,7 +220,8 @@ extension ContextExt on BuildContext {
   ];
   List<String> addRoomName() => [
     nameApparel(), nameElectronics(), nameIndoorPark(), nameOutdoor(), nameCandy(),
-    nameToy(), nameLuxury(), nameSports(), nameGym()
+    nameToy(), nameLuxury(), nameSports(), nameGym(), nameSweets(),
+    nameFurniture(), nameCinema()
   ];
   List<String> roomNameList() => [...initialRoomName(), ...addRoomName()];
 
@@ -319,7 +330,7 @@ extension ContextExt on BuildContext {
   double tooltipOffsetSize() => widthResponsible() * tooltipOffsetSizeRate;
 
   ///Admob
-  double admobHeight() => (height() < 600) ? 50: (height() < 1000) ? 50 + (height() - 600) / 8: 100;
+  double admobHeight() => (height() < 600) ? 50: (height() < 1000) ? (height() / 8 - 25): 100;
   double admobWidth() => widthResponsible() - 100;
 
   ///Menu

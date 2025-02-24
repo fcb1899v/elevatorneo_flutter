@@ -1,3 +1,5 @@
+import 'package:firebase_app_check/firebase_app_check.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -5,6 +7,10 @@ import 'main.dart';
 
 ///アプリ名
 const String appTitle = "LETS ELEVATOR NEO";
+
+///App Check
+final androidProvider = kDebugMode ? AndroidProvider.debug: AndroidProvider.playIntegrity;
+final appleProvider = kDebugMode ? AppleProvider.debug: AppleProvider.deviceCheck;
 
 ///最高階と最低階
 const int min = -6;
@@ -30,7 +36,7 @@ List<List<int>> changePointList = isTest ? List.generate(5, (_) => [0, 0]): [
   [    0,   200],
   [ 3000, 50000],
 ];
-const int albumImagePoint = isTest ? 0: 5000;
+const int albumImagePoint = isTest ? 0: 3000;
 const initialPoint = 0;
 
 /// 停止する：true・しない：false
@@ -74,6 +80,7 @@ final List<bool> pressedCall = [false, false, true];
 final List<bool> allPressed = [true, true, true];
 
 ///Audio
+const int audioPlayerNumber = 1;
 const String countdown = "audios/pon.mp3";
 const String countdownFinish = "audios/chan.mp3";
 const String bestScoreSound = "audios/jajan.mp3";
@@ -123,6 +130,9 @@ const String imageToy     = "${assetsRoom}16toy.jpg";
 const String imageLuxury  = "${assetsRoom}17luxury.jpg";
 const String imageSports  = "${assetsRoom}18sports.jpg";
 const String imageGym     = "${assetsRoom}19gym.jpg";
+const String imageSweets  = "${assetsRoom}20sweets.jpg";
+const String imageFurnit  = "${assetsRoom}21furniture.jpg";
+const String imageCinema  = "${assetsRoom}22cinema.jpg";
 
 const List<String> initialRoomImages = [
   imageParking, imageStation, imageSuper, imageArcade, imageFood,
@@ -130,7 +140,8 @@ const List<String> initialRoomImages = [
 ];
 const List<String> addRoomImages = [
   imageApparel, imageElectro, imagePark, imageOutdoor, imageCandy,
-  imageToy, imageLuxury, imageSports, imageGym
+  imageToy, imageLuxury, imageSports, imageGym, imageSweets,
+  imageFurnit, imageCinema
 ];
 const List<String> roomImageList = [...initialRoomImages, ...addRoomImages];
 

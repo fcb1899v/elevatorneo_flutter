@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:image_cropper/image_cropper.dart';
@@ -33,15 +32,11 @@ class MySettingsPage extends HookConsumerWidget {
     final isImageOn  = useState(List.generate(5, (_) => List.generate(2, (_) => false)));
     final photoPermission = useState(PermissionStatus.permanentlyDenied);
 
-    final AudioPlayer audioPlayer = AudioPlayer();
-
     useEffect(() {
-      WidgetsBinding.instance.addPostFrameCallback((_) async {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
         "$floorNumbers".debugPrint();
         "$roomImages".debugPrint();
         "point: $point".debugPrint();
-        await audioPlayer.setReleaseMode(ReleaseMode.loop);
-        await audioPlayer.setVolume(0.5);
       });
       return null;
     }, []);
@@ -114,18 +109,16 @@ class MySettingsPage extends HookConsumerWidget {
           aspectRatio: const CropAspectRatio(ratioX: 9, ratioY: 16),
           uiSettings: [
             AndroidUiSettings(
-              toolbarTitle: context.cropPhoto(),
+              toolbarTitle: (context.mounted) ? context.cropPhoto(): "",
               toolbarColor: lampColor,
               toolbarWidgetColor: whiteColor,
               initAspectRatio: CropAspectRatioPreset.ratio16x9,
               lockAspectRatio: true
             ),
             IOSUiSettings(
-              title: context.cropPhoto(),
+              title: (context.mounted) ? context.cropPhoto(): "",
             ),
-            WebUiSettings(
-              context: context,
-            ),
+            if (context.mounted) WebUiSettings(context: context),
           ],
         );
         if (croppedFile != null) {
@@ -172,7 +165,7 @@ class MySettingsPage extends HookConsumerWidget {
                   if (newValue != null) {
                     final prefs = await SharedPreferences.getInstance();
                     selectedRoomImage.value = newValue;
-                    selectedRoomName.value = roomImageList.roomName(context, newValue);
+                    if (context.mounted) selectedRoomName.value = roomImageList.roomName(context, newValue);
                     "Room: ${selectedRoomName.value}: ${selectedRoomImage.value}".debugPrint();
                     final newList = List<String>.from(ref.read(roomImagesProvider));
                     newList[buttonIndex(row, col)] = selectedRoomImage.value;
@@ -180,7 +173,7 @@ class MySettingsPage extends HookConsumerWidget {
                     ref.read(roomImagesProvider.notifier).state = newList;
                   }
                   pressedImage(row, col, false);
-                  context.popPage();
+                  if (context.mounted) context.popPage();
                 },
                 items: roomImageList.remainIterable(roomImages, buttonIndex(row, col)).map((image) =>
                   DropdownMenuItem<String>(
@@ -316,7 +309,7 @@ class MySettingsPage extends HookConsumerWidget {
                 }
                 pressedButton(row, col, false);
                 pressedImage(row, col, true);
-                context.popPage();
+                if (context.mounted) context.popPage();
                 await roomPickerDialog(row, col);
               }
             ),

@@ -1,10 +1,8 @@
-import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'admob_rewarded.dart';
 import 'common_function.dart';
@@ -21,16 +19,7 @@ class MyMenuPage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
 
     final point = ref.watch(pointProvider);
-    final AudioPlayer audioPlayer = AudioPlayer();
     final RewardedAd? ad = rewardedAd();
-
-    useEffect(() {
-      WidgetsBinding.instance.addPostFrameCallback((_) async {
-        await audioPlayer.setReleaseMode(ReleaseMode.loop);
-        await audioPlayer.setVolume(0.5);
-      });
-      return null;
-    }, []);
 
     ///Show Rewarded Ad
     showRewardedAd() => ad!.show(
@@ -44,7 +33,7 @@ class MyMenuPage extends HookConsumerWidget {
         await gamesSubmitScore(newPoint);
         "point: $point".debugPrint();
         ref.read(isMenuProvider.notifier).update((_) => false);
-        Navigator.of(context).pop();
+        if (context.mounted) Navigator.of(context).pop();
       }
     );
 
