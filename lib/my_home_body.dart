@@ -1,18 +1,18 @@
-import 'dart:io';
-import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_tts/flutter_tts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vibration/vibration.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'common_function.dart';
+import 'admob_banner.dart';
+import 'games_manager.dart';
 import 'common_widget.dart';
 import 'extension.dart';
 import 'constant.dart';
+import 'image_manager.dart';
 import 'main.dart';
 import 'my_menu.dart';
 import 'my_settings.dart';
+import 'sound_manager.dart';
 
 class MyHomePage extends HookConsumerWidget {
   const MyHomePage({super.key});
@@ -25,118 +25,95 @@ class MyHomePage extends HookConsumerWidget {
     final floorNumbers = ref.watch(floorNumbersProvider);
     final roomImages = ref.watch(roomImagesProvider);
     final point = ref.watch(pointProvider);
+    final List<Image> images = roomImages.floorImages(floorNumbers);
+    final imageManager = useMemoized(() => ImageManager());
+    final isLoadingData = useState(false);
 
     final counter = useState(1);
     final nextFloor = useState(1);
     final isMoving = useState(false);
     final isEmergency = useState(false);
     final isDoorState = useState(closedState); //[opened, closed, opening, closing]
-    final isPressedOperationButtons = useState([false, false, false]);  //open, close, alert
+    final isPressedOperationButtons = useState([false, false, false]); //[open, close, alert]
     final isAboveSelectedList = useState(List.generate(max + 1, (_) => false));
     final isUnderSelectedList = useState(List.generate(min * (-1) + 1, (_) => false));
     final isSoundOn = useState(true);
+    final imageTopMargin = useState(context.doorMarginTop() - (max - 1) * context.roomHeight() * 17/16);
+    final imageDurationTime = useState(0);
 
-    final FlutterTts flutterTts = FlutterTts();
-    final audioPlayers = AudioPlayerManager();
+    //TTS and Audio
+    final ttsManager = useMemoized(() => TtsManager(context: context));
+    final audioManager = useMemoized(() => AudioManager());
     final lifecycle = useAppLifecycleState();
 
-    initTts() async {
-      await flutterTts.setSharedInstance(true);
-      await flutterTts.setIosAudioCategory(
-          IosTextToSpeechAudioCategory.playback,
-          [
-            IosTextToSpeechAudioCategoryOptions.allowBluetooth,
-            IosTextToSpeechAudioCategoryOptions.allowBluetoothA2DP,
-            IosTextToSpeechAudioCategoryOptions.mixWithOthers,
-            IosTextToSpeechAudioCategoryOptions.defaultToSpeaker
-          ]
-      );
-      await flutterTts.setVolume(1);
-      if (context.mounted) await flutterTts.setLanguage(context.ttsLang());
-      if (context.mounted) {
-        await flutterTts.setVoice({
-          "name": context.voiceName(Platform.isAndroid),
-          "locale": context.ttsVoice()
-        });
-      }
-      await flutterTts.setSpeechRate(0.5);
-      if (context.mounted) context.voiceName(Platform.isAndroid).debugPrint();
-      if (context.mounted) context.pushNumber().speakText(flutterTts, isSoundOn.value);
-    }
-
-    initAudio() async {
-      await audioPlayers.audioPlayers[0].setReleaseMode(ReleaseMode.release);
-      await audioPlayers.audioPlayers[0].setVolume(0.5);
-    }
-
-    initGames() async {
-      await gamesSignIn();
-      final bestScore = await getBestScore();
-      if (bestScore > point) {
-        ref.read(pointProvider.notifier).state = bestScore;
+    initState() async {
+      isLoadingData.value = true;
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        ref.read(floorNumbersProvider.notifier).state = "floorsKey".getSharedPrefListInt(prefs, initialFloorNumbers);
+        ref.read(roomImagesProvider.notifier).state = "roomsKey".getSharedPrefListString(prefs, initialRoomImages);
+        ref.read(pointProvider.notifier).state = "pointKey".getSharedPrefInt(prefs, 0);
+        if (context.mounted) imageTopMargin.value = context.doorMarginTop() - (max - 1) * context.floorHeight();
+        ref.read(roomImagesProvider.notifier).state = await imageManager.getImagesList();
+        await ttsManager.initTts();
+        await gamesSignIn();
+        ref.read(pointProvider.notifier).state = await getBestScore();
+        isLoadingData.value = false;
+      } catch (e) {
+        "Error: $e".debugPrint();
+        isLoadingData.value = false;
       }
     }
 
     useEffect(() {
       WidgetsBinding.instance.addPostFrameCallback((_) async {
-        "floorNumber: $floorNumbers".debugPrint();
-        "roomImage: $roomImages".debugPrint();
-        "point: $point".debugPrint();
-        await initTts();
-        await initAudio();
-        await initGames();
+        await initState();
       });
       return null;
     }, []);
 
     useEffect(() {
-      Future<void> handleLifecycleChange() async {
-        // ウィジェットが破棄されていたら何もしない
-        if (!context.mounted) return;
-        // アプリがバックグラウンドに移行する直前
-        if (lifecycle == AppLifecycleState.inactive || lifecycle == AppLifecycleState.paused) {
-          for (int i = 0; i < audioPlayers.audioPlayers.length; i++) {
-            final player = audioPlayers.audioPlayers[i];
-            try {
-              if (player.state == PlayerState.playing) await player.stop();
-            } catch (e) {
-              'Error handling stop for player $i: $e'.debugPrint();
-            }
-          }
-          flutterTts.stop();
+      if (lifecycle == AppLifecycleState.inactive || lifecycle == AppLifecycleState.paused) {
+        if (context.mounted) {
+          audioManager.stopAll();
+          ttsManager.stopTts();
         }
       }
-      handleLifecycleChange();
       return null;
-    }, [lifecycle, context.mounted, audioPlayers.audioPlayers.length, flutterTts]);
+    }, [lifecycle]);
 
     /// 上の階へ行く
     counterUp() async {
-      context.upFloor().speakText(flutterTts, isSoundOn.value);
+      ttsManager.speakText(context.upFloor());
       int count = 0;
       isMoving.value = true;
       if (isDoorState.value != closedState) isDoorState.value = closedState;
       final prefs = await SharedPreferences.getInstance();
       await Future.delayed(const Duration(seconds: waitTime)).then((_) {
         Future.forEach(counter.value.upFromToNumber(nextFloor.value), (int i) async {
+          if (isMoving.value) {
+            imageDurationTime.value = i.elevatorSpeed(count, nextFloor.value);
+            if (context.mounted) imageTopMargin.value += context.floorHeight();
+          }
           await Future.delayed(Duration(milliseconds: i.elevatorSpeed(count, nextFloor.value))).then((_) async {
             if (isMoving.value) count++;
             if (isMoving.value) ref.read(pointProvider.notifier).state++;
             if (isMoving.value && counter.value < nextFloor.value && nextFloor.value < max + 1) counter.value = counter.value + 1;
-            if (counter.value == 0) counter.value = 1;
+            if (counter.value == 0) counter.value += 1;
             if (isMoving.value && (counter.value == nextFloor.value || counter.value == max)) {
-              if (context.mounted) context.openingSound(counter.value, counter.value.roomImageFile(floorNumbers, roomImages)).speakText(flutterTts, isSoundOn.value);
-              counter.value.clearLowerFloor(isAboveSelectedList.value, isUnderSelectedList.value);
-              nextFloor.value = counter.value.upNextFloor(isAboveSelectedList.value, isUnderSelectedList.value);
-              isMoving.value = false;
-              isEmergency.value = false;
-              isDoorState.value = openingState;
-              "isDoorState: ${isDoorState.value}".debugPrint();
-              "$nextString${nextFloor.value}".debugPrint();
-              final newPoint = ref.read(pointProvider.notifier).state;
-              await "pointKey".setSharedPrefInt(prefs, newPoint);
-              await gamesSubmitScore(newPoint);
-              "point: $newPoint".debugPrint();
+              await Future.delayed(Duration(seconds: waitTime)).then((_) async {
+                if (context.mounted) ttsManager.speakText(context.openingSound(counter.value, counter.value.roomImageFile(floorNumbers, roomImages)));
+                counter.value.clearLowerFloor(isAboveSelectedList.value, isUnderSelectedList.value);
+                nextFloor.value = counter.value.upNextFloor(isAboveSelectedList.value, isUnderSelectedList.value);
+                isMoving.value = false;
+                isEmergency.value = false;
+                isDoorState.value = openingState;
+                "isDoorState: ${isDoorState.value}".debugPrint();
+                "$nextString${nextFloor.value}".debugPrint();
+                final newPoint = ref.read(pointProvider.notifier).state;
+                await "pointKey".setSharedPrefInt(prefs, newPoint);
+                await gamesSubmitScore(newPoint);
+              });
             }
           });
         });
@@ -145,31 +122,36 @@ class MyHomePage extends HookConsumerWidget {
 
     /// 下の階へ行く
     counterDown() async {
-      context.downFloor().speakText(flutterTts, isSoundOn.value);
+      ttsManager.speakText(context.downFloor());
       int count = 0;
       isMoving.value = true;
       if (isDoorState.value != closedState) isDoorState.value = closedState;
       final prefs = await SharedPreferences.getInstance();
       await Future.delayed(const Duration(seconds: waitTime)).then((_) {
         Future.forEach(counter.value.downFromToNumber(nextFloor.value), (int i) async {
+          if (isMoving.value) {
+            imageDurationTime.value = i.elevatorSpeed(count, nextFloor.value);
+            if (context.mounted) imageTopMargin.value -= context.floorHeight();
+          }
           await Future.delayed(Duration(milliseconds: i.elevatorSpeed(count, nextFloor.value))).then((_) async {
             if (isMoving.value) count++;
             if (isMoving.value) ref.read(pointProvider.notifier).state++;
             if (isMoving.value && min - 1 < nextFloor.value && nextFloor.value < counter.value) counter.value = counter.value - 1;
-            if (counter.value == 0) counter.value = -1;
+            if (counter.value == 0) counter.value -= 1;
             if (isMoving.value && (counter.value == nextFloor.value || counter.value == min)) {
-              if (context.mounted) context.openingSound(counter.value, counter.value.roomImageFile(floorNumbers, roomImages)).speakText(flutterTts, isSoundOn.value);
-              counter.value.clearUpperFloor(isAboveSelectedList.value, isUnderSelectedList.value);
-              nextFloor.value = counter.value.downNextFloor(isAboveSelectedList.value, isUnderSelectedList.value);
-              isMoving.value = false;
-              isEmergency.value = false;
-              isDoorState.value = openingState;
-              "isDoorState: ${isDoorState.value}".debugPrint();
-              "$nextString${nextFloor.value}".debugPrint();
-              final newPoint = ref.read(pointProvider.notifier).state;
-              await "pointKey".setSharedPrefInt(prefs, newPoint);
-              await gamesSubmitScore(newPoint);
-              "point: $newPoint".debugPrint();
+              await Future.delayed(Duration(seconds: waitTime)).then((_) async {
+                if (context.mounted) ttsManager.speakText(context.openingSound(counter.value, counter.value.roomImageFile(floorNumbers, roomImages)));
+                counter.value.clearUpperFloor(isAboveSelectedList.value, isUnderSelectedList.value);
+                nextFloor.value = counter.value.downNextFloor(isAboveSelectedList.value, isUnderSelectedList.value);
+                isMoving.value = false;
+                isEmergency.value = false;
+                isDoorState.value = openingState;
+                "isDoorState: ${isDoorState.value}".debugPrint();
+                "$nextString${nextFloor.value}".debugPrint();
+                final newPoint = ref.read(pointProvider.notifier).state;
+                await "pointKey".setSharedPrefInt(prefs, newPoint);
+                await gamesSubmitScore(newPoint);
+              });
             }
           });
         });
@@ -181,14 +163,14 @@ class MyHomePage extends HookConsumerWidget {
       if (!isMoving.value && !isEmergency.value && isDoorState.value != closedState && isDoorState.value != closingState) {
         isDoorState.value = closingState;
         "isDoorState: ${isDoorState.value}".debugPrint();
-        await context.closeDoor().speakText(flutterTts, isSoundOn.value);
+        await ttsManager.speakText(context.closeDoor());
         await Future.delayed(const Duration(seconds: waitTime)).then((_) {
           if (!isMoving.value && !isEmergency.value && isDoorState.value == closingState) {
             isDoorState.value = closedState;
             "isDoorState: ${isDoorState.value}".debugPrint();
             (counter.value < nextFloor.value) ? counterUp() :
             (counter.value > nextFloor.value) ? counterDown() :
-            (context.mounted) ? context.pushNumber().speakText(flutterTts, isSoundOn.value): null;
+            (context.mounted) ? ttsManager.speakText(context.pushNumber()): null;
           }
         });
       }
@@ -198,12 +180,13 @@ class MyHomePage extends HookConsumerWidget {
     pressedOpenAction(bool isOn) async {
       isPressedOperationButtons.value = [isOn, false, false];
       if (isOn) {
-        selectButton.playAudio(audioPlayers.audioPlayers[0], isSoundOn.value);
+        await audioManager.stopSound(0);
+        if (isSoundOn.value) await audioManager.playEffectSound(index: 0, asset: selectButton, volume: 0.5);
         Vibration.vibrate(duration: vibTime, amplitude: vibAmp);
         if (!isMoving.value && !isEmergency.value && isDoorState.value != openedState && isDoorState.value != openingState) {
           Future.delayed(const Duration(milliseconds: flashTime)).then((_) async {
             if (!isMoving.value && !isEmergency.value  && isDoorState.value != openedState && isDoorState.value != openingState) {
-              if (context.mounted) context.openDoor().speakText(flutterTts, isSoundOn.value);
+              if (context.mounted) ttsManager.speakText(context.openDoor());
               isDoorState.value = openingState;
               "isDoorState: ${isDoorState.value}".debugPrint();
               await Future.delayed(const Duration(seconds: waitTime)).then((_) {
@@ -222,7 +205,8 @@ class MyHomePage extends HookConsumerWidget {
     pressedCloseAction(bool isOn) async {
       isPressedOperationButtons.value = [false, isOn, false];
       if (isOn) {
-        selectButton.playAudio(audioPlayers.audioPlayers[0], isSoundOn.value);
+        await audioManager.stopSound(0);
+        if (isSoundOn.value) await audioManager.playEffectSound(index: 0, asset: selectButton, volume: 0.5);
         Vibration.vibrate(duration: vibTime, amplitude: vibAmp);
         if (!isMoving.value && !isEmergency.value && isDoorState.value != closedState && isDoorState.value != closingState) {
           Future.delayed(const Duration(milliseconds: flashTime)).then((_) => doorsClosing());
@@ -234,34 +218,32 @@ class MyHomePage extends HookConsumerWidget {
     pressedAlertAction(bool isOn, isLongPressed) async {
       isPressedOperationButtons.value = [false, false, isOn];
       if (isOn) {
-        selectButton.playAudio(audioPlayers.audioPlayers[0], isSoundOn.value);
+        await audioManager.stopSound(0);
+        if (isSoundOn.value) await audioManager.playEffectSound(index: 0, asset: selectButton, volume: 0.5);
         Vibration.vibrate(duration: vibTime, amplitude: vibAmp);
         if (isLongPressed) {
           if (isMoving.value) isEmergency.value = true;
           if (isEmergency.value && isMoving.value) {
-            callSound.playAudio(audioPlayers.audioPlayers[0], isSoundOn.value);
+            await audioManager.stopSound(0);
+            if (isSoundOn.value) await audioManager.playEffectSound(index: 0, asset: callSound, volume: 1.0);
             await Future.delayed(const Duration(seconds: waitTime)).then((_) {
-              if (context.mounted) context.emergency().speakText(flutterTts, isSoundOn.value);
+              if (context.mounted) ttsManager.speakText(context.emergency());
               nextFloor.value = counter.value;
               isMoving.value = false;
               isEmergency.value = true;
-              counter.value.clearLowerFloor(
-                  isAboveSelectedList.value, isUnderSelectedList.value);
-              counter.value.clearUpperFloor(
-                  isAboveSelectedList.value, isUnderSelectedList.value);
+              counter.value.clearLowerFloor(isAboveSelectedList.value, isUnderSelectedList.value);
+              counter.value.clearUpperFloor(isAboveSelectedList.value, isUnderSelectedList.value);
             });
-            await Future.delayed(const Duration(seconds: openTime)).then((
-                _) async {
-              if (context.mounted) context.return1st().speakText(flutterTts, isSoundOn.value);
+            await Future.delayed(const Duration(seconds: openTime)).then((_) async {
+              if (context.mounted) ttsManager.speakText(context.return1st());
             });
-            await Future.delayed(const Duration(seconds: waitTime * 2)).then((
-                _) async {
+            await Future.delayed(const Duration(seconds: waitTime * 2)).then((_) async {
               if (counter.value != 1) {
                 nextFloor.value = 1;
                 "$nextString${nextFloor.value}".debugPrint();
                 (counter.value < nextFloor.value) ? counterUp() : counterDown();
               } else {
-                if (context.mounted) context.openDoor().speakText(flutterTts, isSoundOn.value);
+                if (context.mounted) ttsManager.speakText(context.openDoor());
                 isDoorState.value = openingState;
                 "isDoorState: ${isDoorState.value}".debugPrint();
               }
@@ -282,11 +264,12 @@ class MyHomePage extends HookConsumerWidget {
     floorSelected(int i, bool selectFlag) async {
       if (!isEmergency.value) {
         if (i == counter.value) {
-          if (!isMoving.value && i == nextFloor.value) context.pushNumber().speakText(flutterTts, isSoundOn.value);
+          if (!isMoving.value && i == nextFloor.value) ttsManager.speakText(context.pushNumber());
         } else if (!selectFlag) {
-          context.notStop().speakText(flutterTts, isSoundOn.value);
+          ttsManager.speakText(context.notStop());
         } else if (!i.isSelected(isAboveSelectedList.value, isUnderSelectedList.value)) {
-          selectButton.playAudio(audioPlayers.audioPlayers[0], isSoundOn.value);
+          await audioManager.stopSound(0);
+          if (isSoundOn.value) await audioManager.playEffectSound(index: 0, asset: selectButton, volume: 0.5);
           Vibration.vibrate(duration: vibTime, amplitude: vibAmp);
           i.trueSelected(isAboveSelectedList.value, isUnderSelectedList.value);
           if (counter.value < i && i < nextFloor.value) nextFloor.value = i;
@@ -297,7 +280,7 @@ class MyHomePage extends HookConsumerWidget {
             if (!isMoving.value && !isEmergency.value && isDoorState.value == closedState) {
               (counter.value < nextFloor.value) ? counterUp() :
               (counter.value > nextFloor.value) ? counterDown() :
-              (context.mounted) ? context.pushNumber().speakText(flutterTts, isSoundOn.value): null;
+              (context.mounted) ? ttsManager.speakText(context.pushNumber()): null;
             }
           });
         }
@@ -307,7 +290,8 @@ class MyHomePage extends HookConsumerWidget {
     ///Deselect floor button remote add origin
     floorCanceled(int i) async {
       if (i.isSelected(isAboveSelectedList.value, isUnderSelectedList.value) && i != nextFloor.value) {
-        cancelButton.playAudio(audioPlayers.audioPlayers[0], isSoundOn.value);
+        await audioManager.stopSound(0);
+        if (isSoundOn.value) await audioManager.playEffectSound(index: 0, asset: cancelButton, volume: 0.5);
         Vibration.vibrate(duration: vibTime, amplitude: vibAmp);
         i.falseSelected(isAboveSelectedList.value, isUnderSelectedList.value);
         if (i == nextFloor.value) {
@@ -321,8 +305,10 @@ class MyHomePage extends HookConsumerWidget {
 
     ///Menu button action
     pressedMenu() async {
-      selectButton.playAudio(audioPlayers.audioPlayers[0], isSoundOn.value);
+      await audioManager.stopSound(0);
+      if (isSoundOn.value) await audioManager.playEffectSound(index: 0, asset: selectButton, volume: 0.5);
       await Vibration.vibrate(duration: vibTime, amplitude: vibAmp);
+      if ((isMenu || isSettings) && context.mounted) context.pushHomePage();
       ref.read(isMenuProvider.notifier).state = isSettings ? false: !isMenu;
       ref.read(isSettingsProvider.notifier).state = false;
     }
@@ -387,18 +373,48 @@ class MyHomePage extends HookConsumerWidget {
         top: true,
         bottom: true,
         child: Stack(children: [
+          ///Room Image
+          AnimatedPositioned(
+            duration: Duration(milliseconds: imageDurationTime.value),
+            top: imageTopMargin.value,
+            left: context.doorMarginLeft() + context.sideSpacerWidth(),
+            child: Column(
+              children: images.reversed.map((img) => Column(
+                children: [
+                  SizedBox(
+                    width: context.roomWidth(),
+                    height: context.roomHeight(),
+                    child: img,
+                  ),
+                  SizedBox(
+                    width: context.roomWidth(),
+                    height: (context.floorHeight() - context.roomHeight()),
+                    child: Image.asset(imageDark,
+                      width: double.infinity,
+                      fit: BoxFit.fitWidth
+                    ),
+                  ),
+                ],
+              )).toList(),
+            ),
+          ),
+          Column(children: [
+            Container(
+              margin: EdgeInsets.only(
+                top: context.doorMarginTop(),
+                left: context.doorMarginLeft() + context.sideSpacerWidth(),
+              ),
+              width: context.width(),
+              height: context.roomHeight(),
+              color: transpColor,
+            ),
+            Expanded(
+              child: Container(color: blackColor),
+            )
+          ]),
           Row(children: [
             SizedBox(width: context.sideSpacerWidth()),
             Stack(children: [
-              ///Room Image
-              Container(
-                height: context.roomHeight(),
-                margin: EdgeInsets.only(
-                  top: context.doorMarginTop(),
-                  left: context.doorMarginLeft()
-                ),
-                child: counter.value.roomImage(floorNumbers, roomImages),
-              ),
               ///Door Frame Image
               upAndDownDoorFrame(context),
               ///Left Door Frame Image
@@ -473,7 +489,9 @@ class MyHomePage extends HookConsumerWidget {
           ///Door Cover
           doorCover(context),
           ///Admob Banner
-          admobBanner(),
+          AdBannerWidget(),
+          ///Progress Indicator
+          if (isLoadingData.value) circularProgressIndicator(context),
           ///Menu
           if (isMenu) const MyMenuPage(),
           if (isSettings) const MySettingsPage(),
@@ -482,3 +500,4 @@ class MyHomePage extends HookConsumerWidget {
     );
   }
 }
+

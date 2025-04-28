@@ -7,6 +7,7 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'extension.dart';
 
 RewardedAd? rewardedAd() {
+
   final rewardedAd = useState<RewardedAd?>(null);
   final retryAttempt = useState(0);
   //Dispose時のエラー対策

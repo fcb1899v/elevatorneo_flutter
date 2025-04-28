@@ -31,13 +31,15 @@ bool isNotSelectFloor(int row, int col) =>
 /// 解放ポイントリスト
 List<List<int>> changePointList = isTest ? List.generate(5, (_) => [0, 0]): [
   [50000, 99999],
-  [10000, 20000],
-  [ 1000,  2000],
+  [ 5000, 20000],
+  [  500,  2000],
   [    0,   200],
-  [ 3000, 50000],
+  [ 1000, 10000],
 ];
-const int albumImagePoint = isTest ? 0: 3000;
+const int albumImagePoint = 2000;
 const initialPoint = 0;
+const String earnMiles = "1,000";
+const int earnMilesInt = 1000;
 
 /// 停止する：true・しない：false
 const List<List<bool>> isFloors = [
@@ -62,7 +64,7 @@ const int toolTipTime = 10000; //[msec]
 
 /// エレベータードアの開閉時間
 const int openTime = 10;      //[sec]
-const int waitTime = 3;       //[sec]
+const int waitTime = 2;       //[sec]
 const int flashTime = 500;    //[msec]
 const int snackBarTime = 3;   //[sec]
 
@@ -104,13 +106,15 @@ const String assetsRoom = "assets/images/room/";
 ///Image Elevator
 const String elevatorFrame = "${assetsElevator}elevatorFrame.png";
 const String doorFrame = "${assetsElevator}doorFrame.png";
-const String leftDoor = "${assetsElevator}doorLeft.png";
-const String rightDoor = "${assetsElevator}doorRight.png";
+const String leftDoor = "${assetsElevator}doorLeftWithGlass.png";
+const String rightDoor = "${assetsElevator}doorRightWithGlass.png";
 const String leftSideFrame = "${assetsElevator}sideFrameLeft.png";
 const String rightSideFrame = "${assetsElevator}sideFrameRight.png";
 const String pointImage = "${assetsElevator}point.png";
 
 ///Image Room
+const String imageFloor   = "${assetsRoom}00floor.png";
+const String imageDark    = "${assetsRoom}00dark.png";
 const String imageParking = "${assetsRoom}01parking.jpg";
 const String imageStation = "${assetsRoom}02station.jpg";
 const String imageSuper   = "${assetsRoom}03supermarket.jpg";
@@ -189,6 +193,7 @@ const double doorWidthRate = 0.355;
 const double doorMarginLeftRate = 0.023;
 const double doorMarginTopRate = 0.195;
 const double roomHeightRate = 1.27;
+const double floorHeightRate = roomHeightRate + 0.3;
 const double sideFrameWidthRate = 0.024;
 const double menuIconSizeRate = 0.06;
 const double snackBarFontSizeRate = 0.04;

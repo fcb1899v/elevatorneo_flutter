@@ -1,10 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
-import 'admob_banner.dart';
 import 'constant.dart';
 import 'extension.dart';
-import 'main.dart';
 
 ///Icon
 //Menu Icon
@@ -84,8 +82,8 @@ AnimatedContainer rightDoorImage(BuildContext context, bool isClosedState) =>
       curve: Curves.easeInOut,
       alignment: Alignment.topLeft,
       margin: EdgeInsets.only(
-          top: context.doorMarginTop(),
-          left: context.doorMarginLeft() + context.doorWidth()
+        top: context.doorMarginTop(),
+        left: context.doorMarginLeft() + context.doorWidth()
       ),
       width: context.doorWidth(),
       height: context.roomHeight(),
@@ -193,15 +191,6 @@ SizedBox floorButtonImage(BuildContext context, int floorNumber, bool isSelected
           ),
         ],
       ),
-    );
-
-///Admob Banner
-Center admobBanner() =>
-    const Center(child:
-      Column(children: [
-        Spacer(),
-        if (!isTest) AdBannerWidget(),
-      ]),
     );
 
 ///About EV Mileage Tooltip
@@ -321,4 +310,23 @@ alertLockWidget(BuildContext context)  => Container(
     ]),
   ]),
 );
+
+Widget circularProgressIndicator(BuildContext context) =>
+    Stack(children: [
+      Container(
+        width: context.width(),
+        height: context.height(),
+        color: transpBlackColor,
+      ),
+      Center(
+        child: SizedBox(
+          width: context.circleSize(),
+          height: context.circleSize(),
+          child: CircularProgressIndicator(
+            color: whiteColor,
+            strokeWidth: context.circleStrokeWidth(),
+          )
+        )
+      ),
+    ]);
 

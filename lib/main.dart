@@ -1,19 +1,18 @@
 import 'dart:async';
+import 'dart:io';
+import 'package:app_tracking_transparency/app_tracking_transparency.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'common_function.dart';
 import 'firebase_options.dart';
+import 'l10n/app_localizations.dart' show AppLocalizations;
 import 'my_home_body.dart';
 import 'constant.dart';
-import 'extension.dart';
 
 const isTest = false;
 final isMenuProvider = StateProvider<bool>((ref) => false);
@@ -24,10 +23,6 @@ final pointProvider = StateProvider<int>((ref) => initialPoint);
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  final prefs = await SharedPreferences.getInstance();
-  final savedFloorNumbers = await "floorsKey".getSharedPrefListInt(prefs, initialFloorNumbers);
-  final savedRoomImages = await "roomsKey".getSharedPrefListString(prefs, initialRoomImages);
-  final savedPointValue = await 'pointKey'.getSharedPrefInt(prefs, initialPoint);
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]); //縦向き指定
   await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
   SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
@@ -46,9 +41,9 @@ Future<void> main() async {
   await initATTPlugin();
   runApp(ProviderScope(
     overrides: [
-      floorNumbersProvider.overrideWith((ref) => savedFloorNumbers),
-      roomImagesProvider.overrideWith((ref) => savedRoomImages),
-      pointProvider.overrideWith((ref) => savedPointValue),
+      floorNumbersProvider.overrideWith((ref) => initialFloorNumbers),
+      roomImagesProvider.overrideWith((ref) => initialRoomImages),
+      pointProvider.overrideWith((ref) => initialPoint),
     ],
     child: const MyApp())
   );
@@ -74,4 +69,14 @@ class MyApp extends StatelessWidget {
       RouteObserver<ModalRoute>()
     ],
   );
+}
+
+///App Tracking Transparency
+Future<void> initATTPlugin() async {
+  if (Platform.isIOS || Platform.isMacOS) {
+    final status = await AppTrackingTransparency.trackingAuthorizationStatus;
+    if (status == TrackingStatus.notDetermined) {
+      await AppTrackingTransparency.requestTrackingAuthorization();
+    }
+  }
 }

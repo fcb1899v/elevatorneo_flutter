@@ -1,13 +1,12 @@
-import 'dart:convert';
 import 'dart:io';
-import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'l10n/app_localizations.dart' show AppLocalizations;
 import 'constant.dart';
+import 'my_home_body.dart';
 
 extension StringExt on String {
 
@@ -19,14 +18,6 @@ extension StringExt on String {
   void pushPage(BuildContext context) =>
       Navigator.of(context).pushNamedAndRemoveUntil(this, (_) => false);
 
-  void playAudio(AudioPlayer audioPlayer, bool isSoundOn) async {
-    if (isSoundOn) {
-      debugPrint();
-      await audioPlayer.stop();
-      await audioPlayer.play(AssetSource(this));
-    }
-  }
-
   Future<void> speakText(FlutterTts flutterTts, bool isSoundOn) async {
     if (isSoundOn) {
       debugPrint();
@@ -37,48 +28,46 @@ extension StringExt on String {
 
   //SharedPreferences this is key
   setSharedPrefString(SharedPreferences prefs, String value) {
-    "pref: ${replaceAll("Key","")}: $value".debugPrint();
+    "$this: $value".debugPrint();
     prefs.setString(this, value);
   }
   setSharedPrefInt(SharedPreferences prefs, int value) {
-    "pref: ${replaceAll("Key","")}: $value".debugPrint();
+    "$this: $value".debugPrint();
     prefs.setInt(this, value);
   }
-  setSharedPrefListString(SharedPreferences prefs, List<String> list) {
-    "pref: ${replaceAll("Key","")}: $list".debugPrint();
-    prefs.setString(this, jsonEncode(list));
+  setSharedPrefListString(SharedPreferences prefs, List<String> value) {
+    "$this: $value".debugPrint();
+    prefs.setStringList(this, value);
   }
-  setSharedPrefListInt(SharedPreferences prefs, List<int> list) {
-    "pref: ${replaceAll("Key","")}: $list".debugPrint();
-    prefs.setString(this, jsonEncode(list));
-  }
-  getSharedPrefString(SharedPreferences prefs, String defaultString) {
-    String data = prefs.getString(this) ?? defaultString;
-    "pref: ${replaceAll("Key","")}: $data".debugPrint();
-    return data;
-  }
-  getSharedPrefInt(SharedPreferences prefs, int defaultInt) {
-    int data = prefs.getInt(this) ?? defaultInt;
-    "pref: ${replaceAll("Key","")}: $data".debugPrint();
-    return data;
-  }
-  getSharedPrefListString(SharedPreferences prefs, List<String> initialList) {
-    String? encodedList = prefs.getString(this);
-    if (encodedList != null) {
-      List<dynamic> decodedList = jsonDecode(encodedList);
-      return decodedList.cast<String>();
-    } else {
-      return initialList;
+  setSharedPrefListInt(SharedPreferences prefs, List<int> value) {
+    for (int i = 0; i < value.length; i++) {
+      prefs.setInt("this$i", value[i]);
     }
+    "$this: $value".debugPrint();
   }
-  getSharedPrefListInt(SharedPreferences prefs, List<int> initialList) {
-    String? encodedList = prefs.getString(this);
-    if (encodedList != null) {
-      List<dynamic> decodedList = jsonDecode(encodedList);
-      return decodedList.cast<int>();
-    } else {
-      return initialList;
+  String getSharedPrefString(SharedPreferences prefs, String defaultString) {
+    String value = prefs.getString(this) ?? defaultString;
+    "$this: $value".debugPrint();
+    return value;
+  }
+  int getSharedPrefInt(SharedPreferences prefs, int defaultInt) {
+    int value = prefs.getInt(this) ?? defaultInt;
+    "$this: $value".debugPrint();
+    return value;
+  }
+  List<String> getSharedPrefListString(SharedPreferences prefs, List<String> defaultList) {
+    List<String> values = prefs.getStringList(this) ?? defaultList;
+    "$this: $values".debugPrint();
+    return values;
+  }
+  List<int> getSharedPrefListInt(SharedPreferences prefs, List<int> defaultList) {
+    List<int> values = [];
+    for (int i = 0; i < defaultList.length; i++) {
+      int v = prefs.getInt("this$i") ?? defaultList[i];
+      values.add(v);
     }
+    "$this: $values".debugPrint();
+    return (values == []) ? defaultList: values;
   }
 
   //this is imagePath
@@ -88,6 +77,17 @@ extension StringExt on String {
 }
 
 extension ContextExt on BuildContext {
+
+  void pushHomePage() => Navigator.pushReplacement(
+      this,
+      PageRouteBuilder(
+        pageBuilder: (context, animation, _) => MyHomePage(),
+        transitionsBuilder: (context, animation, _, child) => FadeTransition(
+          opacity: animation,
+          child: child,
+        ),
+        transitionDuration: const Duration(milliseconds: 500),
+      ));
 
   ///Common
   double width() => MediaQuery.of(this).size.width;
@@ -131,7 +131,7 @@ extension ContextExt on BuildContext {
   String notStop() => AppLocalizations.of(this)!.notStop;
   String eVMile() => AppLocalizations.of(this)!.eVMile;
   String eVMileRanking() => AppLocalizations.of(this)!.eVMileRanking;
-  String earnMile() => AppLocalizations.of(this)!.earnMile;
+  String earnMile(String number) => AppLocalizations.of(this)!.earnMile(number);
   String aboutEVMile() => AppLocalizations.of(this)!.aboutEVMile;
 
   ///Room
@@ -246,28 +246,28 @@ extension ContextExt on BuildContext {
   String movingElevator() => AppLocalizations.of(this)!.movingElevator;
   String photoAccessRequired() => AppLocalizations.of(this)!.photoAccessRequired;
   String photoAccessPermission() => AppLocalizations.of(this)!.photoAccessPermission;
-  String earnMilesAfterAdTitle() => AppLocalizations.of(this)!.earnMilesAfterAdTitle;
-  String earnMilesAfterAdDesc() => AppLocalizations.of(this)!.earnMilesAfterAdDesc;
+  String earnMilesAfterAdTitle(String number) => AppLocalizations.of(this)!.earnMilesAfterAdTitle(number);
+  String earnMilesAfterAdDesc(String number) => AppLocalizations.of(this)!.earnMilesAfterAdDesc(number);
 
   List<String> linkLogos() => [
-    if (lang() == "ja") twitterLogo,
-    if (lang() == "ja") instagramLogo,
+    // if (lang() == "ja") twitterLogo,
+    // if (lang() == "ja") instagramLogo,
     if (Platform.isAndroid) youtubeLogo,
     landingPageLogo,
     privacyPolicyLogo,
     if (lang() == "ja") shopPageLogo,
   ];
   List<String> linkLinks() => [
-    if (lang() == "ja") elevatorTwitter,
-    if (lang() == "ja") elevatorInstagram,
+    // if (lang() == "ja") elevatorTwitter,
+    // if (lang() == "ja") elevatorInstagram,
     if (Platform.isAndroid) elevatorYoutube,
     (lang() == "ja") ? landingPageJa: landingPageEn,
     (lang() == "ja") ? privacyPolicyJa: privacyPolicyEn,
     if (lang() == "ja") shopLink,
   ];
   List<String> linkTitles() => [
-    if (lang() == "ja") "X",
-    if (lang() == "ja") "Instagram",
+    // if (lang() == "ja") "X",
+    // if (lang() == "ja") "Instagram",
     if (Platform.isAndroid) "Youtube",
     officialPage(),
     terms(),
@@ -277,9 +277,12 @@ extension ContextExt on BuildContext {
   List<String> menuTitles() => [
     settings(),
     eVMileRanking(),
-    earnMile(),
+    earnMile(earnMiles),
   ];
 
+  ///Progress Indicator
+  double circleSize() => ((height() > width()) ? width(): height()) * 0.1;
+  double circleStrokeWidth() => ((height() > width()) ? width(): height()) * 0.01;
 
   ///Responsible
   double responsible() => (height() < responsibleHeight) ? height(): responsibleHeight;
@@ -292,6 +295,8 @@ extension ContextExt on BuildContext {
   double doorMarginLeft() => widthResponsible() * doorMarginLeftRate;
   double doorMarginTop() => widthResponsible() * doorMarginTopRate;
   double roomHeight() => widthResponsible() * roomHeightRate;
+  double roomWidth() => roomHeight() * 9 / 16;
+  double floorHeight() => widthResponsible() * floorHeightRate;
   double sideFrameWidth() => widthResponsible() * sideFrameWidthRate;
   double sideSpacerWidth() => (width() - elevatorWidth()) / 2;
   double menuIconSize() => widthResponsible() * menuIconSizeRate;
@@ -338,9 +343,9 @@ extension ContextExt on BuildContext {
   double menuTitleFontSize() => height() * menuTitleFontSizeRate;
   double menuButtonSize() => widthResponsible() * menuButtonSizeRate;
   double menuButtonFontSize() => widthResponsible() * menuButtonFontSizeRate;
-  double menuAlertTitleFontSize() => widthResponsible() * menuAlertTitleFontSizeRate;
-  double menuAlertDescFontSize() => widthResponsible() * menuAlertDescFontSizeRate;
-  double menuAlertSelectFontSize() => widthResponsible() * menuAlertSelectFontSizeRate;
+  double menuAlertTitleFontSize() => (widthResponsible() * menuAlertTitleFontSizeRate > 24) ? 24: widthResponsible() * menuAlertTitleFontSizeRate;
+  double menuAlertDescFontSize() => (widthResponsible() * menuAlertDescFontSizeRate > 14) ? 14: widthResponsible() * menuAlertDescFontSizeRate;
+  double menuAlertSelectFontSize() => (widthResponsible() * menuAlertSelectFontSizeRate > 24) ? 24: widthResponsible() * menuAlertSelectFontSizeRate;
 
   ///Menu Bottom Navigation Links
   double linksLogoWidth() => widthResponsible() * linksLogoWidthRate;
@@ -566,7 +571,7 @@ extension IntExt on int {
   bool isButtonContain(List<int> floorNumbers) => floorNumbers.contains(this);
   String roomImageFile(List<int> floorNumbers, List<String> rooms) => rooms[floorNumbers.indexOf(this)];
   Image roomImage(List<int> floorNumbers, List<String> rooms) =>
-    (!isButtonContain(floorNumbers)) ? imageArcade.fittedAssetImage():
+    (!isButtonContain(floorNumbers)) ? imageFloor.fittedAssetImage():
       roomImageFile(floorNumbers, rooms).roomImage();
 }
 extension ListIntExt on List<int> {
@@ -589,6 +594,9 @@ extension ListStringExt on List<String> {
     [this[2], this[3]],
     [this[1], this[0]],
   ];
+
+  List<Image> floorImages(List<int> floorNumbers) =>
+      [for (int i = -6; i <= 163; i++) if (i != 0) i.roomImage(floorNumbers, this)];
 
   //this is roomImageList
   Iterable<String> remainIterable(List<String> roomImages, int buttonIndex) =>

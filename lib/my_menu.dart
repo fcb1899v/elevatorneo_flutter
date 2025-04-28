@@ -1,11 +1,12 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'admob_rewarded.dart';
-import 'common_function.dart';
+import 'games_manager.dart';
 import 'common_widget.dart';
 import 'extension.dart';
 import 'constant.dart';
@@ -18,20 +19,26 @@ class MyMenuPage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
 
-    final point = ref.watch(pointProvider);
+    final isGamesSignedIn = useState(false);
     final RewardedAd? ad = rewardedAd();
+
+    useEffect(() {
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        isGamesSignedIn.value = await gamesIsSignedIn();
+      });
+      return null;
+    }, []);
 
     ///Show Rewarded Ad
     showRewardedAd() => ad!.show(
       onUserEarnedReward: (AdWithoutView ad, RewardItem reward) async {
         final prefs = await SharedPreferences.getInstance();
-        'Reward earned: ${reward.type}, Amount: ${reward.amount}'.debugPrint();
-        "point: $point".debugPrint();
-        ref.read(pointProvider.notifier).update((p) => p + reward.amount.toInt());
+        'rewardEarned: ${reward.type}, rewardAmount: ${reward.amount}'.debugPrint();
+        final addPoint = (earnMilesInt > reward.amount.toInt()) ? earnMilesInt: reward.amount.toInt();
+        ref.read(pointProvider.notifier).update((p) => p + addPoint);
         final newPoint = ref.read(pointProvider.notifier).state;
         await "pointKey".setSharedPrefInt(prefs, newPoint);
         await gamesSubmitScore(newPoint);
-        "point: $point".debugPrint();
         ref.read(isMenuProvider.notifier).update((_) => false);
         if (context.mounted) Navigator.of(context).pop();
       }
@@ -41,14 +48,14 @@ class MyMenuPage extends HookConsumerWidget {
     rewardedAdPermissionAlert() => showDialog(
       context: context,
       builder: (context) => CupertinoAlertDialog(
-        title: Text(context.earnMilesAfterAdTitle(),
+        title: Text(context.earnMilesAfterAdTitle(earnMiles),
           style: TextStyle(
             color: blackColor,
             fontSize: context.menuAlertTitleFontSize(),
             fontFamily: menuFont,
           ),
         ),
-        content: Text(context.earnMilesAfterAdDesc(),
+        content: Text(context.earnMilesAfterAdDesc(earnMiles),
           style: TextStyle(
             color: blackColor,
             fontSize: context.menuAlertDescFontSize(),
@@ -121,6 +128,7 @@ class MyMenuPage extends HookConsumerWidget {
           ///Mode Change
           Row(mainAxisAlignment: MainAxisAlignment.center,
             children: List.generate(7, (i) =>
+              (!isGamesSignedIn.value && (i == 3 || i == 4)) ? const SizedBox.shrink():
               i % 2 == 0 ? const Spacer(flex: 1):
               GestureDetector(
                 onTap: () async => pressedMenuLink((i - 1) ~/ 2),

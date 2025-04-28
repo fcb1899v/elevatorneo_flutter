@@ -33,7 +33,7 @@
   "cropPhoto" : "이미지 자르기",
   "eVMile" : "EV마일",
   "eVMileRanking" : "EV마일\n랭킹",
-  "earnMile" : "500\nEV마일\n획득!",
+  "earnMile" : "{NUMBER}\nEV마일\n획득!",
   "aboutEVMile" : "\n엘리베이터의 상하 운동으로 쌓이는 포인트입니다. \nEV마일이 쌓이면, 메뉴의 각종 설정에서 층수나 목적지 층의 이미지를 변경할 수 있습니다.",
   "rooftop": "옥상 층에 도착하셨습니다. ",
   "vip": "VIP 룸 층에 도착하셨습니다. ",
@@ -54,6 +54,9 @@
   "luxury": "고급 부티크 층에 도착하셨습니다. ",
   "sports": "스포츠 용품점 층에 도착하셨습니다. ",
   "gym" : "피트니스 짐 층에 도착하셨습니다. ",
+  "sweets": "디저트 매장 층에 도착하셨습니다.",
+  "furniture": "가구 매장 층에 도착하셨습니다.",
+  "cinema": "영화관 층에 도착하셨습니다.",
   "nameRooftop": "옥상",
   "nameVip": "VIP 룸",
   "nameRestaurant": "레스토랑",
@@ -73,9 +76,12 @@
   "nameLuxury": "고급 부티크",
   "nameSports": "스포츠 용품점",
   "nameGym" : "피트니스 짐",
+  "nameSweets": "디저트 매장",
+  "nameFurniture": "가구 매장",
+  "nameCinema": "영화관",
   "movingElevator" : "엘리베이터가 운행 중이므로 잠시 기다려 주십시오.",
   "photoAccessRequired" : "사진 접근 권한이 필요합니다.",
   "photoAccessPermission" : "앱 설정에서 사진 전체 액세스를 허용해주세요.",
-  "earnMilesAfterAdTitle" : "광고를 보고\n500EV마일 획득!\n",
-  "earnMilesAfterAdDesc" : "지정된 시간 동안 광고를 보시면 500EV마일를 획득할 수 있습니다."
+  "earnMilesAfterAdTitle" : "광고를 보고\n{NUMBER}EV마일 획득!\n",
+  "earnMilesAfterAdDesc" : "지정된 시간 동안 광고를 보시면 {NUMBER}EV마일를 획득할 수 있습니다."
 }

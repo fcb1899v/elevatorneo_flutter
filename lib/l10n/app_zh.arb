@@ -1,7 +1,7 @@
 {
   "@@locale": "zh",
   "letsElevator": "操作乐趣电梯新锐",
-  "thisApp": "这个应用程序是一个非常逼真的电梯模拟器。",
+  "thisApp": "这款应用程序是一个非常逼真的电梯模拟器。",
   "menu": "菜单",
   "settings": "设置",
   "aboutLetsElevator": "关于操作乐趣电梯",
@@ -33,7 +33,7 @@
   "cropPhoto": "裁剪图片",
   "eVMile": "电梯里程",
   "eVMileRanking": "电梯里程\n排名",
-  "earnMile" : "获得\n500\n电梯里程!",
+  "earnMile" : "获得\n{NUMBER}\n电梯里程!",
   "aboutEVMile": "\n通过电梯上下运动累积的积分。\n积累足够的积分后，您可以在菜单设置中更改楼层数和目的楼层的图片。",
   "rooftop": "屋顶层。",
   "vip": "VIP室层。",
@@ -54,6 +54,9 @@
   "luxury": "奢侈品店层。",
   "sports": "体育用品店层。",
   "gym": "健身房层。",
+  "sweets" : "甜品店层。",
+  "furniture" : "家具店层。",
+  "cinema" : "电影院层。",
   "nameRooftop": "屋顶",
   "nameVip": "VIP室",
   "nameRestaurant": "餐厅",
@@ -73,9 +76,12 @@
   "nameLuxury": "奢侈品店",
   "nameSports": "体育用品店",
   "nameGym":  "健身房",
+  "nameSweets" : "甜品店",
+  "nameFurniture" : "家具店",
+  "nameCinema" : "电影院",
   "movingElevator": "电梯运行中，请稍候",
   "photoAccessRequired": "需要照片访问权限\n",
   "photoAccessPermission": "请在设置中允许完全访问照片。",
-  "earnMilesAfterAdTitle" : "观看广告赚取500电梯里程!\n",
-  "earnMilesAfterAdDesc" : "如果您在指定的时间内观看广告，您可以获得500电梯里程。"
+  "earnMilesAfterAdTitle" : "观看广告赚取{NUMBER}电梯里程!\n",
+  "earnMilesAfterAdDesc" : "如果您在指定的时间内观看广告，您可以获得{NUMBER}电梯里程。"
 }

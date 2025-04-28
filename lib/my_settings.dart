@@ -1,10 +1,6 @@
 import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:image_cropper/image_cropper.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:path/path.dart' as path;
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -13,6 +9,7 @@ import 'admob_banner.dart';
 import 'common_widget.dart';
 import 'extension.dart';
 import 'constant.dart';
+import 'image_manager.dart';
 import 'main.dart';
 
 class MySettingsPage extends HookConsumerWidget {
@@ -25,34 +22,33 @@ class MySettingsPage extends HookConsumerWidget {
     final roomImages = ref.watch(roomImagesProvider);
     final point = ref.watch(pointProvider);
 
-    final selectedRoomImage = useState("");
-    final selectedRoomName  = useState("");
+    final imageManager = useMemoized(() => ImageManager());
+    final photoManager = useMemoized(() => PhotoManager(context: context));
     final selectedNumber = useState(0);
     final isButtonOn = useState(List.generate(5, (_) => List.generate(2, (_) => false)));
     final isImageOn  = useState(List.generate(5, (_) => List.generate(2, (_) => false)));
     final photoPermission = useState(PermissionStatus.permanentlyDenied);
 
-    useEffect(() {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        "$floorNumbers".debugPrint();
-        "$roomImages".debugPrint();
-        "point: $point".debugPrint();
-      });
-      return null;
-    }, []);
-
-    ///Pressed Button
-    pressedButton(int row, int col, bool isTap) {
-      isButtonOn.value[row][col] = isTap;
-      isButtonOn.value = List.from(isButtonOn.value);
-      "${isButtonOn.value}".debugPrint();
+    Future<void> saveImagePath(int row, int col, String? imagePath) async {
+      if (imagePath != null) {
+        final prefs = await SharedPreferences.getInstance();
+        final newList = List<String>.from(ref.read(roomImagesProvider));
+        newList[buttonIndex(row, col)] = imagePath;
+        await "roomsKey".setSharedPrefListString(prefs, newList);
+        final images = await imageManager.getImagesList();
+        ref.read(roomImagesProvider.notifier).state = images;
+        if (context.mounted) context.popPage();
+      }
     }
 
-    ///Pressed Image
-    pressedImage(int row, int col, bool isTap) {
-      isImageOn.value[row][col] = isTap;
-      isImageOn.value = List.from(isImageOn.value);
-      "${isImageOn.value}".debugPrint();
+    Future<void> saveFloorNumber(int row, int col) async {
+      if (!floorNumbers.contains(selectedNumber.value)) {
+        final prefs = await SharedPreferences.getInstance();
+        final newList = List<int>.from(ref.read(floorNumbersProvider));
+        newList[buttonIndex(row, col)] = selectedNumber.value;
+        await "floorsKey".setSharedPrefListInt(prefs, newList);
+        ref.read(floorNumbersProvider.notifier).state = newList;
+      }
     }
 
     photoPermissionAlert() => showDialog(
@@ -67,9 +63,9 @@ class MySettingsPage extends HookConsumerWidget {
         ),
         content: Text(context.photoAccessPermission(),
           style: TextStyle(
-              color: blackColor,
-              fontSize: context.settingsAlertFontSize(),
-              fontFamily: settingsFont,
+            color: blackColor,
+            fontSize: context.settingsAlertFontSize(),
+            fontFamily: settingsFont,
           ),
         ),
         actions: [
@@ -98,42 +94,31 @@ class MySettingsPage extends HookConsumerWidget {
       ),
     );
 
-    pickAndCropImage(int row, int col) async {
-      final XFile? pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
-      'Picked image: ${pickedFile?.path}'.debugPrint();
-      if (pickedFile != null) {
-        final croppedFile = await ImageCropper().cropImage(
-          sourcePath: pickedFile.path,
-          compressFormat: ImageCompressFormat.jpg,
-          compressQuality: 100,
-          aspectRatio: const CropAspectRatio(ratioX: 9, ratioY: 16),
-          uiSettings: [
-            AndroidUiSettings(
-              toolbarTitle: (context.mounted) ? context.cropPhoto(): "",
-              toolbarColor: lampColor,
-              toolbarWidgetColor: whiteColor,
-              initAspectRatio: CropAspectRatioPreset.ratio16x9,
-              lockAspectRatio: true
-            ),
-            IOSUiSettings(
-              title: (context.mounted) ? context.cropPhoto(): "",
-            ),
-            if (context.mounted) WebUiSettings(context: context),
-          ],
-        );
-        if (croppedFile != null) {
-          final directory = await getApplicationDocumentsDirectory();
-          final fileName = path.basename(croppedFile.path);
-          final File savedImage = await File(croppedFile.path).copy('${directory.path}/$fileName');
-          'Cropped image path: ${croppedFile.path}'.debugPrint();
-          final prefs = await SharedPreferences.getInstance();
-          final newList = List<String>.from(ref.read(roomImagesProvider));
-          newList[buttonIndex(row, col)] = savedImage.path;
-          await "roomsKey".setSharedPrefListString(prefs, newList);
-          ref.read(roomImagesProvider.notifier).state = newList;
-        }
+    selectMyPhoto(int row, int col) async {
+      photoPermission.value = await Permission.photos.status;
+      "photoPermission: ${photoPermission.value}";
+      if (Platform.isAndroid || photoPermission.value.isGranted) {
+        final String? savedImagePath = await photoManager.pickAndCropImage(row, col);
+        await saveImagePath(row, col, savedImagePath);
+      } else if (photoPermission.value.isDenied) {
+        photoPermission.value = await Permission.photos.request();
+      } else {
+        photoPermissionAlert();
       }
-      // pressedImage(row, col, false);
+    }
+
+    ///Pressed Button
+    pressedButton(int row, int col, bool isTap) {
+      isButtonOn.value[row][col] = isTap;
+      isButtonOn.value = List.from(isButtonOn.value);
+      "${isButtonOn.value}".debugPrint();
+    }
+
+    ///Pressed Image
+    pressedImage(int row, int col, bool isTap) {
+      isImageOn.value[row][col] = isTap;
+      isImageOn.value = List.from(isImageOn.value);
+      "${isImageOn.value}".debugPrint();
     }
 
     roomPickerDialog(int row, int col) => showDialog(
@@ -162,18 +147,8 @@ class MySettingsPage extends HookConsumerWidget {
               child: DropdownButton<String>(
                 value: roomImageList.selectedRoomImage(roomImages, buttonIndex(row, col)),
                 onChanged: (String? newValue) async {
-                  if (newValue != null) {
-                    final prefs = await SharedPreferences.getInstance();
-                    selectedRoomImage.value = newValue;
-                    if (context.mounted) selectedRoomName.value = roomImageList.roomName(context, newValue);
-                    "Room: ${selectedRoomName.value}: ${selectedRoomImage.value}".debugPrint();
-                    final newList = List<String>.from(ref.read(roomImagesProvider));
-                    newList[buttonIndex(row, col)] = selectedRoomImage.value;
-                    await "roomsKey".setSharedPrefListString(prefs, newList);
-                    ref.read(roomImagesProvider.notifier).state = newList;
-                  }
+                  await saveImagePath(row, col, newValue);
                   pressedImage(row, col, false);
-                  if (context.mounted) context.popPage();
                 },
                 items: roomImageList.remainIterable(roomImages, buttonIndex(row, col)).map((image) =>
                   DropdownMenuItem<String>(
@@ -214,17 +189,7 @@ class MySettingsPage extends HookConsumerWidget {
                     ]
                   ),
                 ),
-                onTap: () async {
-                  photoPermission.value = await Permission.photos.status;
-                  "photoPermission: ${photoPermission.value}";
-                  if (Platform.isAndroid || photoPermission.value.isGranted) {
-                    pickAndCropImage(row, col);
-                  } else if (photoPermission.value.isDenied) {
-                    photoPermission.value = await Permission.photos.request();
-                  } else {
-                    photoPermissionAlert();
-                  }
-                }
+                onTap: () async => await selectMyPhoto(row, col),
               ),
               if (point < albumImagePoint) alertLockWidget(context),
             ]),
@@ -300,13 +265,7 @@ class MySettingsPage extends HookConsumerWidget {
                 ),
               ),
               onPressed: () async {
-                if (!floorNumbers.contains(selectedNumber.value)) {
-                  final prefs = await SharedPreferences.getInstance();
-                  final newList = List<int>.from(ref.read(floorNumbersProvider));
-                  newList[buttonIndex(row, col)] = selectedNumber.value;
-                  await "floorsKey".setSharedPrefListInt(prefs, newList);
-                  ref.read(floorNumbersProvider.notifier).state = newList;
-                }
+                await saveFloorNumber(row, col);
                 pressedButton(row, col, false);
                 pressedImage(row, col, true);
                 if (context.mounted) context.popPage();
