@@ -1,7 +1,7 @@
 name: letselevatorneo
 description: elevatorsimulatorneo
 publish_to: 'none'
-version: 1.3.4+35
+version: 1.4.0+39
 
 environment:
   sdk: '>=2.18.0 <4.0.0'
@@ -29,7 +29,7 @@ dependencies:
   # Font
   google_fonts: ^6.2.1
   # Game Center
-  games_services: ^4.0.3
+  games_services: ^4.1.0
   # Admob
   google_mobile_ads: ^6.0.0
   app_tracking_transparency: ^2.0.6+1
@@ -82,9 +82,11 @@ flutter:
   uses-material-design: true
   assets:
     - assets/audios/
+    - assets/images/button/
     - assets/images/elevator/
     - assets/images/room/
     - assets/images/menu/
+    - assets/images/settings/
     - assets/.env
   fonts:
     - family: teleIndicators

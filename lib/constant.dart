@@ -1,16 +1,16 @@
+import 'dart:math' as math;
+
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
-import 'main.dart';
 
 ///アプリ名
 const String appTitle = "LETS ELEVATOR NEO";
 
 ///App Check
 final androidProvider = kDebugMode ? AndroidProvider.debug: AndroidProvider.playIntegrity;
-final appleProvider = kDebugMode ? AppleProvider.debug: AppleProvider.deviceCheck;
+final appleProvider = kDebugMode ? AppleProvider.debug: AppleProvider.appAttestWithDeviceCheckFallback;
 
 ///最高階と最低階
 const int min = -6;
@@ -29,7 +29,7 @@ bool isNotSelectFloor(int row, int col) =>
     (col == 0 && row == 3) || (col == 1 && (row == 0 || row == 4));
 
 /// 解放ポイントリスト
-List<List<int>> changePointList = isTest ? List.generate(5, (_) => [0, 0]): [
+List<List<int>> changePointList = [
   [50000, 99999],
   [ 5000, 20000],
   [  500,  2000],
@@ -99,18 +99,30 @@ const String settingsFont = "noto";
 const String numberFont = "teleIndicators";
 
 ///Image Folder
-const String assetsMenu = "assets/images/menu/";
+const String assetsButton = "assets/images/button/";
 const String assetsElevator = "assets/images/elevator/";
+const String assetsMenu = "assets/images/menu/";
 const String assetsRoom = "assets/images/room/";
+const String assetsSettings = "assets/images/settings/";
 
 ///Image Elevator
+const List<String> shapeList = ["square", "circle", "diamond", "random"];
+const List<String> styleList = ["metal", "white", "wood", "pop", "random"];
+const List<String> glassList = ["not", "use", "random"];
+const List<String> settingsItemList = ["floor", "number", "button", "style"];
+String initialShape = shapeList[0];
+String initialStyle = styleList[0];
+String initialGlass = glassList[0];
+String randomShape = shapeList[math.Random().nextInt(shapeList.length - 1)];
+String randomStyle = styleList[math.Random().nextInt(styleList.length - 1)];
+String randomGlass = shapeList[math.Random().nextInt(glassList.length - 1)];
 const String elevatorFrame = "${assetsElevator}elevatorFrame.png";
 const String doorFrame = "${assetsElevator}doorFrame.png";
-const String leftDoor = "${assetsElevator}doorLeftWithGlass.png";
-const String rightDoor = "${assetsElevator}doorRightWithGlass.png";
+const String leftDoor = "${assetsElevator}doorLeft.png";
+const String rightDoor = "${assetsElevator}doorRight.png";
 const String leftSideFrame = "${assetsElevator}sideFrameLeft.png";
 const String rightSideFrame = "${assetsElevator}sideFrameRight.png";
-const String pointImage = "${assetsElevator}point.png";
+const String pointImage = "${assetsElevator}elevatorPoint.png";
 
 ///Image Room
 const String imageFloor   = "${assetsRoom}00floor.png";
@@ -154,27 +166,25 @@ const String upArrow = "${assetsElevator}up.png";
 const String downArrow = "${assetsElevator}down.png";
 
 ///Image Buttons
-const String squareButton = "${assetsElevator}square.jpg";
-const String openButton = "${assetsElevator}open.png";
-const String closeButton = "${assetsElevator}close.png";
-const String alertButton = "${assetsElevator}phone.png";
-const String pressedSquare = "${assetsElevator}pressedSquare.jpg";
-const String pressedOpenButton = "${assetsElevator}pressedOpen.png";
-const String pressedCloseButton = "${assetsElevator}pressedClose.png";
-const String pressedAlertButton = "${assetsElevator}pressedPhone.png";
-const String transpImage = "${assetsElevator}transparent.png";
+const String openButton = "${assetsButton}open.png";
+const String closeButton = "${assetsButton}close.png";
+const String alertButton = "${assetsButton}phone.png";
+const String pressedOpenButton = "${assetsButton}pressedOpen.png";
+const String pressedCloseButton = "${assetsButton}pressedClose.png";
+const String pressedAlertButton = "${assetsButton}pressedPhone.png";
+const String transpImage = "${assetsButton}transparent.png";
+const String squareButton = "${assetsButton}square.png";
 
 ///Asset Menu
-const String appLogo = "${assetsMenu}title.png";
+const String settingsButton = "${assetsMenu}settings.png";
+const String rankingButton = "${assetsMenu}ranking.png";
+const String adRewardButton = "${assetsMenu}adReward.png";
 const String landingPageLogo = "${assetsMenu}web.png";
 const String shopPageLogo = "${assetsMenu}cart.png";
 const String twitterLogo = "${assetsMenu}x.png";
 const String instagramLogo = "${assetsMenu}instagram.png";
 const String youtubeLogo = "${assetsMenu}youtube.png";
 const String privacyPolicyLogo = "${assetsMenu}privacyPolicy.png";
-
-///String
-const String nextString = "Next Floor: ";
 
 ///Web Page
 const String landingPageJa = "https://nakajimamasao-appstudio.web.app/elevatorneo/ja/";
@@ -186,100 +196,9 @@ const String elevatorTwitter = "https://twitter.com/letselevator";
 const String elevatorInstagram = "https://www.instagram.com/letselevator/";
 const String elevatorYoutube = "https://www.youtube.com/channel/UCIEVfzFOhUTMOXos1zaZrQQ";
 
-///Size Elevator
+///Size
 const double responsibleHeight = 1000;
 const double elevatorHeightRate = 16/9;
-const double doorWidthRate = 0.355;
-const double doorMarginLeftRate = 0.023;
-const double doorMarginTopRate = 0.195;
-const double roomHeightRate = 1.27;
-const double floorHeightRate = roomHeightRate + 0.3;
-const double sideFrameWidthRate = 0.024;
-const double menuIconSizeRate = 0.06;
-const double snackBarFontSizeRate = 0.04;
-
-///Size Display
-const double displayHeightRate = 0.12;
-const double displayWidthRate = 0.3;
-const double displayMarginTopRate = 0.045;
-const double displayMarginLeftRate = 0.23;
-const double displayFontSizeRate = 0.09;
-const double displayArrowHeightRate = 0.14;
-const double displayArrowWidthRate = 0.04;
-const double displayArrowMarginRate = 0.01;
-const double displayNumberWidthRate = 0.16;
-const double displayNumberHeightRate = 0.12;
-
-///Size Button
-const double buttonPanelWidthRate = 0.26;
-const double buttonPanelHeightRate = 0.9;
-const double buttonPanelMarginTopRate = 0.3;
-const double buttonPanelMarginLeftRate = 0.74;
-const double floorButtonSizeRate = 0.09;
-const double operationButtonSizeRate = 0.075;
-const double buttonNumberFontSizeRate = 0.035;
-const double buttonMarginRate = 0.02;
-const double buttonBorderWidthRate = 0.01;
-const double buttonBorderRadiusRate = 0.015;
-
-///Tooltip
-const double tooltipTitleFontRate = 0.05;
-const double tooltipDescFontRate = 0.04;
-const double tooltipTitleMarginRate = 0.01;
-const double tooltipMarginSizeRate = 0.02;
-const double tooltipPaddingSizeRate = 0.04;
-const double tooltipBorderRadiusRate = 0.04;
-const double tooltipOffsetSizeRate = 0.02;
-
-///Menu
-const double menuTitleWidthRate = 0.8;
-const double menuTitleFontSizeRate = 0.03;
-const double menuButtonSizeRate = 0.3;
-const double menuButtonFontSizeRate = 0.04;
-const double menuAlertTitleFontSizeRate = 0.045;
-const double menuAlertDescFontSizeRate = 0.032;
-const double menuAlertSelectFontSizeRate = 0.04;
-
-///Menu Bottom Navigation Link
-const double linksLogoWidthRate = 0.1;
-const double linksLogoHeightRate = 0.12;
-const double linksTitleJaFontSizeRate = 0.025;
-const double linksTitleEnFontSizeRate = 0.03;
-const double linksTitleMarginRate = 0.02;
-const double linksMarginRate = 0.04;
-
-///Settings
-const double settingsTitleFontSizeRate = 0.03;
-const double settingsTitleMarginRate = 0.01;
-const double settingsButtonSizeRate = 0.05;
-const double settingsButtonMarginRate = 0.015;
-const double settingsButtonSpaceRate = 0.035;
-const double settingsButtonWidthRate = 0.07;
-const double settingsButtonHeightRate = 0.035;
-const double settingsButtonFontSizeRate = 0.016;
-const double settingsButtonNumberFontSizeRate = 0.02;
-const double settingsButtonBorderRadiusRate = 0.03;
-const double settingsButtonShadowSizeRate = 0.01;
-const double settingsLockFontSizeRate = 0.036;
-const double settingsLockIconSizeRate = 0.024;
-const double settingsLockSpaceSizeRate = 0.005;
-const double settingsImageSelectHeightRate = 0.11;
-
-///Settings Alert
-const double settingsAlertTitleFontSizeRate = 0.045;
-const double settingsAlertFontSizeRate = 0.04;
-const double settingsAlertSelectFontSizeRate = 0.04;
-const double settingsAlertFloorNumberSizeRate = 0.12;
-const double settingsAlertFloorNumberHeightRate = 0.2;
-const double settingsAlertImageSelectHeightRate = 0.4;
-const double settingsAlertDropdownMarginRate = 0.01;
-const double settingsAlertIconSizeRate = 0.06;
-const double settingsAlertIconMarginRate = 0.01;
-const double settingsAlertLockFontSizeRate = 0.07;
-const double settingsAlertLockIconSizeRate = 0.05;
-const double settingsAlertLockSpaceSizeRate = 0.02;
-const double settingsAlertLockBorderWidthRate = 0.002;
-const double settingsAlertLockBorderRadiusRate = 0.04;
 
 /// Color
 const Color lampColor = Color.fromRGBO(247, 178, 73, 1);

@@ -123,6 +123,12 @@ abstract class AppLocalizations {
   /// **'Settings'**
   String get settings;
 
+  /// No description provided for @glass.
+  ///
+  /// In en, this message translates to:
+  /// **'Vision Panel'**
+  String get glass;
+
   /// No description provided for @aboutLetsElevator.
   ///
   /// In en, this message translates to:

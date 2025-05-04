@@ -10,16 +10,18 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'firebase_options.dart';
+import 'games_manager.dart';
 import 'l10n/app_localizations.dart' show AppLocalizations;
 import 'my_home_body.dart';
 import 'constant.dart';
 
-const isTest = false;
-final isMenuProvider = StateProvider<bool>((ref) => false);
-final isSettingsProvider = StateProvider<bool>((ref) => false);
+final isTest = false;
 final floorNumbersProvider = StateProvider<List<int>>((ref) => initialFloorNumbers);
 final roomImagesProvider = StateProvider<List<String>>((ref) => initialRoomImages);
 final pointProvider = StateProvider<int>((ref) => initialPoint);
+final shapeProvider = StateProvider<String>((ref) => initialShape);
+final styleProvider = StateProvider<String>((ref) => initialStyle);
+final glassProvider = StateProvider<String>((ref) => initialGlass);
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -38,15 +40,9 @@ Future<void> main() async {
     appleProvider: appleProvider,
   );
   await MobileAds.instance.initialize();
+  if (Platform.isIOS || Platform.isMacOS) await gamesSignIn();
   await initATTPlugin();
-  runApp(ProviderScope(
-    overrides: [
-      floorNumbersProvider.overrideWith((ref) => initialFloorNumbers),
-      roomImagesProvider.overrideWith((ref) => initialRoomImages),
-      pointProvider.overrideWith((ref) => initialPoint),
-    ],
-    child: const MyApp())
-  );
+  runApp(ProviderScope(child: const MyApp()));
 }
 
 class MyApp extends StatelessWidget {

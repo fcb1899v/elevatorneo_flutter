@@ -21,6 +21,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settings => 'Settings';
 
   @override
+  String get glass => 'Vision Panel';
+
+  @override
   String get aboutLetsElevator => 'About LETS ELEVATOR';
 
   @override

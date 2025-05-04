@@ -1,15 +1,13 @@
-import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'admob_banner.dart';
+import 'image_manager.dart';
 import 'common_widget.dart';
 import 'extension.dart';
 import 'constant.dart';
-import 'image_manager.dart';
 import 'main.dart';
 
 class MySettingsPage extends HookConsumerWidget {
@@ -21,105 +19,52 @@ class MySettingsPage extends HookConsumerWidget {
     final floorNumbers = ref.watch(floorNumbersProvider);
     final roomImages = ref.watch(roomImagesProvider);
     final point = ref.watch(pointProvider);
+    final buttonShape = ref.watch(shapeProvider);
+    final elevatorStyle = ref.watch(styleProvider);
+    final glassStyle = ref.watch(glassProvider);
 
+    final scrollController = useScrollController();
     final imageManager = useMemoized(() => ImageManager());
     final photoManager = useMemoized(() => PhotoManager(context: context));
-    final selectedNumber = useState(0);
     final isButtonOn = useState(List.generate(5, (_) => List.generate(2, (_) => false)));
     final isImageOn  = useState(List.generate(5, (_) => List.generate(2, (_) => false)));
-    final photoPermission = useState(PermissionStatus.permanentlyDenied);
+    final selectedNumber = useState(0);
+    final showSettingNumber = useState(0);
+    final hasScrolledOnce = useState(false);
+    final animationController = useAnimationController(
+      duration: const Duration(milliseconds: 1000),
+    )..repeat(reverse: true);
 
-    Future<void> saveImagePath(int row, int col, String? imagePath) async {
-      if (imagePath != null) {
+    useEffect(() {
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
         final prefs = await SharedPreferences.getInstance();
-        final newList = List<String>.from(ref.read(roomImagesProvider));
-        newList[buttonIndex(row, col)] = imagePath;
-        await "roomsKey".setSharedPrefListString(prefs, newList);
-        final images = await imageManager.getImagesList();
-        ref.read(roomImagesProvider.notifier).state = images;
-        if (context.mounted) context.popPage();
+        ref.read(shapeProvider.notifier).state = "shapeKey".getSharedPrefString(prefs, initialShape);
+        ref.read(styleProvider.notifier).state = "styleKey".getSharedPrefString(prefs, initialStyle);
+        ref.read(glassProvider.notifier).state = "glassKey".getSharedPrefString(prefs, initialGlass);
+      });
+      return null;
+    }, []);
+
+    // スクロール位置を監視
+    useEffect(() {
+      void listener() {
+        if (scrollController.offset > 10) hasScrolledOnce.value = true;
       }
-    }
+      scrollController.addListener(listener);
+      return () {
+        scrollController.removeListener(listener);
+      };
+    }, []);
 
-    Future<void> saveFloorNumber(int row, int col) async {
-      if (!floorNumbers.contains(selectedNumber.value)) {
-        final prefs = await SharedPreferences.getInstance();
-        final newList = List<int>.from(ref.read(floorNumbersProvider));
-        newList[buttonIndex(row, col)] = selectedNumber.value;
-        await "floorsKey".setSharedPrefListInt(prefs, newList);
-        ref.read(floorNumbersProvider.notifier).state = newList;
-      }
-    }
-
-    photoPermissionAlert() => showDialog(
-      context: context,
-      builder: (context) => CupertinoAlertDialog(
-        title: Text(context.photoAccessRequired(),
-          style: TextStyle(
-            color: blackColor,
-            fontSize: context.settingsAlertTitleFontSize(),
-            fontFamily: settingsFont,
-          ),
-        ),
-        content: Text(context.photoAccessPermission(),
-          style: TextStyle(
-            color: blackColor,
-            fontSize: context.settingsAlertFontSize(),
-            fontFamily: settingsFont,
-          ),
-        ),
-        actions: [
-          TextButton(
-            child: Text(context.ok(),
-              style: TextStyle(
-                color: blackColor,
-                fontSize: context.settingsAlertSelectFontSize(),
-                fontFamily: settingsFont,
-                fontWeight: FontWeight.bold
-              ),
-            ),
-            onPressed: () => openAppSettings(),
-          ),
-          TextButton(
-            child: Text(context.cancel(),
-              style: TextStyle(
-                color: blackColor,
-                fontSize: context.settingsAlertSelectFontSize(),
-                fontFamily: settingsFont,
-              ),
-            ),
-            onPressed: () => Navigator.of(context).pop(),
-          ),
-        ],
-      ),
-    );
-
-    selectMyPhoto(int row, int col) async {
-      photoPermission.value = await Permission.photos.status;
-      "photoPermission: ${photoPermission.value}";
-      if (Platform.isAndroid || photoPermission.value.isGranted) {
-        final String? savedImagePath = await photoManager.pickAndCropImage(row, col);
-        await saveImagePath(row, col, savedImagePath);
-      } else if (photoPermission.value.isDenied) {
-        photoPermission.value = await Permission.photos.request();
-      } else {
-        photoPermissionAlert();
-      }
-    }
-
-    ///Pressed Button
-    pressedButton(int row, int col, bool isTap) {
-      isButtonOn.value[row][col] = isTap;
-      isButtonOn.value = List.from(isButtonOn.value);
-      "${isButtonOn.value}".debugPrint();
-    }
-
-    ///Pressed Image
-    pressedImage(int row, int col, bool isTap) {
-      isImageOn.value[row][col] = isTap;
-      isImageOn.value = List.from(isImageOn.value);
-      "${isImageOn.value}".debugPrint();
-    }
+    useEffect(() {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (scrollController.hasClients) {
+          scrollController.jumpTo(scrollController.position.maxScrollExtent);
+        }
+        hasScrolledOnce.value = false;
+      });
+      return null;
+    }, [showSettingNumber.value]);
 
     roomPickerDialog(int row, int col) => showDialog(
       context: context,
@@ -147,8 +92,12 @@ class MySettingsPage extends HookConsumerWidget {
               child: DropdownButton<String>(
                 value: roomImageList.selectedRoomImage(roomImages, buttonIndex(row, col)),
                 onChanged: (String? newValue) async {
-                  await saveImagePath(row, col, newValue);
-                  pressedImage(row, col, false);
+                  ref.read(roomImagesProvider.notifier).state = await imageManager.saveImagePath(
+                    currentList: roomImages,
+                    newIndex: buttonIndex(row, col),
+                    newValue: newValue
+                  );
+                  if (context.mounted) context.popPage();
                 },
                 items: roomImageList.remainIterable(roomImages, buttonIndex(row, col)).map((image) =>
                   DropdownMenuItem<String>(
@@ -189,16 +138,17 @@ class MySettingsPage extends HookConsumerWidget {
                     ]
                   ),
                 ),
-                onTap: () async => await selectMyPhoto(row, col),
+                onTap: () async => await photoManager.selectMyPhoto(row, col, roomImages),
               ),
               if (point < albumImagePoint) alertLockWidget(context),
             ]),
             const Spacer(flex: 1),
           ]),
-          ),
+        ),
       )
     ).then((_) {
-      pressedImage(row, col, false);
+      isImageOn.value[row][col] = false;
+      isImageOn.value = List.from(isImageOn.value);
     });
 
     floorInputDialog(int row, int col) => showDialog(
@@ -249,10 +199,7 @@ class MySettingsPage extends HookConsumerWidget {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              onPressed: () {
-                context.popPage();
-                pressedButton(row, col, false);
-              }
+              onPressed: () => context.popPage(),
             ),
             const Spacer(flex: 2),
             TextButton(
@@ -265,11 +212,12 @@ class MySettingsPage extends HookConsumerWidget {
                 ),
               ),
               onPressed: () async {
-                await saveFloorNumber(row, col);
-                pressedButton(row, col, false);
-                pressedImage(row, col, true);
+                ref.read(floorNumbersProvider.notifier).state = await imageManager.saveFloorNumber(
+                  currentList: floorNumbers,
+                  newIndex: buttonIndex(row, col),
+                  newValue: selectedNumber.value
+                );
                 if (context.mounted) context.popPage();
-                await roomPickerDialog(row, col);
               }
             ),
             const Spacer(flex: 1),
@@ -277,167 +225,375 @@ class MySettingsPage extends HookConsumerWidget {
         ]
       ),
     ).then((_) {
-      pressedButton(row, col, false);
+      isButtonOn.value[row][col] = false;
+      isButtonOn.value = List.from(isButtonOn.value);
     });
 
-    settingsLockWidget(int row, int col) => Container(
-      color: transpBlackColor,
-      width: context.settingsLockWidth(),
-      height: context.settingsImageSelectHeight(),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          lockIcon(context.settingsLockIconSize()),
-          Row(children: [
-            const Spacer(flex: 1),
-            pointIcon(context.settingsLockIconSize()),
-            SizedBox(width: context.settingsLockSpaceSize()),
-            Text("${changePointList[row][col]}",
-              style: TextStyle(
-                color: lampColor,
-                fontSize: context.settingsLockFontSize(),
-                fontWeight: FontWeight.normal,
-                fontFamily: numberFont,
+    Widget selectButtonsWidget() => Column(children: [
+      SizedBox(height: context.settingsMarginSize()),
+      Row(mainAxisAlignment: MainAxisAlignment.center,
+        children: List.generate(settingsItemList.length, (i) =>
+            GestureDetector(
+              onTap: () => {
+                showSettingNumber.value = i
+              },
+              child: Container(
+                width: context.settingsSelectButtonSize(),
+                height: context.settingsSelectButtonSize(),
+                margin: EdgeInsets.symmetric(
+                    horizontal: context.settingsSelectButtonHorizontalMargin(),
+                    vertical: context.settingsSelectButtonVerticalMargin()
+                ),
+                child: Image.asset(showSettingNumber.value.settingsButton(i)),
               ),
             ),
-            const Spacer(flex: 1),
-          ]),
-        ],
+        ),
+      ),
+      Divider(),
+    ]);
+
+    Widget settingsFloorNumberWidget() => Column(children: [
+      ...floorNumbers.floorNumbersList().asMap().entries.map((row) =>
+        Column(children: [
+          Row(mainAxisAlignment: MainAxisAlignment.center,
+            children: row.value.asMap().entries.map((col) => Container(
+              alignment: Alignment.center,
+              width: context.settingsLockNumberWidth(),
+              height: context.settingsLockNumberHeight(),
+              margin: EdgeInsets.only(
+                top: row.key == 0 ? context.settingsButtonMargin() : 0,
+                right: col.key == 0 ? context.settingsButtonMargin() : 0,
+                bottom: context.settingsButtonBottomMargin(),
+              ),
+              child: Stack(alignment: Alignment.center,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      /// Number Button
+                      GestureDetector(
+                        onTap: () {
+                          if (point >= changePointList[row.key][col.key] && !isNotSelectFloor(row.key, col.key)) {
+                            isButtonOn.value[row.key][col.key] = true;
+                            isButtonOn.value = List.from(isButtonOn.value);
+                            floorInputDialog(row.key, col.key);
+                          }
+                        },
+                        child: Stack(alignment: Alignment.center,
+                          children: [
+                            Image.asset(isButtonOn.value[row.key][col.key].numberBackground("square"),
+                              width: context.settingsButtonSize(),
+                              height: context.settingsButtonSize(),
+                            ),
+                            Text(col.value.buttonNumber(),
+                              style: TextStyle(
+                                color: isButtonOn.value[row.key][col.key].numberColor(),
+                                fontSize: context.settingsButtonFontSize(),
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            if (isNotSelectFloor(row.key, col.key)) Container(
+                              width: context.settingsButtonSize(),
+                              height: context.settingsButtonSize(),
+                              color: transpBlackColor,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  /// Lock Overlay
+                  if (point < changePointList[row.key][col.key]) Container(
+                    alignment: Alignment.center,
+                    color: transpBlackColor,
+                    width: context.settingsLockNumberWidth(),
+                    height: context.settingsLockNumberHeight(),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        SizedBox(height: context.settingsLockMargin()),
+                        lockIcon(context.settingsLockIconSize()),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            pointIcon(context.settingsLockIconSize()),
+                            SizedBox(width: context.settingsLockMargin()),
+                            Text(
+                              "${changePointList[row.key][col.key]}",
+                              style: TextStyle(
+                                color: lampColor,
+                                fontSize: context.settingsLockFontSize(),
+                                fontWeight: FontWeight.normal,
+                                fontFamily: numberFont,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            )).toList(),
+          ),
+        ]),
+      ),
+      SizedBox(height: context.settingsMarginSize()),
+    ]);
+
+    Widget settingsFloorUpArrow() => Container(
+      alignment: Alignment.topCenter,
+      margin: EdgeInsets.only(top: context.settingsArrowMarginTop()),
+      child: FadeTransition(
+        opacity: animationController.drive(CurveTween(curve: Curves.easeInOut)),
+        child: Container(
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            gradient: RadialGradient(
+              colors: [blackColor.withAlpha((0.6 * 255).round()), transpColor],
+              center: Alignment.center,
+              radius: 0.8,
+            ),
+          ),
+          child: Icon(
+            Icons.keyboard_arrow_up,
+            size: context.settingsSelectButtonSize(),
+            color: whiteColor,
+          ),
+        ),
       ),
     );
 
-    ///Settings
-    return Scaffold(
-      body: Container(
-        color: transpColor,
-        child:Column(children: [
-          const Spacer(flex: 2),
-          ///Settings title
-          Text(context.settings(),
-            style: TextStyle(
-              fontSize: context.settingsTitleFontSize(),
-              fontWeight: FontWeight.bold,
-              fontFamily: settingsFont
+    Widget settingsFloorImageWidget() => Expanded(
+      child: Stack(children: [
+        SingleChildScrollView(
+          controller: scrollController,
+          child: Column(children: [
+            ...roomImages.roomsList().asMap().entries.map((row) =>
+              Column(children: [
+                Row(mainAxisAlignment: MainAxisAlignment.center,
+                  children: row.value.asMap().entries.map((col) => Container(
+                    alignment: Alignment.center,
+                    width: context.settingsLockImageWidth(),
+                    height: context.settingsLockImageHeight(),
+                    margin: EdgeInsets.only(
+                      top: row.key == 0 ? context.settingsMarginSize() : 0,
+                      right: col.key == 0 ? context.settingsButtonMargin() : 0,
+                      bottom: context.settingsButtonBottomMargin(),
+                    ),
+                    child: Stack(alignment: Alignment.center,
+                      children: [
+                        /// Room Image
+                        GestureDetector(
+                          onTap: () {
+                            isImageOn.value[row.key][col.key] = true;
+                            isImageOn.value = List.from(isImageOn.value);
+                            roomPickerDialog(row.key, col.key);
+                          },
+                          child: SizedBox(
+                            width: context.settingsImageWidth(),
+                            height: context.settingsImageHeight(),
+                            child: Stack(children: [
+                              roomImages.roomsList()[row.key][col.key].roomImage(),
+                              if (isImageOn.value[row.key][col.key] && point >= changePointList[row.key][col.key]) Container(color: transpLampColor),
+                            ]),
+                          ),
+                        ),
+                        /// Lock Overlay
+                        if (point < changePointList[row.key][col.key]) Container(
+                          alignment: Alignment.center,
+                          color: transpBlackColor,
+                          width: context.settingsLockImageWidth(),
+                          height: context.settingsLockImageHeight(),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              SizedBox(height: context.settingsLockMargin()),
+                              lockIcon(context.settingsLockIconSize()),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  pointIcon(context.settingsLockIconSize()),
+                                  SizedBox(width: context.settingsLockMargin()),
+                                  Text(
+                                    "${changePointList[row.key][col.key]}",
+                                    style: TextStyle(
+                                      color: lampColor,
+                                      fontSize: context.settingsLockFontSize(),
+                                      fontWeight: FontWeight.normal,
+                                      fontFamily: numberFont,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  )).toList(),
+                ),
+              ]),
             ),
-          ),
-          SizedBox(height: context.settingsTitleMargin()),
-          const Spacer(flex: 1),
-          Column(children: floorNumbers.floorNumbersList().asMap().entries.map((row) =>
-            Column(children: [
-              Row(mainAxisAlignment: MainAxisAlignment.center,
-                children: row.value.asMap().entries.map((col) {
-                  final isChange = (point >= changePointList[row.key][col.key]);
-                  return Stack(children: [
-                    Row(children: [
-                      ///Edit Elevator Button
-                      Column(children: [
-                        SizedBox(
+          ])
+        ),
+        if (!hasScrolledOnce.value) settingsFloorUpArrow(),
+      ])
+    );
+
+    Widget settingsButtonShapeWidget() => Column(children: [
+      ...shapeList.shapesList().asMap().entries.map((row) =>
+        Column(children: [
+          Row(mainAxisAlignment: MainAxisAlignment.center,
+            children: row.value.asMap().entries.map((col) => Container(
+              alignment: Alignment.center,
+              width: context.settingsButtonSize(),
+              height: context.settingsButtonSize(),
+              margin: EdgeInsets.all(context.settingsButtonMargin()),
+              child: Stack(alignment: Alignment.center,
+                children: [
+                  /// Number Button
+                  GestureDetector(
+                    onTap: () async {
+                      ref.read(shapeProvider.notifier).state = await imageManager.changeSettingsValue(
+                          key: "shapeKey",
+                          current: buttonShape,
+                          next: row.value[col.key]
+                      );
+                    },
+                    child: Stack(alignment: Alignment.center,
+                      children: [
+                        Image.asset((buttonShape == row.value[col.key]).numberBackground(row.value[col.key]),
                           width: context.settingsButtonSize(),
                           height: context.settingsButtonSize(),
-                          child: GestureDetector(
-                            child: Stack(alignment: Alignment.center,
-                              children: [
-                                Image.asset(isButtonOn.value[row.key][col.key].numberBackground()),
-                                Text(col.value.buttonNumber(),
-                                  style: TextStyle(
-                                    color: (isButtonOn.value[row.key][col.key]).numberColor(),
-                                    fontSize: context.settingsButtonNumberFontSize(),
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                if (isNotSelectFloor(row.key, col.key)) Container(
-                                  width: context.settingsButtonSize(),
-                                  height: context.settingsButtonSize(),
-                                  color: transpBlackColor,
-                                ),
-                              ],
-                            ),
-                            onTap: () => {
-                              isNotSelectFloor(row.key, col.key) ?
-                                pressedImage(row.key, col.key, true):
-                                pressedButton(row.key, col.key, true),
-                              isNotSelectFloor(row.key, col.key) ?
-                                roomPickerDialog(row.key, col.key):
-                                floorInputDialog(row.key, col.key),
-                            },
+                        ),
+                        Text((row.key * 2 + col.key != 3) ? "1": "",
+                          style: TextStyle(
+                            color: (buttonShape == row.value[col.key]).numberColor(),
+                            fontSize: context.settingsButtonFontSize(),
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
-                        SizedBox(height: context.settingsButtonMargin()),
-                        Ink(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                isButtonOn.value[row.key][col.key] ? lampColor: blackColor,
-                                isButtonOn.value[row.key][col.key] ? lampColor: grayColor
-                              ],
-                              begin: Alignment.centerLeft,
-                              end: Alignment.centerRight,
-                            ),
-                            borderRadius: BorderRadius.all(Radius.circular(
-                              context.settingsButtonBorderRadius()
-                            )),
-                          ),
-                          child: Container(
-                            width: context.settingsButtonWidth(),
-                            height: context.settingsButtonHeight(),
-                            alignment: Alignment.center,
-                            child: ElevatedButton(
-                              onPressed: () {
-                                (isNotSelectFloor(row.key, col.key)) ?
-                                  pressedImage(row.key, col.key, true):
-                                  pressedButton(row.key, col.key, true);
-                                (isNotSelectFloor(row.key, col.key)) ?
-                                  roomPickerDialog(row.key, col.key):
-                                  floorInputDialog(row.key, col.key);
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: transpColor,
-                                foregroundColor: transpColor,
-                                shadowColor: blackColor,
-                                elevation: context.settingsButtonShadowSize(),
-                                padding: EdgeInsets.zero,
-                              ),
-                              child: Text(context.edit(),
-                                style: TextStyle(
-                                  fontFamily: settingsFont,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: context.settingsButtonFontSize(),
-                                  color: whiteColor,
-                                )
-                              ),
-                            ),
-                          ),
-                        ),
-                      ]),
-                      SizedBox(width: context.settingsButtonMargin()),
-                      ///Edit Room Image
-                      SizedBox(
-                        width: context.settingsImageSelectWidth(),
-                        height: context.settingsImageSelectHeight(),
-                        child:  GestureDetector(
-                          child: Stack(children:[
-                            roomImages.roomsList()[row.key][col.key].roomImage(),
-                            if (isImageOn.value[row.key][col.key] && isChange) Container(color: transpLampColor),
-                          ]),
-                          onTap: () {
-                            pressedImage(row.key, col.key, true);
-                            roomPickerDialog(row.key, col.key);
-                          }
-                        ),
-                      ),
-                      if (col.key == 0) SizedBox(width: context.settingsButtonSpace()),
-                    ]),
-                    if (!isChange) settingsLockWidget(row.key, col.key)
-                  ]);
-                }).toList(),
+                      ],
+                    ),
+                  ),
+                ]
               ),
-              SizedBox(height: context.settingsButtonMargin()),
-            ]),
+            ),
           ).toList()),
-          const Spacer(flex: 2),
-          const AdBannerWidget(),
         ]),
       ),
+    ]);
+
+    Widget settingsGlassToggleWidget() => Column(children: [
+      SizedBox(height: context.settingsGlassToggleMarginSize()),
+      Row(mainAxisAlignment: MainAxisAlignment.spaceAround,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Text(context.glass(),
+            style: TextStyle(
+              color: blackColor,
+              fontSize: context.settingsGlassFontSize(),
+              fontWeight: FontWeight.bold,
+              fontFamily: elevatorFont,
+            ),
+          ),
+          CupertinoSwitch(
+            value: glassStyle == "use",
+            onChanged: (value) async {
+              ref.read(glassProvider.notifier).state = await imageManager.changeSettingsValue(
+                key: "glassKey",
+                current: glassStyle,
+                next: value ? "use": "non"
+              );
+            },
+          ),
+        ],
+      ),
+      Divider(),
+    ]);
+
+    Widget settingsBackgroundImageWidget() => Column(children: [
+      ...styleList.stylesList().asMap().entries.map((row) =>
+        Column(children: [
+          Row(mainAxisAlignment: MainAxisAlignment.center,
+            children: row.value.asMap().entries.map((col) => Container(
+              alignment: Alignment.center,
+              width: context.settingsBackgroundWidth(),
+              height: context.settingsBackgroundHeight(),
+              margin: EdgeInsets.only(
+                top: row.key == 0 ? context.settingsMarginTopSize() : 0,
+                right: col.key == 0 ? context.settingsButtonMargin() : 0,
+                bottom: context.settingsButtonBottomMargin(),
+              ),
+              child: Stack(children: [
+                GestureDetector(
+                  onTap: () async {
+                    ref.read(styleProvider.notifier).state = await imageManager.changeSettingsValue(
+                      key: "styleKey",
+                      current: elevatorStyle,
+                      next: row.value[col.key]
+                    );
+                  },
+                  child: Image.asset(row.value[col.key].backGroundImage(glassStyle)),
+                ),
+                if (styleList.stylesList()[row.key][col.key] == elevatorStyle) Container(color: transpLampColor),
+              ]),
+            )).toList(),
+          ),
+        ]),
+      ),
+      SizedBox(height: context.settingsMarginSize()),
+    ]);
+
+    ///Settings
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: blackColor,
+        shadowColor: Colors.transparent,
+        iconTheme: IconThemeData(color: whiteColor),
+        title: Row(children: [
+          Spacer(flex: 1),
+          Container(
+            alignment: Alignment.center,
+            height: 50,
+            margin: EdgeInsets.only(right: 50),
+            child: Text(context.settings(),
+              style: TextStyle(
+                color: whiteColor,
+                fontSize: context.lang() == "ja" ? 28: 40,
+                fontFamily: elevatorFont,
+              ),
+            ),
+          ),
+          Spacer(flex: 1),
+        ]),
+        leading: FadeTransition(
+          opacity: animationController,
+          child: Container(
+            margin: EdgeInsets.only(left: 10),
+            child: IconButton(
+              iconSize: 40, // 大きめ
+              icon: const Icon(CupertinoIcons.arrow_left_circle_fill,
+                color: whiteColor
+              ),
+              onPressed: () => context.pushMyPage(true),
+            ),
+          ),
+        ),
+      ),
+      body: Column(children: [
+        selectButtonsWidget(),
+        if (showSettingNumber.value == 3) settingsGlassToggleWidget(),
+        (showSettingNumber.value == 0) ? settingsFloorImageWidget():
+        (showSettingNumber.value == 1) ? settingsFloorNumberWidget():
+        (showSettingNumber.value == 2) ? settingsButtonShapeWidget():
+        (showSettingNumber.value == 3) ? settingsBackgroundImageWidget():
+        settingsFloorNumberWidget(),
+        (showSettingNumber.value == 0) ? Divider(): Spacer(flex: 1),
+        const AdBannerWidget(),
+      ]),
     );
   }
 }

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -12,6 +14,7 @@ import 'extension.dart';
 import 'constant.dart';
 import 'admob_banner.dart';
 import 'main.dart';
+import 'my_app_bar.dart';
 
 class MyMenuPage extends HookConsumerWidget {
   const MyMenuPage({super.key});
@@ -19,12 +22,15 @@ class MyMenuPage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
 
+    final point = ref.watch(pointProvider);
     final isGamesSignedIn = useState(false);
     final RewardedAd? ad = rewardedAd();
 
     useEffect(() {
       WidgetsBinding.instance.addPostFrameCallback((_) async {
-        isGamesSignedIn.value = await gamesIsSignedIn();
+        if (!Platform.isAndroid || isTest) {
+          isGamesSignedIn.value = await gamesIsSignedIn();
+        }
       });
       return null;
     }, []);
@@ -32,14 +38,14 @@ class MyMenuPage extends HookConsumerWidget {
     ///Show Rewarded Ad
     showRewardedAd() => ad!.show(
       onUserEarnedReward: (AdWithoutView ad, RewardItem reward) async {
+        "showRewardedAd".debugPrint();
         final prefs = await SharedPreferences.getInstance();
         'rewardEarned: ${reward.type}, rewardAmount: ${reward.amount}'.debugPrint();
         final addPoint = (earnMilesInt > reward.amount.toInt()) ? earnMilesInt: reward.amount.toInt();
         ref.read(pointProvider.notifier).update((p) => p + addPoint);
         final newPoint = ref.read(pointProvider.notifier).state;
         await "pointKey".setSharedPrefInt(prefs, newPoint);
-        await gamesSubmitScore(newPoint);
-        ref.read(isMenuProvider.notifier).update((_) => false);
+        if (!Platform.isAndroid || isTest) await gamesSubmitScore(newPoint);
         if (context.mounted) Navigator.of(context).pop();
       }
     );
@@ -90,83 +96,80 @@ class MyMenuPage extends HookConsumerWidget {
 
     ///Pressed menu links action
     pressedMenuLink(int i) {
-      if (i == 0) {
-        ref.read(isMenuProvider.notifier).update((state) => false);
-        ref.read(isSettingsProvider.notifier).update((state) => true);
-      } else if (i == 1) {
-        gamesShowLeaderboard();
-      } else if (i == 2) {
+      if (i == 1) {
         "$ad".debugPrint();
         if (ad != null) rewardedAdPermissionAlert();
+      } else if (i == 2) {
+        gamesShowLeaderboard();
+      } else {
+        context.pushSettingsPage();
       }
     }
 
     ///Menu
     return Scaffold(
+      appBar: myAppBar(
+        context: context,
+        point: point,
+        isMenuIcon: true,
+        pressedMenu: () => context.pushMyPage(true), //to MyHomePage
+      ),
       backgroundColor: transpWhiteColor,
       body: SizedBox(
         width: context.width(),
         height: context.height(),
-        child: Column(children: [
-          const Spacer(flex: 3),
-          ///App Logo
-          SizedBox(
-            width: context.menuTitleWidth(),
-            child: Image.asset(appLogo),
-          ),
-          const Spacer(flex: 2),
-          ///Menu Title
-          Text(context.menu(),
-            style: TextStyle(
-              color: blackColor,
-              fontSize: context.menuTitleFontSize(),
-              fontWeight: FontWeight.bold,
-              fontFamily: menuFont,
-            ),
-          ),
-          const Spacer(flex: 1),
-          ///Mode Change
-          Row(mainAxisAlignment: MainAxisAlignment.center,
-            children: List.generate(7, (i) =>
-              (!isGamesSignedIn.value && (i == 3 || i == 4)) ? const SizedBox.shrink():
-              i % 2 == 0 ? const Spacer(flex: 1):
-              GestureDetector(
-                onTap: () async => pressedMenuLink((i - 1) ~/ 2),
-                child: menuButton(context, (i - 1) ~/ 2),
+        child: Column(mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            SizedBox(height: context.settingsMarginSize()),
+            /// App Logo
+            Text(context.menu(),
+              style: TextStyle(
+                color: blackColor,
+                fontSize: context.menuTitleFontSize(),
+                fontFamily: elevatorFont,
               ),
             ),
-          ),
-          const Spacer(flex: 3),
-          ///Menu Links
-          BottomNavigationBar(
-            items: List<BottomNavigationBarItem>.generate(context.linkLogos().length, (i) =>
-              BottomNavigationBarItem(
-                icon: Container(
-                  margin: EdgeInsets.only(
-                    top: context.linksMargin(),
-                    bottom: context.linksTitleMargin()
-                  ),
-                  width: context.linksLogoWidth(),
-                  height: context.linksLogoHeight(),
-                  child: Image.asset(context.linkLogos()[i]),
+            /// Menu Rows
+            ...List.generate(isGamesSignedIn.value ? 3: 2, (i) =>
+              Column(children: [
+                GestureDetector(
+                  onTap: () async => pressedMenuLink(i),
+                  child: menuButton(context, i),
                 ),
-                label: context.linkTitles()[i],
-              ),
+              ])
             ),
-            currentIndex: 0,
-            type: BottomNavigationBarType.fixed,
-            onTap: (i) => launchUrl(Uri.parse(context.linkLinks()[i])),
-            elevation: 0,
-            selectedItemColor: lampColor,
-            unselectedItemColor: lampColor,
-            selectedFontSize: context.linksTitleSize(),
-            selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold),
-            unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold),
-            unselectedFontSize: context.linksTitleSize(),
-            backgroundColor: blackColor,
-          ),
-          const AdBannerWidget(),
-        ]),
+            SizedBox(height: context.settingsMarginSize()),
+            ///Menu Links
+            BottomNavigationBar(
+              items: List.generate(context.linkLogos().length, (i) =>
+                BottomNavigationBarItem(
+                  icon: Container(
+                    margin: EdgeInsets.only(
+                      top: context.linksTopMargin(),
+                      bottom: context.linksBottomMargin()
+                    ),
+                    width: context.linksLogoWidth(),
+                    height: context.linksLogoHeight(),
+                    child: Image.asset(context.linkLogos()[i]),
+                  ),
+                  label: context.linkTitles()[i],
+                ),
+              ),
+              currentIndex: 0,
+              type: BottomNavigationBarType.fixed,
+              onTap: (i) => launchUrl(Uri.parse(context.linkLinks()[i])),
+              elevation: 0,
+              selectedItemColor: lampColor,
+              unselectedItemColor: lampColor,
+              selectedFontSize: context.linksTitleSize(),
+              selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold),
+              unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold),
+              unselectedFontSize: context.linksTitleSize(),
+              backgroundColor: blackColor,
+            ),
+            const AdBannerWidget(),
+          ]
+        ),
       ),
     );
   }

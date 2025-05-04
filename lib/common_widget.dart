@@ -17,7 +17,7 @@ Icon lockIcon(double size) =>
 
 ///Image
 //UpAndDownDoorFrame
-Container upAndDownDoorFrame(BuildContext context) =>
+Container upAndDownDoorFrame(BuildContext context, String elevatorStyle) =>
     Container(
       alignment: Alignment.centerLeft,
       height: context.roomHeight(),
@@ -25,7 +25,7 @@ Container upAndDownDoorFrame(BuildContext context) =>
           top: context.doorMarginTop(),
           left: context.doorMarginLeft()
       ),
-      child: Image.asset(doorFrame),
+      child: Image.asset(elevatorStyle.doorFrame()),
     );
 
 //LeftDoorFrame
@@ -59,7 +59,7 @@ AnimatedContainer rightDoorFrame(BuildContext context, bool isClosedState) =>
     );
 
 //LeftDoor
-AnimatedContainer leftDoorImage(BuildContext context, bool isClosedState) =>
+AnimatedContainer leftDoorImage(BuildContext context, String elevatorStyle, String glassStyle, bool isClosedState) =>
     AnimatedContainer(
       duration: const Duration(seconds: 2),
       transform: Matrix4.translationValues(isClosedState ? 0: - context.doorWidth(), 0, 0),
@@ -71,11 +71,11 @@ AnimatedContainer leftDoorImage(BuildContext context, bool isClosedState) =>
       ),
       width: context.doorWidth(),
       height: context.roomHeight(),
-      child: Image.asset(leftDoor),
+      child: Image.asset(elevatorStyle.leftDoor(glassStyle)),
     );
 
 //RightDoor
-AnimatedContainer rightDoorImage(BuildContext context, bool isClosedState) =>
+AnimatedContainer rightDoorImage(BuildContext context, String elevatorStyle, String glassStyle, bool isClosedState) =>
     AnimatedContainer(
       duration: const Duration(seconds: 2),
       transform: Matrix4.translationValues(isClosedState ? 0: context.doorWidth(), 0, 0),
@@ -87,16 +87,16 @@ AnimatedContainer rightDoorImage(BuildContext context, bool isClosedState) =>
       ),
       width: context.doorWidth(),
       height: context.roomHeight(),
-      child: Image.asset(rightDoor),
+      child: Image.asset(elevatorStyle.rightDoor(glassStyle)),
     );
 
 //Elevator Frame
-Container elevatorFrameImage(BuildContext context) =>
+Container elevatorFrameImage(BuildContext context, String elevatorStyle) =>
     Container(
       alignment: Alignment.topCenter,
       width: context.elevatorWidth() ,
       height: context.elevatorHeight(),
-      child: Image.asset(elevatorFrame)
+      child: Image.asset(elevatorStyle.elevatorFrame())
     );
 //DoorCover
 Row doorCover(BuildContext context) =>
@@ -175,13 +175,13 @@ Container operationButtonImage(BuildContext context, List<bool> isPressedList, i
       child: Image.asset(isPressedList.operateBackGround()[number]),
     );
 //Floor Button
-SizedBox floorButtonImage(BuildContext context, int floorNumber, bool isSelected) =>
+SizedBox floorButtonImage(BuildContext context, String buttonShape, int floorNumber, bool isSelected) =>
     SizedBox(
-      width: context.floorButtonSize(),
-      height: context.floorButtonSize(),
+      width: context.floorButtonSize(buttonShape == "diamond"),
+      height: context.floorButtonSize(buttonShape == "diamond"),
       child: Stack(alignment: Alignment.center,
         children: [
-          Image.asset(isSelected.numberBackground()),
+          Image.asset(isSelected.numberBackground(buttonShape)),
           Text(floorNumber.buttonNumber(),
             style: TextStyle(
               color: isSelected ? lampColor: whiteColor,
@@ -261,22 +261,18 @@ GestureDetector shutButton(BuildContext context) =>
     );
 
 ///Menu Button
-SizedBox menuButton(BuildContext context, int i) => SizedBox(
+Container menuButton(BuildContext context, int i) => Container(
   width: context.menuButtonSize(),
   height: context.menuButtonSize(),
-  child: Stack(
-      alignment: Alignment.center,
-      children: [
-        Image.asset(squareButton),
-        Text(context.menuTitles()[i],
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            color: whiteColor,
-            fontWeight: FontWeight.bold,
-            fontSize: context.menuButtonFontSize(),
-          ),
-        ),
-      ]
+  margin: EdgeInsets.only(
+    top: (i == 0) ? context.menuButtonBottomMargin(): 0,
+    bottom: context.menuButtonBottomMargin(),
+  ),
+  child: Image.asset(
+    (i == 0) ? settingsButton:
+    (i == 1) ? adRewardButton:
+    (i == 2) ? rankingButton:
+    squareButton
   ),
 );
 
@@ -297,7 +293,7 @@ alertLockWidget(BuildContext context)  => Container(
       lockIcon(context.settingsAlertLockIconSize()),
       SizedBox(width: context.settingsAlertLockSpaceSize()),
       pointIcon(context.settingsAlertLockIconSize()),
-      SizedBox(width: context.settingsLockSpaceSize()),
+      SizedBox(width: context.settingsLockMargin()),
       Text("$albumImagePoint",
         style: TextStyle(
           color: lampColor,
@@ -329,4 +325,3 @@ Widget circularProgressIndicator(BuildContext context) =>
         )
       ),
     ]);
-

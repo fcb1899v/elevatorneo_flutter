@@ -10,8 +10,7 @@ import 'extension.dart';
 import 'constant.dart';
 import 'image_manager.dart';
 import 'main.dart';
-import 'my_menu.dart';
-import 'my_settings.dart';
+import 'my_app_bar.dart';
 import 'sound_manager.dart';
 
 class MyHomePage extends HookConsumerWidget {
@@ -20,15 +19,15 @@ class MyHomePage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
 
-    final isMenu = ref.watch(isMenuProvider);
-    final isSettings = ref.watch(isSettingsProvider);
+    //Provider
     final floorNumbers = ref.watch(floorNumbersProvider);
     final roomImages = ref.watch(roomImagesProvider);
     final point = ref.watch(pointProvider);
-    final List<Image> images = roomImages.floorImages(floorNumbers);
-    final imageManager = useMemoized(() => ImageManager());
-    final isLoadingData = useState(false);
+    final buttonShape = ref.watch(shapeProvider);
+    final elevatorStyle = ref.watch(styleProvider);
+    final glassStyle = ref.watch(glassProvider);
 
+    //Hooks
     final counter = useState(1);
     final nextFloor = useState(1);
     final isMoving = useState(false);
@@ -38,26 +37,31 @@ class MyHomePage extends HookConsumerWidget {
     final isAboveSelectedList = useState(List.generate(max + 1, (_) => false));
     final isUnderSelectedList = useState(List.generate(min * (-1) + 1, (_) => false));
     final isSoundOn = useState(true);
+    final isLoadingData = useState(false);
     final imageTopMargin = useState(context.doorMarginTop() - (max - 1) * context.roomHeight() * 17/16);
     final imageDurationTime = useState(0);
+    final lifecycle = useAppLifecycleState();
 
-    //TTS and Audio
+    //Manager
+    final imageManager = useMemoized(() => ImageManager());
     final ttsManager = useMemoized(() => TtsManager(context: context));
     final audioManager = useMemoized(() => AudioManager());
-    final lifecycle = useAppLifecycleState();
 
     initState() async {
       isLoadingData.value = true;
       try {
-        final prefs = await SharedPreferences.getInstance();
-        ref.read(floorNumbersProvider.notifier).state = "floorsKey".getSharedPrefListInt(prefs, initialFloorNumbers);
-        ref.read(roomImagesProvider.notifier).state = "roomsKey".getSharedPrefListString(prefs, initialRoomImages);
-        ref.read(pointProvider.notifier).state = "pointKey".getSharedPrefInt(prefs, 0);
         if (context.mounted) imageTopMargin.value = context.doorMarginTop() - (max - 1) * context.floorHeight();
-        ref.read(roomImagesProvider.notifier).state = await imageManager.getImagesList();
+        final prefs = await SharedPreferences.getInstance();
         await ttsManager.initTts();
-        await gamesSignIn();
+        ref.read(floorNumbersProvider.notifier).state = "floorsKey".getSharedPrefListInt(prefs, initialFloorNumbers);
+        ref.read(roomImagesProvider.notifier).state = await imageManager.getImagesList();
         ref.read(pointProvider.notifier).state = await getBestScore();
+        ref.read(shapeProvider.notifier).state = "shapeKey".getSharedPrefString(prefs, initialShape);
+        ref.read(styleProvider.notifier).state = "styleKey".getSharedPrefString(prefs, initialStyle);
+        ref.read(glassProvider.notifier).state = "glassKey".getSharedPrefString(prefs, initialGlass);
+        if (ref.read(shapeProvider.notifier).state == "random") ref.read(shapeProvider.notifier).state = randomShape;
+        if (ref.read(styleProvider.notifier).state == "random") ref.read(shapeProvider.notifier).state = randomStyle;
+        if (ref.read(glassProvider.notifier).state == "random") ref.read(shapeProvider.notifier).state = randomGlass;
         isLoadingData.value = false;
       } catch (e) {
         "Error: $e".debugPrint();
@@ -109,7 +113,7 @@ class MyHomePage extends HookConsumerWidget {
                 isEmergency.value = false;
                 isDoorState.value = openingState;
                 "isDoorState: ${isDoorState.value}".debugPrint();
-                "$nextString${nextFloor.value}".debugPrint();
+                "nextFloor: ${nextFloor.value}".debugPrint();
                 final newPoint = ref.read(pointProvider.notifier).state;
                 await "pointKey".setSharedPrefInt(prefs, newPoint);
                 await gamesSubmitScore(newPoint);
@@ -147,7 +151,7 @@ class MyHomePage extends HookConsumerWidget {
                 isEmergency.value = false;
                 isDoorState.value = openingState;
                 "isDoorState: ${isDoorState.value}".debugPrint();
-                "$nextString${nextFloor.value}".debugPrint();
+                "nextFloor: ${nextFloor.value}".debugPrint();
                 final newPoint = ref.read(pointProvider.notifier).state;
                 await "pointKey".setSharedPrefInt(prefs, newPoint);
                 await gamesSubmitScore(newPoint);
@@ -240,7 +244,7 @@ class MyHomePage extends HookConsumerWidget {
             await Future.delayed(const Duration(seconds: waitTime * 2)).then((_) async {
               if (counter.value != 1) {
                 nextFloor.value = 1;
-                "$nextString${nextFloor.value}".debugPrint();
+                "nextFloor: ${nextFloor.value}".debugPrint();
                 (counter.value < nextFloor.value) ? counterUp() : counterDown();
               } else {
                 if (context.mounted) ttsManager.speakText(context.openDoor());
@@ -275,7 +279,7 @@ class MyHomePage extends HookConsumerWidget {
           if (counter.value < i && i < nextFloor.value) nextFloor.value = i;
           if (counter.value > i && i > nextFloor.value) nextFloor.value = i;
           if (i.onlyTrue(isAboveSelectedList.value, isUnderSelectedList.value)) nextFloor.value = i;
-          "$nextString${nextFloor.value}".debugPrint();
+          "nextFloor: ${nextFloor.value}".debugPrint();
           await Future.delayed(const Duration(seconds: waitTime)).then((_) async {
             if (!isMoving.value && !isEmergency.value && isDoorState.value == closedState) {
               (counter.value < nextFloor.value) ? counterUp() :
@@ -299,18 +303,8 @@ class MyHomePage extends HookConsumerWidget {
           counter.value.upNextFloor(isAboveSelectedList.value, isUnderSelectedList.value) :
           counter.value.downNextFloor(isAboveSelectedList.value, isUnderSelectedList.value);
         }
-        "$nextString${nextFloor.value}".debugPrint();
+        "nextFloor: ${nextFloor.value}".debugPrint();
       }
-    }
-
-    ///Menu button action
-    pressedMenu() async {
-      await audioManager.stopSound(0);
-      if (isSoundOn.value) await audioManager.playEffectSound(index: 0, asset: selectButton, volume: 0.5);
-      await Vibration.vibrate(duration: vibTime, amplitude: vibAmp);
-      if ((isMenu || isSettings) && context.mounted) context.pushHomePage();
-      ref.read(isMenuProvider.notifier).state = isSettings ? false: !isMenu;
-      ref.read(isSettingsProvider.notifier).state = false;
     }
 
     ///Action after changing door state
@@ -333,42 +327,14 @@ class MyHomePage extends HookConsumerWidget {
 
     return Scaffold(
       backgroundColor: blackColor,
-      ///AppBar
-      appBar: AppBar(
-        backgroundColor: blackColor,
-        shadowColor: Colors.transparent,
-        title: Row(children: [
-          GestureDetector(
-            onTap: () async => {
-              Vibration.vibrate(duration: vibTime, amplitude: vibAmp),
-              gamesShowLeaderboard(),
-            },
-            child: pointIcon(30),
-          ),
-          Container(
-            height: 50,
-            margin: const EdgeInsets.only(left: 10),
-            child:useMemoized(() => HookBuilder(
-              builder: (context) => Text("$point",
-                style: const TextStyle(
-                  color: lampColor,
-                  fontSize: 40,
-                  fontWeight: FontWeight.normal,
-                  fontFamily: numberFont,
-                ),
-              ),
-            ), [point]),
-          ),
-          evMileTooltip(context),
-        ]),
-        actions: [
-          (counter.value == nextFloor.value) ? IconButton(
-            icon: menuIcon(context.menuIconSize()),
-            onPressed: () => pressedMenu()
-          ): SizedBox(width: context.menuIconSize()),
-          const SizedBox(width: 10),
-        ]
+      ///My AppBar
+      appBar: myAppBar(
+        context: context,
+        point: point,
+        isMenuIcon: counter.value == nextFloor.value,
+        pressedMenu: () => context.pushMyPage(false), ///to MyMenuPage
       ),
+      ///Body
       body: SafeArea(
         top: true,
         bottom: true,
@@ -379,7 +345,7 @@ class MyHomePage extends HookConsumerWidget {
             top: imageTopMargin.value,
             left: context.doorMarginLeft() + context.sideSpacerWidth(),
             child: Column(
-              children: images.reversed.map((img) => Column(
+              children: roomImages.floorImages(floorNumbers).reversed.map((img) => Column(
                 children: [
                   SizedBox(
                     width: context.roomWidth(),
@@ -416,17 +382,17 @@ class MyHomePage extends HookConsumerWidget {
             SizedBox(width: context.sideSpacerWidth()),
             Stack(children: [
               ///Door Frame Image
-              upAndDownDoorFrame(context),
+              upAndDownDoorFrame(context, elevatorStyle),
               ///Left Door Frame Image
               leftDoorFrame(context, isDoorState.value == closedState),
               ///Right Door Frame Image
               rightDoorFrame(context, isDoorState.value == closedState),
               ///Left Door Image
-              leftDoorImage(context, isDoorState.value == closedState),
+              leftDoorImage(context, elevatorStyle, glassStyle, isDoorState.value == closedState),
               ///Right Door Image
-              rightDoorImage(context, isDoorState.value == closedState),
+              rightDoorImage(context, elevatorStyle, glassStyle, isDoorState.value == closedState),
               ///Elevator Frame Image
-              elevatorFrameImage(context),
+              elevatorFrameImage(context, elevatorStyle),
               ///Display Image
               displayNumber(context, counter.value, isMoving.value, nextFloor.value),
               ///Elevator Button Image
@@ -449,25 +415,25 @@ class MyHomePage extends HookConsumerWidget {
                       child: operationButtonImage(context, isPressedOperationButtons.value, 2)
                     ),
                   ),
-                  SizedBox(height: context.buttonMargin() * 2),
+                  SizedBox(height: context.emergencyBottomMargin(buttonShape == "diamond")),
                   ///Floor Buttons
                   Column(children: floorNumbers.floorNumbersList().asMap().entries.map((row) => Column(children: [
-                    SizedBox(height: context.buttonMargin()),
+                    SizedBox(height: context.buttonMargin(buttonShape == "diamond")),
                     Row(mainAxisAlignment: MainAxisAlignment.center,
                       children: row.value.asMap().entries.map((floor) => Row(children: [
-                        SizedBox(width: context.buttonMargin()),
+                        SizedBox(width: context.buttonMargin(buttonShape == "diamond")),
                         GestureDetector(
-                          child: floorButtonImage(context, floor.value, floor.value.isSelected(isAboveSelectedList.value, isUnderSelectedList.value)),
+                          child: floorButtonImage(context, buttonShape, floor.value, floor.value.isSelected(isAboveSelectedList.value, isUnderSelectedList.value)),
                           onTap: () => floorSelected(floor.value, isFloors[row.key][floor.key]),
                           onLongPress: () => floorCanceled(floor.value),
                           onDoubleTap: () => floorCanceled(floor.value),
                         ),
-                        if (floor.key == row.value.length - 1) SizedBox(width: context.buttonMargin()),
+                        if (floor.key == row.value.length - 1) SizedBox(width: context.buttonMargin(buttonShape == "diamond")),
                       ])).toList(),
                     ),
-                    if (row.key == floorNumbers.length - 1) SizedBox(height: context.buttonMargin()),
+                    if (row.key == floorNumbers.length - 1) SizedBox(height: context.buttonMargin(buttonShape == "diamond")),
                   ])).toList()),
-                  SizedBox(height: context.buttonMargin() * 2),
+                  SizedBox(height: context.operationTopMargin(buttonShape == "diamond")),
                   ///Operation Buttons (Close: 0, Open: 1)
                   Row(mainAxisAlignment: MainAxisAlignment.center,
                     children: [0, 1].expand((i) => [
@@ -478,7 +444,7 @@ class MyHomePage extends HookConsumerWidget {
                         onLongPressEnd: pressedButtonAction(false, true)[i],
                         child: operationButtonImage(context, isPressedOperationButtons.value, i),
                       ),
-                      if (i != 1) SizedBox(width: context.buttonMargin()),
+                      if (i != 1) SizedBox(width: context.operationSideMargin(buttonShape == "diamond")),
                     ]).toList()
                   ),
                   const Spacer(flex: 1),
@@ -492,9 +458,6 @@ class MyHomePage extends HookConsumerWidget {
           AdBannerWidget(),
           ///Progress Indicator
           if (isLoadingData.value) circularProgressIndicator(context),
-          ///Menu
-          if (isMenu) const MyMenuPage(),
-          if (isSettings) const MySettingsPage(),
         ]),
       ),
     );

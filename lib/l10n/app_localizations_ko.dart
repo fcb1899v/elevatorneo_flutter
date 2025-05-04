@@ -21,6 +21,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get settings => '각종 설정';
 
   @override
+  String get glass => '관찰창';
+
+  @override
   String get aboutLetsElevator => '렛츠 엘리베이터 란';
 
   @override

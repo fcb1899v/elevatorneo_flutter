@@ -7,6 +7,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'l10n/app_localizations.dart' show AppLocalizations;
 import 'constant.dart';
 import 'my_home_body.dart';
+import 'my_menu.dart';
+import 'my_settings.dart';
 
 extension StringExt on String {
 
@@ -14,9 +16,6 @@ extension StringExt on String {
   void debugPrint() {
     if (kDebugMode) print(this);
   }
-
-  void pushPage(BuildContext context) =>
-      Navigator.of(context).pushNamedAndRemoveUntil(this, (_) => false);
 
   Future<void> speakText(FlutterTts flutterTts, bool isSoundOn) async {
     if (isSoundOn) {
@@ -35,6 +34,10 @@ extension StringExt on String {
     "$this: $value".debugPrint();
     prefs.setInt(this, value);
   }
+  setSharedPrefBool(SharedPreferences prefs, bool value) {
+    "$this: $value".debugPrint();
+    prefs.setBool(this, value);
+  }
   setSharedPrefListString(SharedPreferences prefs, List<String> value) {
     "$this: $value".debugPrint();
     prefs.setStringList(this, value);
@@ -52,6 +55,11 @@ extension StringExt on String {
   }
   int getSharedPrefInt(SharedPreferences prefs, int defaultInt) {
     int value = prefs.getInt(this) ?? defaultInt;
+    "$this: $value".debugPrint();
+    return value;
+  }
+  bool getSharedPrefBool(SharedPreferences prefs, bool defaultBool) {
+    bool value = prefs.getBool(this) ?? defaultBool;
     "$this: $value".debugPrint();
     return value;
   }
@@ -74,20 +82,38 @@ extension StringExt on String {
   Image cropperImage() => Image.file(File(this), fit: BoxFit.cover);
   Image fittedAssetImage() => Image.asset(this, fit: BoxFit.cover);
   Image roomImage() => contains("image_cropper") ? cropperImage(): fittedAssetImage();
+
+  //this is style
+  String elevatorFrame() => "${assetsElevator}elevatorFrame_$this.png";
+  String doorFrame() => "${assetsElevator}doorFrame_$this.png";
+  String leftDoor(String glassStyle) => "${assetsElevator}doorLeft_$this${glassStyle == "use" ? "WithGlass": ""}.png";
+  String rightDoor(String glassStyle) => "${assetsElevator}doorRight_$this${glassStyle == "use" ? "WithGlass": ""}.png";
+  String backGroundImage(String glassStyle) => "$assetsSettings${this}Background${glassStyle == "use" ? "WithGlass": ""}.png";
+
 }
 
 extension ContextExt on BuildContext {
 
-  void pushHomePage() => Navigator.pushReplacement(
-      this,
-      PageRouteBuilder(
-        pageBuilder: (context, animation, _) => MyHomePage(),
+  void pushMyPage(bool isHome) =>
+      Navigator.pushReplacement(this, PageRouteBuilder(
+        pageBuilder: (context, animation, _) => isHome ? MyHomePage(): MyMenuPage(),
         transitionsBuilder: (context, animation, _, child) => FadeTransition(
           opacity: animation,
           child: child,
         ),
         transitionDuration: const Duration(milliseconds: 500),
       ));
+
+  void pushSettingsPage() =>
+      Navigator.push(this, PageRouteBuilder(
+        pageBuilder: (context, animation, _) => MySettingsPage(),
+        transitionsBuilder: (context, animation, _, child) => FadeTransition(
+          opacity: animation,
+          child: child,
+        ),
+        transitionDuration: const Duration(milliseconds: 500),
+      ));
+
 
   ///Common
   double width() => MediaQuery.of(this).size.width;
@@ -228,6 +254,7 @@ extension ContextExt on BuildContext {
   ///Menu
   String menu() => AppLocalizations.of(this)!.menu;
   String settings() => AppLocalizations.of(this)!.settings;
+  String glass() => AppLocalizations.of(this)!.glass;
   String back() => AppLocalizations.of(this)!.back;
   String ok() => AppLocalizations.of(this)!.ok;
   String cancel() => AppLocalizations.of(this)!.cancel;
@@ -291,103 +318,114 @@ extension ContextExt on BuildContext {
   ///Elevator
   double elevatorWidth() => widthResponsible();
   double elevatorHeight() => widthResponsible() * elevatorHeightRate;
-  double doorWidth() => widthResponsible() * doorWidthRate;
-  double doorMarginLeft() => widthResponsible() * doorMarginLeftRate;
-  double doorMarginTop() => widthResponsible() * doorMarginTopRate;
-  double roomHeight() => widthResponsible() * roomHeightRate;
+  double doorWidth() => widthResponsible() * 0.355;
+  double doorMarginLeft() => widthResponsible() * 0.023;
+  double doorMarginTop() => widthResponsible() * 0.195;
+  double roomHeight() => widthResponsible() * 1.27;
   double roomWidth() => roomHeight() * 9 / 16;
-  double floorHeight() => widthResponsible() * floorHeightRate;
-  double sideFrameWidth() => widthResponsible() * sideFrameWidthRate;
+  double floorHeight() => widthResponsible() * 1.57;
+  double sideFrameWidth() => widthResponsible() * 0.024;
   double sideSpacerWidth() => (width() - elevatorWidth()) / 2;
-  double menuIconSize() => widthResponsible() * menuIconSizeRate;
+  double menuIconSize() => widthResponsible() * 0.06;
 
   ///Display
-  double displayHeight() => widthResponsible() * displayHeightRate;
-  double displayWidth()  => widthResponsible() * displayWidthRate;
-  double displayMarginTop() => widthResponsible() * displayMarginTopRate;
-  double displayMarginLeft()  => widthResponsible() * displayMarginLeftRate;
-  double displayNumberHeight() => widthResponsible() * displayNumberHeightRate;
-  double displayNumberWidth() => widthResponsible() * displayNumberWidthRate;
-  double displayArrowHeight() => widthResponsible() * displayArrowHeightRate;
-  double displayArrowWidth() => widthResponsible() * displayArrowWidthRate;
-  double displayArrowMargin() => widthResponsible() * displayArrowMarginRate;
-  double displayNumberFontSize() => widthResponsible() * displayFontSizeRate;
+  double displayHeight() => widthResponsible() * 0.12;
+  double displayWidth()  => widthResponsible() * 0.3;
+  double displayMarginTop() => widthResponsible() * 0.035;
+  double displayMarginLeft()  => widthResponsible() * 0.23;
+  double displayNumberHeight() => widthResponsible() * 0.12;
+  double displayNumberWidth() => widthResponsible() * 0.16;
+  double displayArrowHeight() => widthResponsible() * 0.14;
+  double displayArrowWidth() => widthResponsible() * 0.04;
+  double displayArrowMargin() => widthResponsible() * 0.01;
+  double displayNumberFontSize() => widthResponsible() * 0.09;
 
   ///Buttons
-  double buttonPanelWidth() =>      widthResponsible() * buttonPanelWidthRate;
-  double buttonPanelHeight() =>     widthResponsible() * buttonPanelHeightRate;
-  double buttonPanelMarginTop() =>  widthResponsible() * buttonPanelMarginTopRate;
-  double buttonPanelMarginLeft() => widthResponsible() * buttonPanelMarginLeftRate;
-  double floorButtonSize() =>       widthResponsible() * floorButtonSizeRate;
-  double operationButtonSize() =>   widthResponsible() * operationButtonSizeRate;
-  double buttonNumberFontSize() =>  widthResponsible() * buttonNumberFontSizeRate;
-  double buttonMargin() =>          widthResponsible() * buttonMarginRate;
-  double buttonBorderWidth() =>     widthResponsible() * buttonBorderWidthRate;
-  double buttonBorderRadius() =>    widthResponsible() * buttonBorderRadiusRate;
+  double buttonPanelWidth() =>      widthResponsible() * 0.26;
+  double buttonPanelHeight() =>     widthResponsible() * 0.9;
+  double buttonPanelMarginTop() =>  widthResponsible() * 0.15;
+  double buttonPanelMarginLeft() => widthResponsible() * 0.74;
+  double buttonBorderWidth() =>     widthResponsible() * 0.008;
+  double buttonBorderRadius() =>    widthResponsible() * 0.012;
+  double operationButtonSize() =>   widthResponsible() * 0.07;
+  double buttonNumberFontSize() =>  widthResponsible() * 0.028;
+  double floorButtonSize(bool isDiamond) => widthResponsible() * isDiamond.floorButtonShapeFactor() * 0.08;
+  double buttonMargin(bool isDiamond) => widthResponsible()  * isDiamond.buttonMarginShapeFactor() * 0.03;
+  double operationTopMargin(bool isDiamond) => buttonMargin(isDiamond) * isDiamond.operationTopMarginShapeFactor();
+  double operationSideMargin(bool isDiamond) => buttonMargin(isDiamond) * isDiamond.operationSideMarginShapeFactor();
+  double emergencyBottomMargin(bool isDiamond) => buttonMargin(isDiamond) * isDiamond.emergencyBottomMarginShapeFactor();
 
   ///Tooltip
-  double tooltipTitleFontSize() => widthResponsible() * tooltipTitleFontRate;
-  double tooltipDescFontSize() => widthResponsible() * tooltipDescFontRate;
-  double tooltipTitleMargin() => widthResponsible() * tooltipTitleMarginRate;
-  double tooltipPaddingSize() => widthResponsible() * tooltipPaddingSizeRate;
-  double tooltipMarginSize() => widthResponsible() * tooltipMarginSizeRate;
-  double tooltipBorderRadius() => widthResponsible() * tooltipBorderRadiusRate;
-  double tooltipOffsetSize() => widthResponsible() * tooltipOffsetSizeRate;
+  double tooltipTitleFontSize() => widthResponsible() * 0.05;
+  double tooltipDescFontSize() => widthResponsible() *0.04;
+  double tooltipTitleMargin() => widthResponsible() * 0.01;
+  double tooltipPaddingSize() => widthResponsible() * 0.04;
+  double tooltipMarginSize() => widthResponsible() * 0.02;
+  double tooltipBorderRadius() => widthResponsible() * 0.04;
+  double tooltipOffsetSize() => widthResponsible() * 0.02;
 
   ///Admob
   double admobHeight() => (height() < 600) ? 50: (height() < 1000) ? (height() / 8 - 25): 100;
   double admobWidth() => widthResponsible() - 100;
 
   ///Menu
-  double menuTitleWidth() => widthResponsible() * menuTitleWidthRate;
-  double menuTitleFontSize() => height() * menuTitleFontSizeRate;
-  double menuButtonSize() => widthResponsible() * menuButtonSizeRate;
-  double menuButtonFontSize() => widthResponsible() * menuButtonFontSizeRate;
-  double menuAlertTitleFontSize() => (widthResponsible() * menuAlertTitleFontSizeRate > 24) ? 24: widthResponsible() * menuAlertTitleFontSizeRate;
-  double menuAlertDescFontSize() => (widthResponsible() * menuAlertDescFontSizeRate > 14) ? 14: widthResponsible() * menuAlertDescFontSizeRate;
-  double menuAlertSelectFontSize() => (widthResponsible() * menuAlertSelectFontSizeRate > 24) ? 24: widthResponsible() * menuAlertSelectFontSizeRate;
+  double menuTitleWidth() => widthResponsible() * 0.8;
+  double menuTitleFontSize() => height() * (lang() == "ja" ? 0.032: 0.05);
+  double menuButtonSize() => widthResponsible() * 0.28;
+  double menuButtonFontSize() => widthResponsible() * 0.04;
+  double menuButtonBottomMargin() => widthResponsible() * 0.05;
+  double menuAlertTitleFontSize()  => (widthResponsible() * 0.045 > 24) ? 24: widthResponsible() * 0.045;
+  double menuAlertDescFontSize()   => (widthResponsible() * 0.032 > 14) ? 14: widthResponsible() * 0.032;
+  double menuAlertSelectFontSize() => (widthResponsible() * 0.040 > 24) ? 24: widthResponsible() * 0.040;
 
   ///Menu Bottom Navigation Links
-  double linksLogoWidth() => widthResponsible() * linksLogoWidthRate;
-  double linksLogoHeight() => widthResponsible() * linksLogoHeightRate;
-  double linksTitleSize() => widthResponsible() * ((lang() == "ja" && Platform.isAndroid) ? linksTitleJaFontSizeRate: linksTitleEnFontSizeRate);
-  double linksTitleMargin() => widthResponsible() * linksTitleMarginRate;
-  double linksMargin() => widthResponsible() * linksMarginRate;
+  double linksLogoWidth() => widthResponsible() * 0.16;
+  double linksLogoHeight() => widthResponsible() * 0.16;
+  double linksTitleSize() => widthResponsible() * ((lang() == "ja" && Platform.isAndroid) ? 0.025: 0.03);
+  double linksTopMargin() => widthResponsible() * 0.02;
+  double linksBottomMargin() => widthResponsible() * 0.02;
 
   ///Settings
-  double settingsTitleFontSize() => height() * settingsTitleFontSizeRate;
-  double settingsTitleMargin() => height() * settingsTitleMarginRate;
-  double settingsButtonWidth() => height() * settingsButtonWidthRate;
-  double settingsButtonHeight() => height() * settingsButtonHeightRate;
-  double settingsButtonMargin() => height() * settingsButtonMarginRate;
-  double settingsButtonSpace() => height() * settingsButtonSpaceRate;
-  double settingsButtonSize() => height() * settingsButtonSizeRate;
-  double settingsButtonFontSize() => height() * settingsButtonFontSizeRate;
-  double settingsButtonNumberFontSize() => height() * settingsButtonNumberFontSizeRate;
-  double settingsButtonBorderRadius() => height() * settingsButtonBorderRadiusRate;
-  double settingsButtonShadowSize() => height() * settingsButtonShadowSizeRate;
-  double settingsLockFontSize() => height() * settingsLockFontSizeRate;
-  double settingsLockIconSize() => height() * settingsLockIconSizeRate;
-  double settingsLockSpaceSize() => height() * settingsLockSpaceSizeRate;
-  double settingsLockWidth() => settingsImageSelectWidth() + settingsButtonWidth() + settingsButtonMargin();
-  double settingsImageSelectHeight() => height() * settingsImageSelectHeightRate;
-  double settingsImageSelectWidth() => settingsImageSelectHeight() * 9 / 16;
+  double settingsButtonSize()   => height() * 0.09;
+  double settingsButtonFontSize() => height() * 0.03;
+  double settingsButtonMargin() => height() * 0.03;
+  double settingsButtonTopMargin() => height() * 0.01;
+  double settingsButtonBottomMargin() => height() * 0.01;
+  double settingsImageHeight() => height() * 0.19;
+  double settingsImageWidth() => settingsImageHeight() * 9 / 16;
+  double settingsBackgroundHeight() => height() * 0.27;
+  double settingsBackgroundWidth() => settingsBackgroundHeight() * 0.62;
+  double settingsLockNumberWidth() => height() * 0.18;
+  double settingsLockNumberHeight() => height() * 0.11;
+  double settingsLockImageWidth() => height() * 0.18;
+  double settingsLockImageHeight() => height() * 0.20;
+  double settingsLockFontSize() => height() * 0.040;
+  double settingsLockIconSize() => height() * 0.035;
+  double settingsLockMargin() => height() * 0.01;
+  double settingsMarginSize() => height() * 0.01;
+  double settingsMarginTopSize() => height() * 0.015;
+  double settingsGlassFontSize() => height() * (lang() == "ja" ? 0.02: 0.03);
+  double settingsGlassToggleMarginSize() => height() * 0.005;
+  double settingsSelectButtonSize() => height() * 0.07;
+  double settingsSelectButtonHorizontalMargin() => height() * 0.015;
+  double settingsSelectButtonVerticalMargin() => height() * 0.01;
+  double settingsArrowMarginTop() => height() * 0.03;
 
   ///Settings Alert Dialog
-  double settingsAlertTitleFontSize() => widthResponsible() * settingsAlertTitleFontSizeRate;
-  double settingsAlertFontSize() => widthResponsible() * settingsAlertFontSizeRate;
-  double settingsAlertSelectFontSize() => widthResponsible() * settingsAlertSelectFontSizeRate;
-  double settingsAlertFloorNumberSize() => widthResponsible() * settingsAlertFloorNumberSizeRate;
-  double settingsAlertFloorNumberHeight() => widthResponsible() * settingsAlertFloorNumberHeightRate;
-  double settingsAlertDropdownMargin() => widthResponsible() * settingsAlertDropdownMarginRate;
-  double settingsAlertImageSelectHeight() => widthResponsible() * settingsAlertImageSelectHeightRate;
-  double settingsAlertIconSize() => widthResponsible() * settingsAlertIconSizeRate;
-  double settingsAlertIconMargin() => width() * settingsAlertIconMarginRate;
-  double settingsAlertLockFontSize() => widthResponsible() * settingsAlertLockFontSizeRate;
-  double settingsAlertLockIconSize() => widthResponsible() * settingsAlertLockIconSizeRate;
-  double settingsAlertLockBorderWidth() => widthResponsible() * settingsAlertLockBorderWidthRate;
-  double settingsAlertLockBorderRadius() => widthResponsible() * settingsAlertLockBorderRadiusRate;
-  double settingsAlertLockSpaceSize() => widthResponsible() * settingsAlertLockSpaceSizeRate;
+  double settingsAlertTitleFontSize() => widthResponsible() * 0.045;
+  double settingsAlertFontSize() => widthResponsible() * 0.04;
+  double settingsAlertSelectFontSize() => widthResponsible() * 0.04;
+  double settingsAlertFloorNumberSize() => widthResponsible() * 0.12;
+  double settingsAlertFloorNumberHeight() => widthResponsible() * 0.2;
+  double settingsAlertImageSelectHeight() => widthResponsible() * 0.4;
+  double settingsAlertDropdownMargin() => widthResponsible() * 0.01;
+  double settingsAlertIconSize() => widthResponsible() * 0.06;
+  double settingsAlertIconMargin() => widthResponsible() * 0.01;
+  double settingsAlertLockFontSize() => widthResponsible() * 0.07;
+  double settingsAlertLockIconSize() => widthResponsible() * 0.05;
+  double settingsAlertLockSpaceSize() => widthResponsible() * 0.02;
+  double settingsAlertLockBorderWidth() => widthResponsible() * 0.002;
+  double settingsAlertLockBorderRadius() => widthResponsible() * 0.04;
 }
 
 extension IntExt on int {
@@ -398,6 +436,11 @@ extension IntExt on int {
       (abs() % 10 == 2 && abs() ~/ 10 != 1) ? "${abs()}nd ":
       (abs() % 10 == 3 && abs() ~/ 10 != 1) ? "${abs()}rd ":
       "${abs()}th ";
+
+  ///Settings
+  //this is selected number
+  String selected(int i) => (this == i) ? "Pressed": "";
+  String settingsButton(int i) => "$assetsSettings${settingsItemList[i]}Settings${selected(i)}.png";
 
   ///Display
   // this is counter
@@ -595,6 +638,17 @@ extension ListStringExt on List<String> {
     [this[1], this[0]],
   ];
 
+  List<List<String>> shapesList() => [
+    [this[0], this[1]],
+    [this[2], this[3]],
+  ];
+
+  List<List<String>> stylesList() => [
+    [this[0], this[1]],
+    [this[2], this[3]],
+  ];
+
+
   List<Image> floorImages(List<int> floorNumbers) =>
       [for (int i = -6; i <= 163; i++) if (i != 0) i.roomImage(floorNumbers, this)];
 
@@ -627,10 +681,11 @@ extension ListStringExt on List<String> {
 extension BoolExt on bool {
 
   ///This is isPressed
-  String numberBackground() => this ? pressedSquare: squareButton;
-  String openBackGround() => (this) ? pressedOpenButton: openButton;
-  String closeBackGround() => (this) ? pressedCloseButton: closeButton;
-  String phoneBackGround() => (this) ? pressedAlertButton: alertButton;
+  String pressed() => this ? 'Pressed': '';
+  String numberBackground(String buttonShape) => "$assetsButton$buttonShape${pressed()}.png";
+  String openBackGround() => this ? pressedOpenButton: openButton;
+  String closeBackGround() => this ? pressedCloseButton: closeButton;
+  String phoneBackGround() => this ? pressedAlertButton: alertButton;
   Color numberColor() => this ? lampColor: whiteColor;
 
   ///This is isBasement
@@ -644,6 +699,13 @@ extension BoolExt on bool {
       selectLastFloor(floorNumbers, buttonIndex) - selectFirstFloor(floorNumbers, buttonIndex);
   int selectInitialIndex(List<int> floorNumbers, int buttonIndex) =>
       this ? -1 * (floorNumbers[buttonIndex] + 1): (floorNumbers[buttonIndex] - selectFirstFloor(floorNumbers, buttonIndex));
+
+  ///This is buttonShape
+  double floorButtonShapeFactor() => this ? 1.2: 1;
+  double buttonMarginShapeFactor() => this ? 0.5: 1;
+  double operationTopMarginShapeFactor() => this ? 3: 1.6;
+  double operationSideMarginShapeFactor() => this ? 1.8: 0.8;
+  double emergencyBottomMarginShapeFactor() => this ? 1.8: 0.8;
 }
 
 extension ListBoolExt on List<bool> {

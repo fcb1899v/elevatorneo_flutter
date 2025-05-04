@@ -21,6 +21,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settings => '设置';
 
   @override
+  String get glass => '观察窗';
+
+  @override
   String get aboutLetsElevator => '关于操作乐趣电梯';
 
   @override
