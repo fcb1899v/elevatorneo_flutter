@@ -3,9 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:vibration/vibration.dart';
 import 'admob_banner.dart';
-import 'image_manager.dart';
 import 'common_widget.dart';
+import 'image_manager.dart';
 import 'extension.dart';
 import 'constant.dart';
 import 'main.dart';
@@ -19,9 +20,10 @@ class MySettingsPage extends HookConsumerWidget {
     final floorNumbers = ref.watch(floorNumbersProvider);
     final roomImages = ref.watch(roomImagesProvider);
     final point = ref.watch(pointProvider);
-    final buttonShape = ref.watch(shapeProvider);
-    final elevatorStyle = ref.watch(styleProvider);
-    final glassStyle = ref.watch(glassProvider);
+    final buttonShape = ref.watch(buttonShapeProvider);
+    final buttonStyle = ref.watch(buttonStyleProvider);
+    final backgroundStyle = ref.watch(backgroundStyleProvider);
+    final glassStyle = ref.watch(glassStyleProvider);
 
     final scrollController = useScrollController();
     final imageManager = useMemoized(() => ImageManager());
@@ -38,9 +40,10 @@ class MySettingsPage extends HookConsumerWidget {
     useEffect(() {
       WidgetsBinding.instance.addPostFrameCallback((_) async {
         final prefs = await SharedPreferences.getInstance();
-        ref.read(shapeProvider.notifier).state = "shapeKey".getSharedPrefString(prefs, initialShape);
-        ref.read(styleProvider.notifier).state = "styleKey".getSharedPrefString(prefs, initialStyle);
-        ref.read(glassProvider.notifier).state = "glassKey".getSharedPrefString(prefs, initialGlass);
+        ref.read(buttonShapeProvider.notifier).state = "numberButtonKey".getSharedPrefString(prefs, initialButtonShape);
+        ref.read(buttonStyleProvider.notifier).state = "operationButtonKey".getSharedPrefInt(prefs, initialButtonStyle);
+        ref.read(backgroundStyleProvider.notifier).state = "backgroundStyleKey".getSharedPrefString(prefs, initialBackgroundStyle);
+        ref.read(glassStyleProvider.notifier).state = "glassStyleKey".getSharedPrefString(prefs, initialGlassStyle);
       });
       return null;
     }, []);
@@ -138,7 +141,10 @@ class MySettingsPage extends HookConsumerWidget {
                     ]
                   ),
                 ),
-                onTap: () async => await photoManager.selectMyPhoto(row, col, roomImages),
+                onTap: () async {
+                  ref.read(roomImagesProvider.notifier).state = await photoManager.selectMyPhoto(row, col, roomImages);
+                  if (context.mounted) context.popPage();
+                }
               ),
               if (point < albumImagePoint) alertLockWidget(context),
             ]),
@@ -230,41 +236,38 @@ class MySettingsPage extends HookConsumerWidget {
     });
 
     Widget selectButtonsWidget() => Column(children: [
-      SizedBox(height: context.settingsMarginSize()),
-      Row(mainAxisAlignment: MainAxisAlignment.center,
+      Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: List.generate(settingsItemList.length, (i) =>
-            GestureDetector(
-              onTap: () => {
-                showSettingNumber.value = i
-              },
-              child: Container(
-                width: context.settingsSelectButtonSize(),
-                height: context.settingsSelectButtonSize(),
-                margin: EdgeInsets.symmetric(
-                    horizontal: context.settingsSelectButtonHorizontalMargin(),
-                    vertical: context.settingsSelectButtonVerticalMargin()
-                ),
-                child: Image.asset(showSettingNumber.value.settingsButton(i)),
+          GestureDetector(
+            onTap: () => {
+              Vibration.vibrate(duration: vibTime, amplitude: vibAmp),
+              showSettingNumber.value = i
+            },
+            child: Container(
+              width: context.settingsSelectButtonSize(),
+              height: context.settingsSelectButtonSize(),
+              margin: EdgeInsets.only(
+                top: context.settingsSelectButtonMarginTop(),
+                bottom: context.settingsSelectButtonMarginBottom()
               ),
+              child: Image.asset(showSettingNumber.value.settingsButton(i)),
             ),
+          ),
         ),
       ),
-      Divider(),
+      myDivider(context),
     ]);
 
     Widget settingsFloorNumberWidget() => Column(children: [
       ...floorNumbers.floorNumbersList().asMap().entries.map((row) =>
-        Column(children: [
-          Row(mainAxisAlignment: MainAxisAlignment.center,
+        Column(mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+          Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: row.value.asMap().entries.map((col) => Container(
               alignment: Alignment.center,
-              width: context.settingsLockNumberWidth(),
-              height: context.settingsLockNumberHeight(),
-              margin: EdgeInsets.only(
-                top: row.key == 0 ? context.settingsButtonMargin() : 0,
-                right: col.key == 0 ? context.settingsButtonMargin() : 0,
-                bottom: context.settingsButtonBottomMargin(),
-              ),
+              width: context.settingsNumberLockWidth(),
+              height: context.settingsNumberLockHeight(),
+              margin: EdgeInsets.only(top: context.settingsNumberButtonMargin(),),
               child: Stack(alignment: Alignment.center,
                 children: [
                   Row(
@@ -282,20 +285,20 @@ class MySettingsPage extends HookConsumerWidget {
                         },
                         child: Stack(alignment: Alignment.center,
                           children: [
-                            Image.asset(isButtonOn.value[row.key][col.key].numberBackground("square"),
-                              width: context.settingsButtonSize(),
-                              height: context.settingsButtonSize(),
+                            Image.asset(isButtonOn.value[row.key][col.key].numberBackground(0, "circle"),
+                              width: context.settingsNumberButtonSize(),
+                              height: context.settingsNumberButtonSize(),
                             ),
                             Text(col.value.buttonNumber(),
                               style: TextStyle(
-                                color: isButtonOn.value[row.key][col.key].numberColor(),
-                                fontSize: context.settingsButtonFontSize(),
+                                color: isButtonOn.value[row.key][col.key] ? lampColor: whiteColor,
+                                fontSize: context.settingsNumberButtonFontSize(),
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
                             if (isNotSelectFloor(row.key, col.key)) Container(
-                              width: context.settingsButtonSize(),
-                              height: context.settingsButtonSize(),
+                              width: context.settingsNumberButtonSize(),
+                              height: context.settingsNumberButtonSize(),
                               color: transpBlackColor,
                             ),
                           ],
@@ -307,8 +310,8 @@ class MySettingsPage extends HookConsumerWidget {
                   if (point < changePointList[row.key][col.key]) Container(
                     alignment: Alignment.center,
                     color: transpBlackColor,
-                    width: context.settingsLockNumberWidth(),
-                    height: context.settingsLockNumberHeight(),
+                    width: context.settingsNumberLockWidth(),
+                    height: context.settingsNumberLockHeight(),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -339,7 +342,6 @@ class MySettingsPage extends HookConsumerWidget {
           ),
         ]),
       ),
-      SizedBox(height: context.settingsMarginSize()),
     ]);
 
     Widget settingsFloorUpArrow() => Container(
@@ -348,17 +350,19 @@ class MySettingsPage extends HookConsumerWidget {
       child: FadeTransition(
         opacity: animationController.drive(CurveTween(curve: Curves.easeInOut)),
         child: Container(
+          width: context.settingsSelectButtonSize(),
+          height: context.settingsSelectButtonSize(),
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             gradient: RadialGradient(
-              colors: [blackColor.withAlpha((0.6 * 255).round()), transpColor],
+              colors: [transpBlackColor, transpColor],
               center: Alignment.center,
               radius: 0.8,
             ),
           ),
           child: Icon(
-            Icons.keyboard_arrow_up,
-            size: context.settingsSelectButtonSize(),
+            CupertinoIcons.arrow_down,
+            size: context.settingsSelectButtonIconSize(),
             color: whiteColor,
           ),
         ),
@@ -372,15 +376,14 @@ class MySettingsPage extends HookConsumerWidget {
           child: Column(children: [
             ...roomImages.roomsList().asMap().entries.map((row) =>
               Column(children: [
-                Row(mainAxisAlignment: MainAxisAlignment.center,
+                Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: row.value.asMap().entries.map((col) => Container(
                     alignment: Alignment.center,
-                    width: context.settingsLockImageWidth(),
-                    height: context.settingsLockImageHeight(),
+                    width: context.settingsFloorImageLockWidth(),
+                    height: context.settingsFloorImageLockHeight(),
                     margin: EdgeInsets.only(
-                      top: row.key == 0 ? context.settingsMarginSize() : 0,
-                      right: col.key == 0 ? context.settingsButtonMargin() : 0,
-                      bottom: context.settingsButtonBottomMargin(),
+                      top: row.key == 0 ? context.settingsFloorImageMargin() : 0,
+                      bottom: context.settingsFloorImageMargin(),
                     ),
                     child: Stack(alignment: Alignment.center,
                       children: [
@@ -392,8 +395,8 @@ class MySettingsPage extends HookConsumerWidget {
                             roomPickerDialog(row.key, col.key);
                           },
                           child: SizedBox(
-                            width: context.settingsImageWidth(),
-                            height: context.settingsImageHeight(),
+                            width: context.settingsFloorImageWidth(),
+                            height: context.settingsFloorImageHeight(),
                             child: Stack(children: [
                               roomImages.roomsList()[row.key][col.key].roomImage(),
                               if (isImageOn.value[row.key][col.key] && point >= changePointList[row.key][col.key]) Container(color: transpLampColor),
@@ -404,8 +407,8 @@ class MySettingsPage extends HookConsumerWidget {
                         if (point < changePointList[row.key][col.key]) Container(
                           alignment: Alignment.center,
                           color: transpBlackColor,
-                          width: context.settingsLockImageWidth(),
-                          height: context.settingsLockImageHeight(),
+                          width: context.settingsFloorImageLockWidth(),
+                          height: context.settingsFloorImageLockHeight(),
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
@@ -443,36 +446,65 @@ class MySettingsPage extends HookConsumerWidget {
     );
 
     Widget settingsButtonShapeWidget() => Column(children: [
-      ...shapeList.shapesList().asMap().entries.map((row) =>
+      ...List.generate(operationButtonCount, (row) => GestureDetector(
+        onTap: () async {
+          ref.read(buttonStyleProvider.notifier).state = await imageManager.changeSettingsIntValue(
+            key: "operationButtonKey",
+            current: buttonStyle,
+            next: row
+          );
+        },
+        child: Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: List.generate(3, (col) => Container(
+            width: context.settingsShapeButtonSize(),
+            height: context.settingsShapeButtonSize(),
+            margin: EdgeInsets.only(
+                top: (row == 0) ? context.settingsShapeButtonMarginTop(): 0,
+                bottom: context.settingsShapeButtonMargin()
+            ),
+            child: Image.asset(List.filled(3, row == buttonStyle).operationButtonImage(row)[col]),
+          )),
+        )
+      )),
+      myDivider(context),
+      ...buttonShapeList.toGroups(numberButtonColumnCount).asMap().entries.map((row) =>
         Column(children: [
-          Row(mainAxisAlignment: MainAxisAlignment.center,
+          Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: row.value.asMap().entries.map((col) => Container(
               alignment: Alignment.center,
-              width: context.settingsButtonSize(),
-              height: context.settingsButtonSize(),
-              margin: EdgeInsets.all(context.settingsButtonMargin()),
+              width: context.settingsShapeButtonSize(),
+              height: context.settingsShapeButtonSize(),
+              margin: EdgeInsets.only(
+                top: (row.key == 0) ? context.settingsShapeButtonMarginTop(): 0,
+                bottom: context.settingsShapeButtonMargin()
+              ),
               child: Stack(alignment: Alignment.center,
                 children: [
                   /// Number Button
                   GestureDetector(
                     onTap: () async {
-                      ref.read(shapeProvider.notifier).state = await imageManager.changeSettingsValue(
-                          key: "shapeKey",
-                          current: buttonShape,
-                          next: row.value[col.key]
+                      ref.read(buttonShapeProvider.notifier).state = await imageManager.changeSettingsStringValue(
+                        key: "numberButtonKey",
+                        current: buttonShape,
+                        next: row.value[col.key]
                       );
                     },
                     child: Stack(alignment: Alignment.center,
                       children: [
-                        Image.asset((buttonShape == row.value[col.key]).numberBackground(row.value[col.key]),
-                          width: context.settingsButtonSize(),
-                          height: context.settingsButtonSize(),
-                        ),
-                        Text((row.key * 2 + col.key != 3) ? "1": "",
-                          style: TextStyle(
-                            color: (buttonShape == row.value[col.key]).numberColor(),
-                            fontSize: context.settingsButtonFontSize(),
-                            fontWeight: FontWeight.bold,
+                        if (buttonShapeList[numberButtonColumnCount * row.key + col.key] != "") Image.asset((buttonShape == row.value[col.key]).numberBackground(buttonStyle, row.value[col.key]),),
+                        Container(
+                          margin: EdgeInsets.only(
+                            top: context.floorButtonNumberMarginTop(numberButtonColumnCount * row.key + col.key) * 2,
+                            bottom: context.floorButtonNumberMarginBottom(numberButtonColumnCount * row.key + col.key) * 2,
+                          ),
+                          child: Text("99",
+                            style: TextStyle(
+                              color: (buttonStyle != 0) ? blackColor:
+                                      buttonShape != buttonShapeList[numberButtonColumnCount * row.key + col.key] ? whiteColor:
+                                      numberColorList[numberButtonColumnCount * row.key + col.key],
+                              fontSize: context.settingsShapeButtonFontSize(),
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
                       ],
@@ -486,8 +518,43 @@ class MySettingsPage extends HookConsumerWidget {
       ),
     ]);
 
+    Widget settingsButtonShapeLockWidget() => Column(children: List.generate(2, (i) =>
+      Container(
+        alignment: Alignment.center,
+        color: transpBlackColor,
+        width: context.settingsShapeButtonLockWidth(),
+        height: context.settingsShapeButtonLockHeight(),
+        margin: EdgeInsets.only(
+          top: (i == 0) ? context.settingsShapeButtonLockMarginTop(): context.settingsShapeButtonLockMarginNext()
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            SizedBox(height: context.settingsLockMargin()),
+            lockIcon(context.settingsLockIconSize()),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                pointIcon(context.settingsLockIconSize()),
+                SizedBox(width: context.settingsLockMargin()),
+                Text(
+                  "$buttonShapeLockPoint",
+                  style: TextStyle(
+                    color: lampColor,
+                    fontSize: context.settingsLockFontSize(),
+                    fontWeight: FontWeight.normal,
+                    fontFamily: numberFont,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    ));
+
     Widget settingsGlassToggleWidget() => Column(children: [
-      SizedBox(height: context.settingsGlassToggleMarginSize()),
+      SizedBox(height: context.settingsGlassToggleMargin()),
       Row(mainAxisAlignment: MainAxisAlignment.spaceAround,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
@@ -502,8 +569,8 @@ class MySettingsPage extends HookConsumerWidget {
           CupertinoSwitch(
             value: glassStyle == "use",
             onChanged: (value) async {
-              ref.read(glassProvider.notifier).state = await imageManager.changeSettingsValue(
-                key: "glassKey",
+              ref.read(glassStyleProvider.notifier).state = await imageManager.changeSettingsStringValue(
+                key: "glassStyleKey",
                 current: glassStyle,
                 next: value ? "use": "non"
               );
@@ -511,41 +578,68 @@ class MySettingsPage extends HookConsumerWidget {
           ),
         ],
       ),
-      Divider(),
+      myDivider(context),
     ]);
 
-    Widget settingsBackgroundImageWidget() => Column(children: [
-      ...styleList.stylesList().asMap().entries.map((row) =>
-        Column(children: [
-          Row(mainAxisAlignment: MainAxisAlignment.center,
+    Widget settingsBackgroundLockWidget() => Container(
+      alignment: Alignment.topCenter,
+      color: transpBlackColor,
+      width: context.settingsBackgroundLockWidth(),
+      height: context.settingsBackgroundLockHeight(),
+      margin: EdgeInsets.only(top: context.settingsBackgroundLockMargin()),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          SizedBox(height: context.settingsLockMargin()),
+          lockIcon(context.settingsLockIconSize()),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              pointIcon(context.settingsLockIconSize()),
+              SizedBox(width: context.settingsLockMargin()),
+              Text(
+                "$buttonShapeLockPoint",
+                style: TextStyle(
+                  color: lampColor,
+                  fontSize: context.settingsLockFontSize(),
+                  fontWeight: FontWeight.normal,
+                  fontFamily: numberFont,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+
+    Widget settingsBackgroundImageWidget() => Column(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        ...backgroundStyleList.toGroups(2).asMap().entries.map((row) =>
+          Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: row.value.asMap().entries.map((col) => Container(
               alignment: Alignment.center,
               width: context.settingsBackgroundWidth(),
               height: context.settingsBackgroundHeight(),
-              margin: EdgeInsets.only(
-                top: row.key == 0 ? context.settingsMarginTopSize() : 0,
-                right: col.key == 0 ? context.settingsButtonMargin() : 0,
-                bottom: context.settingsButtonBottomMargin(),
-              ),
+              margin: EdgeInsets.only(top: context.settingsBackgroundMargin()),
               child: Stack(children: [
                 GestureDetector(
                   onTap: () async {
-                    ref.read(styleProvider.notifier).state = await imageManager.changeSettingsValue(
-                      key: "styleKey",
-                      current: elevatorStyle,
+                    ref.read(backgroundStyleProvider.notifier).state = await imageManager.changeSettingsStringValue(
+                      key: "backgroundStyleKey",
+                      current: backgroundStyle,
                       next: row.value[col.key]
                     );
                   },
                   child: Image.asset(row.value[col.key].backGroundImage(glassStyle)),
                 ),
-                if (styleList.stylesList()[row.key][col.key] == elevatorStyle) Container(color: transpLampColor),
+                if (backgroundStyleList.toGroups(2)[row.key][col.key] == backgroundStyle) Container(color: transpLampColor),
               ]),
             )).toList(),
           ),
-        ]),
-      ),
-      SizedBox(height: context.settingsMarginSize()),
-    ]);
+        ),
+      ]
+    );
 
     ///Settings
     return Scaffold(
@@ -588,10 +682,20 @@ class MySettingsPage extends HookConsumerWidget {
         if (showSettingNumber.value == 3) settingsGlassToggleWidget(),
         (showSettingNumber.value == 0) ? settingsFloorImageWidget():
         (showSettingNumber.value == 1) ? settingsFloorNumberWidget():
-        (showSettingNumber.value == 2) ? settingsButtonShapeWidget():
-        (showSettingNumber.value == 3) ? settingsBackgroundImageWidget():
+        (showSettingNumber.value == 2) ? Stack(alignment: Alignment.topCenter,
+          children: [
+            settingsButtonShapeWidget(),
+            if (point < buttonShapeLockPoint) settingsButtonShapeLockWidget(),
+          ]
+        ):
+        (showSettingNumber.value == 3) ? Stack(alignment: Alignment.topCenter,
+          children: [
+            settingsBackgroundImageWidget(),
+            if (point < backgroundLockPoint) settingsBackgroundLockWidget()
+          ]
+        ):
         settingsFloorNumberWidget(),
-        (showSettingNumber.value == 0) ? Divider(): Spacer(flex: 1),
+        (showSettingNumber.value == 0) ? myDivider(context): Spacer(flex: 1),
         const AdBannerWidget(),
       ]),
     );

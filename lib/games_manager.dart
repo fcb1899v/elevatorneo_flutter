@@ -2,6 +2,8 @@ import 'dart:io';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:games_services/games_services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:vibration/vibration.dart';
+import 'constant.dart';
 import 'extension.dart';
 import 'main.dart';
 
@@ -73,6 +75,7 @@ gamesSubmitScore(int value) async {
 ///Showing games leaderboards
 gamesShowLeaderboard() async {
   if (!Platform.isAndroid || isTest) {
+    Vibration.vibrate(duration: vibTime, amplitude: vibAmp);
     "gamesShowLeaderboard".debugPrint();
     final isSignedIn = await gamesSignIn();
     if (isSignedIn) {
@@ -94,8 +97,6 @@ Future<int> getBestScore() async {
   final SharedPreferences prefs = await SharedPreferences.getInstance();
   final prefBestScore = prefs.getInt('pointKey') ?? 0;
   if (!Platform.isAndroid || isTest) {
-    return prefBestScore;
-  } else {
     "gamesBestScore".debugPrint();
     final isSignedIn = await gamesSignIn();
     if (isSignedIn) {
@@ -122,5 +123,8 @@ Future<int> getBestScore() async {
       "bestScore: $prefBestScore (Can't sign in)".debugPrint();
       return prefBestScore;
     }
+  } else {
+    "bestScore: $prefBestScore (Android or Test)".debugPrint();
+    return prefBestScore;
   }
 }

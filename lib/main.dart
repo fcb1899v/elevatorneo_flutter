@@ -19,9 +19,10 @@ final isTest = false;
 final floorNumbersProvider = StateProvider<List<int>>((ref) => initialFloorNumbers);
 final roomImagesProvider = StateProvider<List<String>>((ref) => initialRoomImages);
 final pointProvider = StateProvider<int>((ref) => initialPoint);
-final shapeProvider = StateProvider<String>((ref) => initialShape);
-final styleProvider = StateProvider<String>((ref) => initialStyle);
-final glassProvider = StateProvider<String>((ref) => initialGlass);
+final buttonShapeProvider = StateProvider<String>((ref) => initialButtonShape);
+final buttonStyleProvider = StateProvider<int>((ref) => initialButtonStyle);
+final backgroundStyleProvider = StateProvider<String>((ref) => initialBackgroundStyle);
+final glassStyleProvider = StateProvider<String>((ref) => initialGlassStyle);
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -40,7 +41,7 @@ Future<void> main() async {
     appleProvider: appleProvider,
   );
   await MobileAds.instance.initialize();
-  if (Platform.isIOS || Platform.isMacOS) await gamesSignIn();
+  if (!Platform.isAndroid || isTest) await gamesSignIn();
   await initATTPlugin();
   runApp(ProviderScope(child: const MyApp()));
 }

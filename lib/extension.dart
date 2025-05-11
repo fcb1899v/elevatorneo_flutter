@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:vibration/vibration.dart';
 import 'l10n/app_localizations.dart' show AppLocalizations;
 import 'constant.dart';
 import 'my_home_body.dart';
@@ -90,29 +91,35 @@ extension StringExt on String {
   String rightDoor(String glassStyle) => "${assetsElevator}doorRight_$this${glassStyle == "use" ? "WithGlass": ""}.png";
   String backGroundImage(String glassStyle) => "$assetsSettings${this}Background${glassStyle == "use" ? "WithGlass": ""}.png";
 
+  //this is buttonShape
+  int buttonShapeIndex() => buttonShapeList.contains(this) ? buttonShapeList.indexOf(this): 0;
 }
 
 extension ContextExt on BuildContext {
 
-  void pushMyPage(bool isHome) =>
-      Navigator.pushReplacement(this, PageRouteBuilder(
-        pageBuilder: (context, animation, _) => isHome ? MyHomePage(): MyMenuPage(),
-        transitionsBuilder: (context, animation, _, child) => FadeTransition(
-          opacity: animation,
-          child: child,
-        ),
-        transitionDuration: const Duration(milliseconds: 500),
-      ));
+  void pushMyPage(bool isHome) {
+    Vibration.vibrate(duration: vibTime, amplitude: vibAmp);
+    Navigator.pushReplacement(this, PageRouteBuilder(
+      pageBuilder: (context, animation, _) => isHome ? MyHomePage(): MyMenuPage(),
+      transitionsBuilder: (context, animation, _, child) => FadeTransition(
+        opacity: animation,
+        child: child,
+      ),
+      transitionDuration: const Duration(milliseconds: 500),
+    ));
+  }
 
-  void pushSettingsPage() =>
-      Navigator.push(this, PageRouteBuilder(
-        pageBuilder: (context, animation, _) => MySettingsPage(),
-        transitionsBuilder: (context, animation, _, child) => FadeTransition(
-          opacity: animation,
-          child: child,
-        ),
-        transitionDuration: const Duration(milliseconds: 500),
-      ));
+  void pushSettingsPage() {
+    Vibration.vibrate(duration: vibTime, amplitude: vibAmp);
+    Navigator.push(this, PageRouteBuilder(
+      pageBuilder: (context, animation, _) => MySettingsPage(),
+      transitionsBuilder: (context, animation, _, child) => FadeTransition(
+        opacity: animation,
+        child: child,
+      ),
+      transitionDuration: const Duration(milliseconds: 500),
+    ));
+  }
 
 
   ///Common
@@ -341,19 +348,21 @@ extension ContextExt on BuildContext {
   double displayNumberFontSize() => widthResponsible() * 0.09;
 
   ///Buttons
-  double buttonPanelWidth() =>      widthResponsible() * 0.26;
-  double buttonPanelHeight() =>     widthResponsible() * 0.9;
-  double buttonPanelMarginTop() =>  widthResponsible() * 0.15;
-  double buttonPanelMarginLeft() => widthResponsible() * 0.74;
-  double buttonBorderWidth() =>     widthResponsible() * 0.008;
-  double buttonBorderRadius() =>    widthResponsible() * 0.012;
-  double operationButtonSize() =>   widthResponsible() * 0.07;
-  double buttonNumberFontSize() =>  widthResponsible() * 0.028;
-  double floorButtonSize(bool isDiamond) => widthResponsible() * isDiamond.floorButtonShapeFactor() * 0.08;
-  double buttonMargin(bool isDiamond) => widthResponsible()  * isDiamond.buttonMarginShapeFactor() * 0.03;
-  double operationTopMargin(bool isDiamond) => buttonMargin(isDiamond) * isDiamond.operationTopMarginShapeFactor();
-  double operationSideMargin(bool isDiamond) => buttonMargin(isDiamond) * isDiamond.operationSideMarginShapeFactor();
-  double emergencyBottomMargin(bool isDiamond) => buttonMargin(isDiamond) * isDiamond.emergencyBottomMarginShapeFactor();
+  double buttonPanelWidth() =>      widthResponsible() * 0.23;
+  double buttonPanelHeight() =>     widthResponsible() * 0.84;
+  double buttonPanelMarginTop() =>  widthResponsible() * 0.2;
+  double buttonPanelMarginLeft() => widthResponsible() * 0.76;
+  double buttonSize() =>   widthResponsible() * 0.08;
+  double operationButtonSize() =>   widthResponsible() * 0.085;
+  double floorButtonMargin() => widthResponsible() * 0.02;
+  double floorButtonNumberFontSize(int i) =>
+      widthResponsible() * floorButtonNumberSizeFactor[i] * 0.03;
+  double floorButtonNumberBottomMargin(int i) =>
+      widthResponsible() * floorButtonNumberMarginFactor[i] * 0.01;
+  double floorButtonNumberMarginTop(int i) =>
+      floorButtonNumberMarginFactor[i] < 0 ? 0: widthResponsible() * floorButtonNumberMarginFactor[i];
+  double floorButtonNumberMarginBottom(int i) =>
+      floorButtonNumberMarginFactor[i] > 0 ? 0: -1 * widthResponsible() * floorButtonNumberMarginFactor[i];
 
   ///Tooltip
   double tooltipTitleFontSize() => widthResponsible() * 0.05;
@@ -374,44 +383,62 @@ extension ContextExt on BuildContext {
   double menuButtonSize() => widthResponsible() * 0.28;
   double menuButtonFontSize() => widthResponsible() * 0.04;
   double menuButtonBottomMargin() => widthResponsible() * 0.05;
+  double menuMarginTop() => height() * 0.02;
+  double menuMarginBottom() => height() * 0.25;
   double menuAlertTitleFontSize()  => (widthResponsible() * 0.045 > 24) ? 24: widthResponsible() * 0.045;
   double menuAlertDescFontSize()   => (widthResponsible() * 0.032 > 14) ? 14: widthResponsible() * 0.032;
   double menuAlertSelectFontSize() => (widthResponsible() * 0.040 > 24) ? 24: widthResponsible() * 0.040;
-
-  ///Menu Bottom Navigation Links
-  double linksLogoWidth() => widthResponsible() * 0.16;
-  double linksLogoHeight() => widthResponsible() * 0.16;
-  double linksTitleSize() => widthResponsible() * ((lang() == "ja" && Platform.isAndroid) ? 0.025: 0.03);
-  double linksTopMargin() => widthResponsible() * 0.02;
-  double linksBottomMargin() => widthResponsible() * 0.02;
+  double menuLinksLogoSize() => widthResponsible() * 0.16;
+  double menuLinksTitleSize() => widthResponsible() * ((lang() == "ja" && Platform.isAndroid) ? 0.025: 0.03);
+  double menuLinksMargin() => widthResponsible() * 0.02;
 
   ///Settings
-  double settingsButtonSize()   => height() * 0.09;
-  double settingsButtonFontSize() => height() * 0.03;
-  double settingsButtonMargin() => height() * 0.03;
-  double settingsButtonTopMargin() => height() * 0.01;
-  double settingsButtonBottomMargin() => height() * 0.01;
-  double settingsImageHeight() => height() * 0.19;
-  double settingsImageWidth() => settingsImageHeight() * 9 / 16;
-  double settingsBackgroundHeight() => height() * 0.27;
-  double settingsBackgroundWidth() => settingsBackgroundHeight() * 0.62;
-  double settingsLockNumberWidth() => height() * 0.18;
-  double settingsLockNumberHeight() => height() * 0.11;
-  double settingsLockImageWidth() => height() * 0.18;
-  double settingsLockImageHeight() => height() * 0.20;
+  //Divider
+  double dividerHeight() => height() * 0.015;
+  double dividerThickness() => height() * 0.001;
+  //Select top button
+  double settingsSelectButtonSize() => height() * 0.07;
+  double settingsSelectButtonIconSize() => height() * 0.04;
+  double settingsSelectButtonMarginTop() => height() * 0.015;
+  double settingsSelectButtonMarginBottom() => height() * 0.007;
+  //Common
   double settingsLockFontSize() => height() * 0.040;
   double settingsLockIconSize() => height() * 0.035;
   double settingsLockMargin() => height() * 0.01;
-  double settingsMarginSize() => height() * 0.01;
-  double settingsMarginTopSize() => height() * 0.015;
-  double settingsGlassFontSize() => height() * (lang() == "ja" ? 0.02: 0.03);
-  double settingsGlassToggleMarginSize() => height() * 0.005;
-  double settingsSelectButtonSize() => height() * 0.07;
-  double settingsSelectButtonHorizontalMargin() => height() * 0.015;
-  double settingsSelectButtonVerticalMargin() => height() * 0.01;
+  //Change floor image
+  double settingsFloorImageLockWidth() => height() * 0.18;
+  double settingsFloorImageLockHeight() => height() * 0.20;
+  double settingsFloorImageHeight() => height() * 0.19;
+  double settingsFloorImageWidth() => settingsFloorImageHeight() * 9 / 16;
+  double settingsFloorImageMargin() => height() * 0.01;
   double settingsArrowMarginTop() => height() * 0.03;
+  //Change button number
+  double settingsNumberLockWidth() => height() * 0.18;
+  double settingsNumberLockHeight() => height() * 0.11;
+  double settingsNumberButtonSize()   => height() * 0.09;
+  double settingsNumberButtonFontSize() => height() * 0.03;
+  double settingsNumberButtonMargin() => height() * 0.015;
+  //Change button shape
+  double settingsShapeButtonSize() => height() * 0.07;
+  double settingsShapeButtonFontSize() => height() * 0.02;
+  double settingsShapeButtonMargin() => height() * 0.025;
+  double settingsShapeButtonMarginTop() => height() * 0.03;
+  double settingsShapeButtonLockHeight() => (settingsShapeButtonSize() + settingsShapeButtonMargin()) * 2;
+  double settingsShapeButtonLockWidth() => width() * 0.9;
+  double settingsShapeButtonLockMarginTop() => height() * 0.112;
+  double settingsShapeButtonLockMarginNext() => height() * 0.141;
 
-  ///Settings Alert Dialog
+  //Change background image
+  double settingsBackgroundHeight() => height() * 0.27;
+  double settingsBackgroundWidth() => settingsBackgroundHeight() * 0.62;
+  double settingsBackgroundMargin() => height() * 0.015;
+  double settingsBackgroundLockHeight() => settingsBackgroundHeight() + height() * 0.017;
+  double settingsBackgroundLockWidth() => width() * 0.9;
+  double settingsBackgroundLockMargin() => height() * 0.292;
+
+  double settingsGlassFontSize() => height() * (lang() == "ja" ? 0.024: 0.032);
+  double settingsGlassToggleMargin() => height() * 0.005;
+  //Settings Alert Dialog
   double settingsAlertTitleFontSize() => widthResponsible() * 0.045;
   double settingsAlertFontSize() => widthResponsible() * 0.04;
   double settingsAlertSelectFontSize() => widthResponsible() * 0.04;
@@ -441,6 +468,13 @@ extension IntExt on int {
   //this is selected number
   String selected(int i) => (this == i) ? "Pressed": "";
   String settingsButton(int i) => "$assetsSettings${settingsItemList[i]}Settings${selected(i)}.png";
+  //this is operationButtonStyleNumber
+  String openButton() => "${assetsButton}open${this + 1}.png";
+  String closeButton() => "${assetsButton}close${this + 1}.png";
+  String alertButton() => "${assetsButton}phone${this + 1}.png";
+  String pressedOpenButton() => "${assetsButton}open${this + 1}Pressed.png";
+  String pressedCloseButton() => "${assetsButton}close${this + 1}Pressed.png";
+  String pressedAlertButton() => "${assetsButton}phone${this + 1}Pressed.png";
 
   ///Display
   // this is counter
@@ -638,17 +672,6 @@ extension ListStringExt on List<String> {
     [this[1], this[0]],
   ];
 
-  List<List<String>> shapesList() => [
-    [this[0], this[1]],
-    [this[2], this[3]],
-  ];
-
-  List<List<String>> stylesList() => [
-    [this[0], this[1]],
-    [this[2], this[3]],
-  ];
-
-
   List<Image> floorImages(List<int> floorNumbers) =>
       [for (int i = -6; i <= 163; i++) if (i != 0) i.roomImage(floorNumbers, this)];
 
@@ -682,11 +705,12 @@ extension BoolExt on bool {
 
   ///This is isPressed
   String pressed() => this ? 'Pressed': '';
-  String numberBackground(String buttonShape) => "$assetsButton$buttonShape${pressed()}.png";
-  String openBackGround() => this ? pressedOpenButton: openButton;
-  String closeBackGround() => this ? pressedCloseButton: closeButton;
-  String phoneBackGround() => this ? pressedAlertButton: alertButton;
-  Color numberColor() => this ? lampColor: whiteColor;
+  String numberBackground(int buttonStyle, String buttonShape) => "$assetsButton$buttonShape${buttonStyle + 1}${pressed()}.png";
+  String openBackGround(int styleNumber) => this ? styleNumber.pressedOpenButton(): styleNumber.openButton();
+  String closeBackGround(int styleNumber) => this ? styleNumber.pressedCloseButton(): styleNumber.closeButton();
+  String phoneBackGround(int styleNumber) => this ? styleNumber.pressedAlertButton(): styleNumber.alertButton();
+  Color numberColor(int i) => this ? numberColorList[i]: whiteColor;
+  Color floorButtonNumberColor(String buttonShape) => numberColor(buttonShape.buttonShapeIndex());
 
   ///This is isBasement
   int floorSymbol() => this ? -1: 1;
@@ -710,10 +734,15 @@ extension BoolExt on bool {
 
 extension ListBoolExt on List<bool> {
 
-  List<String> operateBackGround() => [
-    this[0].openBackGround(),
-    this[1].closeBackGround(),
-    this[2].phoneBackGround()
+  List<String> operationButtonImage(int styleNumber) => [
+    this[0].openBackGround(styleNumber),
+    this[1].closeBackGround(styleNumber),
+    this[2].phoneBackGround(styleNumber)
   ];
 }
 
+extension ListDynamicExt<T> on List<T> {
+  List<List<T>> toGroups(int n) =>
+      [for (var i = 0; i < length; i += n) sublist(i, (i + n <= length) ? i + n : length)];
+
+}

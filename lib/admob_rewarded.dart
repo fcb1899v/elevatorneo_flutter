@@ -7,18 +7,18 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'extension.dart';
 
 RewardedAd? rewardedAd() {
-
   final rewardedAd = useState<RewardedAd?>(null);
   final retryAttempt = useState(0);
-  //Dispose時のエラー対策
-  final cancelToken = useState(Completer<void>());
+  final cancelToken = useMemoized(() => Completer<void>(), []);
 
-  // バナー広告ID
   String rewardedAdId =
-    (!kDebugMode && Platform.isIOS) ? dotenv.get("IOS_REWARDED_UNIT_ID"):
-    (!kDebugMode && Platform.isAndroid) ? dotenv.get("ANDROID_REWARDED_UNIT_ID"):
-    (Platform.isIOS) ? dotenv.get("IOS_REWARDED_TEST_ID"):
-    dotenv.get("ANDROID_REWARDED_TEST_ID");
+  (!kDebugMode && Platform.isIOS)
+      ? dotenv.get("IOS_REWARDED_UNIT_ID")
+      : (!kDebugMode && Platform.isAndroid)
+      ? dotenv.get("ANDROID_REWARDED_UNIT_ID")
+      : (Platform.isIOS)
+      ? dotenv.get("IOS_REWARDED_TEST_ID")
+      : dotenv.get("ANDROID_REWARDED_TEST_ID");
 
   void loadAd() {
     RewardedAd.load(
@@ -26,19 +26,20 @@ RewardedAd? rewardedAd() {
       request: const AdRequest(),
       rewardedAdLoadCallback: RewardedAdLoadCallback(
         onAdLoaded: (RewardedAd ad) async {
-          if (!cancelToken.value.isCompleted) {
-            // 広告が正常にロードされたとき
+          if (!cancelToken.isCompleted) {
             'ad loaded'.debugPrint();
             rewardedAd.value = ad;
-            // リトライカウンタをリセット
             retryAttempt.value = 0;
           }
         },
         onAdFailedToLoad: (LoadAdError error) {
           'Ad failed to load: $error'.debugPrint();
-          if (!cancelToken.value.isCompleted) {
+          if (!cancelToken.isCompleted) {
             Future.delayed(Duration(seconds: 2 * retryAttempt.value), () {
-              retryAttempt.value += 1; // リトライカウンタをインクリメント
+              if (!cancelToken.isCompleted) {
+                retryAttempt.value += 1;
+                loadAd();
+              }
             });
           }
         },
@@ -47,11 +48,14 @@ RewardedAd? rewardedAd() {
   }
 
   useEffect(() {
-    if (!cancelToken.value.isCompleted) {
+    if (!cancelToken.isCompleted) {
       loadAd();
     }
+
     return () {
-      cancelToken.value.complete();
+      if (!cancelToken.isCompleted) {
+        cancelToken.complete();
+      }
       rewardedAd.value?.dispose();
     };
   }, [retryAttempt.value]);

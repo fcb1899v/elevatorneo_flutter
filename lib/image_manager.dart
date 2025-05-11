@@ -105,7 +105,6 @@ class PhotoManager {
     "photoPermission: $photoPermission";
     if (Platform.isAndroid || photoPermission.isGranted) {
       final String? savedImagePath = await pickAndCropImage(row, col);
-      if (context.mounted) context.popPage();
       return ImageManager().saveImagePath(
         currentList: currentList,
         newValue: savedImagePath,
@@ -131,10 +130,11 @@ class ImageManager {
     for (int i = 0; i < images.length; i++) {
       if (!(images[i].contains("assets/images/room/"))) {
         final newPath = path.join(directory.path, images[i]);
-        if (await File(newPath).exists()) images[i] = newPath;
+        images[i] = (await File(newPath).exists()) ? newPath: initialRoomImages[i];
+        "newPath[$i]: ${images[i]}".debugPrint();
       }
     }
-    "Show images: $images".debugPrint();
+    "getImagesList: $images".debugPrint();
     return images;
   }
 
@@ -147,6 +147,7 @@ class ImageManager {
       final prefs = await SharedPreferences.getInstance();
       final newList = List<int>.from(currentList);
       newList[newIndex] = newValue;
+      "newNumber: $newValue".debugPrint();
       await "floorsKey".setSharedPrefListInt(prefs, newList);
       return newList;
     } else {
@@ -163,6 +164,7 @@ class ImageManager {
       final prefs = await SharedPreferences.getInstance();
       final newList = List<String>.from(currentList);
       newList[newIndex] = newValue;
+      "newPath: $newValue".debugPrint();
       await "roomsKey".setSharedPrefListString(prefs, newList);
       final images = await getImagesList();
       return images;
@@ -171,7 +173,7 @@ class ImageManager {
     }
   }
 
-  Future<String> changeSettingsValue({
+  Future<String> changeSettingsStringValue({
     required String key,
     required String current,
     required String next,
@@ -179,6 +181,20 @@ class ImageManager {
     if (next != current) {
       final prefs = await SharedPreferences.getInstance();
       await key.setSharedPrefString(prefs, next);
+      return next;
+    } else {
+      return current;
+    }
+  }
+
+  Future<int> changeSettingsIntValue({
+    required String key,
+    required int current,
+    required int next,
+  }) async {
+    if (next != current) {
+      final prefs = await SharedPreferences.getInstance();
+      await key.setSharedPrefInt(prefs, next);
       return next;
     } else {
       return current;

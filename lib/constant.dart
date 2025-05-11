@@ -1,5 +1,3 @@
-import 'dart:math' as math;
-
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -106,20 +104,37 @@ const String assetsRoom = "assets/images/room/";
 const String assetsSettings = "assets/images/settings/";
 
 ///Image Elevator
-const List<String> shapeList = ["square", "circle", "diamond", "random"];
-const List<String> styleList = ["metal", "white", "wood", "pop", "random"];
-const List<String> glassList = ["not", "use", "random"];
+const int buttonShapeLockPoint = 10000;
+const int operationButtonCount = 3;
+const int initialButtonStyle = 0;
+String initialButtonShape = buttonShapeList[1];
+String initialBackgroundStyle = backgroundStyleList[0];
+String initialGlassStyle = glassStyleList[0];
+const int numberButtonColumnCount = 3;
 const List<String> settingsItemList = ["floor", "number", "button", "style"];
-String initialShape = shapeList[0];
-String initialStyle = styleList[0];
-String initialGlass = glassList[0];
-String randomShape = shapeList[math.Random().nextInt(shapeList.length - 1)];
-String randomStyle = styleList[math.Random().nextInt(styleList.length - 1)];
-String randomGlass = shapeList[math.Random().nextInt(glassList.length - 1)];
-const String elevatorFrame = "${assetsElevator}elevatorFrame.png";
-const String doorFrame = "${assetsElevator}doorFrame.png";
-const String leftDoor = "${assetsElevator}doorLeft.png";
-const String rightDoor = "${assetsElevator}doorRight.png";
+const List<String> backgroundStyleList = ["metal", "white", "wood", "pop"];
+const List<String> glassStyleList = ["not", "use"];
+const List<String> buttonShapeList = [
+  "normal", "circle", "square",
+  "diamond", "hexagon", "clover",
+  "star", "heart", "cat",
+];
+const List<Color> numberColorList = [
+  lampColor, lampColor, blueLightColor,
+  redLightColor, purpleLightColor, greenLightColor,
+  yellowColor, pinkLightColor, goldLightColor,
+];
+const List<double> floorButtonNumberSizeFactor = [
+  1.0, 1.0, 1.0,
+  1.0, 1.0, 1.0,
+  0.9, 0.9, 1.0,
+];
+const List<double> floorButtonNumberMarginFactor = [
+  0.0, 0.0, 0.0,
+  0.0, 0.0, 0.0,
+  0.006, -0.01, 0.002,
+];
+const int backgroundLockPoint = 10000;
 const String leftSideFrame = "${assetsElevator}sideFrameLeft.png";
 const String rightSideFrame = "${assetsElevator}sideFrameRight.png";
 const String pointImage = "${assetsElevator}elevatorPoint.png";
@@ -166,14 +181,8 @@ const String upArrow = "${assetsElevator}up.png";
 const String downArrow = "${assetsElevator}down.png";
 
 ///Image Buttons
-const String openButton = "${assetsButton}open.png";
-const String closeButton = "${assetsButton}close.png";
-const String alertButton = "${assetsButton}phone.png";
-const String pressedOpenButton = "${assetsButton}pressedOpen.png";
-const String pressedCloseButton = "${assetsButton}pressedClose.png";
-const String pressedAlertButton = "${assetsButton}pressedPhone.png";
 const String transpImage = "${assetsButton}transparent.png";
-const String squareButton = "${assetsButton}square.png";
+const String squareButton = "${assetsButton}normal1.png";
 
 ///Asset Menu
 const String settingsButton = "${assetsMenu}settings.png";
@@ -201,12 +210,19 @@ const double responsibleHeight = 1000;
 const double elevatorHeightRate = 16/9;
 
 /// Color
-const Color lampColor = Color.fromRGBO(247, 178, 73, 1);
+const Color lampColor = Color.fromRGBO(247, 178, 73, 1); //#f7b249
 const Color transpLampColor = Color.fromRGBO(247, 178, 73, 0.7);
-const Color yellowColor = Color.fromRGBO(255, 234, 0, 1);
-const Color greenColor = Color.fromRGBO(105, 184, 0, 1);
+const Color goldLightColor = Color.fromRGBO(212, 175, 55, 1);
+const Color pinkLightColor = Color.fromRGBO(255, 128, 192, 1);
+const Color redLightColor = Color.fromRGBO(255, 64, 64, 1);
+const Color blueLightColor = Color.fromRGBO(16, 192, 255, 1);
+const Color purpleLightColor = Color.fromRGBO(192, 128, 255, 1);
+const Color greenLightColor = Color.fromRGBO(64, 255, 64, 1);
+const Color yellowColor = Color.fromRGBO(255, 234, 0, 1); //#ffea00
+const Color greenColor = Color.fromRGBO(105, 184, 0, 1);  //#69b800
 const Color redColor = Color.fromRGBO(255, 0, 0, 1);
 const Color blackColor = Color.fromRGBO(56, 54, 53, 1);
+const Color lightGrayColor =Color.fromRGBO(192, 192, 192, 1);
 const Color grayColor = Colors.grey;
 const Color transpBlackColor = Color.fromRGBO(0, 0, 0, 0.6);
 const Color darkBlackColor = Colors.black;

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:vibration/vibration.dart';
 import 'extension.dart';
 import 'constant.dart';
 import 'common_widget.dart';
@@ -9,7 +8,6 @@ import 'games_manager.dart';
 AppBar myAppBar({
   required BuildContext context,
   required int point,
-  required bool isMenuIcon,
   required VoidCallback pressedMenu,
 }) => AppBar(
   backgroundColor: blackColor,
@@ -17,10 +15,7 @@ AppBar myAppBar({
   automaticallyImplyLeading: false,
   title: Row(children: [
     GestureDetector(
-      onTap: () async {
-        Vibration.vibrate(duration: vibTime, amplitude: vibAmp);
-        await gamesShowLeaderboard();
-      },
+      onTap: () async => await gamesShowLeaderboard(),
       child: pointIcon(45),
     ),
     Container(
@@ -41,10 +36,10 @@ AppBar myAppBar({
     evMileTooltip(context),
   ]),
   actions: [
-    (isMenuIcon) ? IconButton(
+    IconButton(
       icon: menuIcon(context.menuIconSize()),
       onPressed: pressedMenu,
-    ): SizedBox(width: context.menuIconSize()),
+    ),
     const SizedBox(width: 10),
   ],
 );

@@ -7,6 +7,7 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:vibration/vibration.dart';
 import 'admob_rewarded.dart';
 import 'games_manager.dart';
 import 'common_widget.dart';
@@ -95,12 +96,13 @@ class MyMenuPage extends HookConsumerWidget {
     );
 
     ///Pressed menu links action
-    pressedMenuLink(int i) {
+    pressedMenuLink(int i) async {
       if (i == 1) {
+        Vibration.vibrate(duration: vibTime, amplitude: vibAmp);
         "$ad".debugPrint();
         if (ad != null) rewardedAdPermissionAlert();
       } else if (i == 2) {
-        gamesShowLeaderboard();
+        await gamesShowLeaderboard();
       } else {
         context.pushSettingsPage();
       }
@@ -111,16 +113,16 @@ class MyMenuPage extends HookConsumerWidget {
       appBar: myAppBar(
         context: context,
         point: point,
-        isMenuIcon: true,
-        pressedMenu: () => context.pushMyPage(true), //to MyHomePage
+        pressedMenu: () => context.pushMyPage(true), ///to MyMenuPage
       ),
       backgroundColor: transpWhiteColor,
-      body: SizedBox(
-        width: context.width(),
-        height: context.height(),
-        child: Column(mainAxisAlignment: MainAxisAlignment.spaceAround,
+      body: Stack(alignment: Alignment.topCenter,
+        children: [
+        Column(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            SizedBox(height: context.settingsMarginSize()),
+            SizedBox(height: context.menuMarginTop()),
             /// App Logo
             Text(context.menu(),
               style: TextStyle(
@@ -133,23 +135,23 @@ class MyMenuPage extends HookConsumerWidget {
             ...List.generate(isGamesSignedIn.value ? 3: 2, (i) =>
               Column(children: [
                 GestureDetector(
-                  onTap: () async => pressedMenuLink(i),
+                  onTap: () async => await pressedMenuLink(i),
                   child: menuButton(context, i),
                 ),
               ])
             ),
-            SizedBox(height: context.settingsMarginSize()),
+            SizedBox(height: context.menuMarginBottom())
+          ]
+        ),
+        Column(mainAxisAlignment: MainAxisAlignment.end,
+          children: [
             ///Menu Links
             BottomNavigationBar(
               items: List.generate(context.linkLogos().length, (i) =>
                 BottomNavigationBarItem(
                   icon: Container(
-                    margin: EdgeInsets.only(
-                      top: context.linksTopMargin(),
-                      bottom: context.linksBottomMargin()
-                    ),
-                    width: context.linksLogoWidth(),
-                    height: context.linksLogoHeight(),
+                    margin: EdgeInsets.symmetric(vertical: context.menuLinksMargin()),
+                    width: context.menuLinksLogoSize(),
                     child: Image.asset(context.linkLogos()[i]),
                   ),
                   label: context.linkTitles()[i],
@@ -157,20 +159,23 @@ class MyMenuPage extends HookConsumerWidget {
               ),
               currentIndex: 0,
               type: BottomNavigationBarType.fixed,
-              onTap: (i) => launchUrl(Uri.parse(context.linkLinks()[i])),
+              onTap: (i) =>{
+                Vibration.vibrate(duration: vibTime, amplitude: vibAmp),
+                launchUrl(Uri.parse(context.linkLinks()[i]))
+              },
               elevation: 0,
               selectedItemColor: lampColor,
               unselectedItemColor: lampColor,
-              selectedFontSize: context.linksTitleSize(),
+              selectedFontSize: context.menuLinksTitleSize(),
               selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold),
               unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold),
-              unselectedFontSize: context.linksTitleSize(),
+              unselectedFontSize: context.menuLinksTitleSize(),
               backgroundColor: blackColor,
             ),
             const AdBannerWidget(),
           ]
-        ),
-      ),
+        )
+      ]),
     );
   }
 }

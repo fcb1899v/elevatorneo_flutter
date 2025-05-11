@@ -23,9 +23,10 @@ class MyHomePage extends HookConsumerWidget {
     final floorNumbers = ref.watch(floorNumbersProvider);
     final roomImages = ref.watch(roomImagesProvider);
     final point = ref.watch(pointProvider);
-    final buttonShape = ref.watch(shapeProvider);
-    final elevatorStyle = ref.watch(styleProvider);
-    final glassStyle = ref.watch(glassProvider);
+    final buttonShape = ref.watch(buttonShapeProvider);
+    final buttonStyle = ref.watch(buttonStyleProvider);
+    final backgroundStyle = ref.watch(backgroundStyleProvider);
+    final glassStyle = ref.watch(glassStyleProvider);
 
     //Hooks
     final counter = useState(1);
@@ -56,12 +57,10 @@ class MyHomePage extends HookConsumerWidget {
         ref.read(floorNumbersProvider.notifier).state = "floorsKey".getSharedPrefListInt(prefs, initialFloorNumbers);
         ref.read(roomImagesProvider.notifier).state = await imageManager.getImagesList();
         ref.read(pointProvider.notifier).state = await getBestScore();
-        ref.read(shapeProvider.notifier).state = "shapeKey".getSharedPrefString(prefs, initialShape);
-        ref.read(styleProvider.notifier).state = "styleKey".getSharedPrefString(prefs, initialStyle);
-        ref.read(glassProvider.notifier).state = "glassKey".getSharedPrefString(prefs, initialGlass);
-        if (ref.read(shapeProvider.notifier).state == "random") ref.read(shapeProvider.notifier).state = randomShape;
-        if (ref.read(styleProvider.notifier).state == "random") ref.read(shapeProvider.notifier).state = randomStyle;
-        if (ref.read(glassProvider.notifier).state == "random") ref.read(shapeProvider.notifier).state = randomGlass;
+        ref.read(buttonShapeProvider.notifier).state = "numberButtonKey".getSharedPrefString(prefs, initialButtonShape);
+        ref.read(buttonStyleProvider.notifier).state = "operationButtonKey".getSharedPrefInt(prefs, initialButtonStyle);
+        ref.read(backgroundStyleProvider.notifier).state = "backgroundStyleKey".getSharedPrefString(prefs, initialBackgroundStyle);
+        ref.read(glassStyleProvider.notifier).state = "glassStyleKey".getSharedPrefString(prefs, initialGlassStyle);
         isLoadingData.value = false;
       } catch (e) {
         "Error: $e".debugPrint();
@@ -182,39 +181,47 @@ class MyHomePage extends HookConsumerWidget {
 
     ///Pressed open button action
     pressedOpenAction(bool isOn) async {
-      isPressedOperationButtons.value = [isOn, false, false];
-      if (isOn) {
-        await audioManager.stopSound(0);
-        if (isSoundOn.value) await audioManager.playEffectSound(index: 0, asset: selectButton, volume: 0.5);
-        Vibration.vibrate(duration: vibTime, amplitude: vibAmp);
-        if (!isMoving.value && !isEmergency.value && isDoorState.value != openedState && isDoorState.value != openingState) {
-          Future.delayed(const Duration(milliseconds: flashTime)).then((_) async {
-            if (!isMoving.value && !isEmergency.value  && isDoorState.value != openedState && isDoorState.value != openingState) {
-              if (context.mounted) ttsManager.speakText(context.openDoor());
-              isDoorState.value = openingState;
-              "isDoorState: ${isDoorState.value}".debugPrint();
-              await Future.delayed(const Duration(seconds: waitTime)).then((_) {
-                if (!isMoving.value && !isEmergency.value && isDoorState.value == openingState) {
-                  isDoorState.value = openedState;
-                  "isDoorState: ${isDoorState.value}".debugPrint();
-                }
-              });
-            }
-          });
+      if (!isMoving.value) {
+        isPressedOperationButtons.value = [isOn, false, false];
+        if (isOn) {
+          await audioManager.stopSound(0);
+          if (isSoundOn.value) await audioManager.playEffectSound(index: 0, asset: selectButton, volume: 0.5);
+          Vibration.vibrate(duration: vibTime, amplitude: vibAmp);
+          if (!isMoving.value && !isEmergency.value && isDoorState.value != openedState && isDoorState.value != openingState) {
+            Future.delayed(const Duration(milliseconds: flashTime)).then((_) async {
+              if (!isMoving.value && !isEmergency.value  && isDoorState.value != openedState && isDoorState.value != openingState) {
+                if (context.mounted) ttsManager.speakText(context.openDoor());
+                isDoorState.value = openingState;
+                "isDoorState: ${isDoorState.value}".debugPrint();
+                await Future.delayed(const Duration(seconds: waitTime)).then((_) {
+                  if (!isMoving.value && !isEmergency.value && isDoorState.value == openingState) {
+                    isDoorState.value = openedState;
+                    "isDoorState: ${isDoorState.value}".debugPrint();
+                  }
+                });
+              }
+            });
+          }
         }
+      } else {
+        isPressedOperationButtons.value = [false, false, false];
       }
     }
 
     ///Pressed close button action
     pressedCloseAction(bool isOn) async {
-      isPressedOperationButtons.value = [false, isOn, false];
-      if (isOn) {
-        await audioManager.stopSound(0);
-        if (isSoundOn.value) await audioManager.playEffectSound(index: 0, asset: selectButton, volume: 0.5);
-        Vibration.vibrate(duration: vibTime, amplitude: vibAmp);
-        if (!isMoving.value && !isEmergency.value && isDoorState.value != closedState && isDoorState.value != closingState) {
-          Future.delayed(const Duration(milliseconds: flashTime)).then((_) => doorsClosing());
+      if (!isMoving.value) {
+        isPressedOperationButtons.value = [false, isOn, false];
+        if (isOn) {
+          await audioManager.stopSound(0);
+          if (isSoundOn.value) await audioManager.playEffectSound(index: 0, asset: selectButton, volume: 0.5);
+          Vibration.vibrate(duration: vibTime, amplitude: vibAmp);
+          if (!isMoving.value && !isEmergency.value && isDoorState.value != closedState && isDoorState.value != closingState) {
+            Future.delayed(const Duration(milliseconds: flashTime)).then((_) => doorsClosing());
+          }
         }
+      } else {
+        isPressedOperationButtons.value = [false, false, false];
       }
     }
 
@@ -331,7 +338,6 @@ class MyHomePage extends HookConsumerWidget {
       appBar: myAppBar(
         context: context,
         point: point,
-        isMenuIcon: counter.value == nextFloor.value,
         pressedMenu: () => context.pushMyPage(false), ///to MyMenuPage
       ),
       ///Body
@@ -339,121 +345,147 @@ class MyHomePage extends HookConsumerWidget {
         top: true,
         bottom: true,
         child: Stack(children: [
-          ///Room Image
-          AnimatedPositioned(
-            duration: Duration(milliseconds: imageDurationTime.value),
-            top: imageTopMargin.value,
-            left: context.doorMarginLeft() + context.sideSpacerWidth(),
-            child: Column(
-              children: roomImages.floorImages(floorNumbers).reversed.map((img) => Column(
-                children: [
-                  SizedBox(
-                    width: context.roomWidth(),
-                    height: context.roomHeight(),
-                    child: img,
-                  ),
-                  SizedBox(
-                    width: context.roomWidth(),
-                    height: (context.floorHeight() - context.roomHeight()),
-                    child: Image.asset(imageDark,
-                      width: double.infinity,
-                      fit: BoxFit.fitWidth
-                    ),
-                  ),
-                ],
-              )).toList(),
-            ),
-          ),
-          Column(children: [
-            Container(
-              margin: EdgeInsets.only(
-                top: context.doorMarginTop(),
+          InteractiveViewer(
+            minScale: 1.0,
+            maxScale: 1.5,
+            child: Stack(children: [
+              ///Room Image
+              AnimatedPositioned(
+                duration: Duration(milliseconds: imageDurationTime.value),
+                top: imageTopMargin.value,
                 left: context.doorMarginLeft() + context.sideSpacerWidth(),
-              ),
-              width: context.width(),
-              height: context.roomHeight(),
-              color: transpColor,
-            ),
-            Expanded(
-              child: Container(color: blackColor),
-            )
-          ]),
-          Row(children: [
-            SizedBox(width: context.sideSpacerWidth()),
-            Stack(children: [
-              ///Door Frame Image
-              upAndDownDoorFrame(context, elevatorStyle),
-              ///Left Door Frame Image
-              leftDoorFrame(context, isDoorState.value == closedState),
-              ///Right Door Frame Image
-              rightDoorFrame(context, isDoorState.value == closedState),
-              ///Left Door Image
-              leftDoorImage(context, elevatorStyle, glassStyle, isDoorState.value == closedState),
-              ///Right Door Image
-              rightDoorImage(context, elevatorStyle, glassStyle, isDoorState.value == closedState),
-              ///Elevator Frame Image
-              elevatorFrameImage(context, elevatorStyle),
-              ///Display Image
-              displayNumber(context, counter.value, isMoving.value, nextFloor.value),
-              ///Elevator Button Image
-              Container(
-                width: context.buttonPanelWidth(),
-                height: context.buttonPanelHeight(),
-                margin: EdgeInsets.only(
-                  top: context.buttonPanelMarginTop(),
-                  left: context.buttonPanelMarginLeft()
-                ),
-                child: Column(children: [
-                  const Spacer(flex: 3),
-                  ///Operation Buttons (Alert: 2)
-                  Center(child:
-                    GestureDetector(
-                      onTapDown: pressedButtonAction(true, false)[2],
-                      onTapUp: pressedButtonAction(false, false)[2],
-                      onLongPress: pressedButtonAction(true, true)[2],
-                      onLongPressEnd: pressedButtonAction(false, true)[2],
-                      child: operationButtonImage(context, isPressedOperationButtons.value, 2)
-                    ),
-                  ),
-                  SizedBox(height: context.emergencyBottomMargin(buttonShape == "diamond")),
-                  ///Floor Buttons
-                  Column(children: floorNumbers.floorNumbersList().asMap().entries.map((row) => Column(children: [
-                    SizedBox(height: context.buttonMargin(buttonShape == "diamond")),
-                    Row(mainAxisAlignment: MainAxisAlignment.center,
-                      children: row.value.asMap().entries.map((floor) => Row(children: [
-                        SizedBox(width: context.buttonMargin(buttonShape == "diamond")),
-                        GestureDetector(
-                          child: floorButtonImage(context, buttonShape, floor.value, floor.value.isSelected(isAboveSelectedList.value, isUnderSelectedList.value)),
-                          onTap: () => floorSelected(floor.value, isFloors[row.key][floor.key]),
-                          onLongPress: () => floorCanceled(floor.value),
-                          onDoubleTap: () => floorCanceled(floor.value),
-                        ),
-                        if (floor.key == row.value.length - 1) SizedBox(width: context.buttonMargin(buttonShape == "diamond")),
-                      ])).toList(),
-                    ),
-                    if (row.key == floorNumbers.length - 1) SizedBox(height: context.buttonMargin(buttonShape == "diamond")),
-                  ])).toList()),
-                  SizedBox(height: context.operationTopMargin(buttonShape == "diamond")),
-                  ///Operation Buttons (Close: 0, Open: 1)
-                  Row(mainAxisAlignment: MainAxisAlignment.center,
-                    children: [0, 1].expand((i) => [
-                      GestureDetector(
-                        onTapDown: pressedButtonAction(true, false)[i],
-                        onTapUp: pressedButtonAction(false, false)[i],
-                        onLongPress: pressedButtonAction(true, true)[i],
-                        onLongPressEnd: pressedButtonAction(false, true)[i],
-                        child: operationButtonImage(context, isPressedOperationButtons.value, i),
+                child: Column(
+                  children: roomImages.floorImages(floorNumbers).reversed.map((img) => Column(
+                    children: [
+                      SizedBox(
+                        width: context.roomWidth(),
+                        height: context.roomHeight(),
+                        child: img,
                       ),
-                      if (i != 1) SizedBox(width: context.operationSideMargin(buttonShape == "diamond")),
-                    ]).toList()
-                  ),
-                  const Spacer(flex: 1),
-                ]),
+                      SizedBox(
+                        width: context.roomWidth(),
+                        height: (context.floorHeight() - context.roomHeight()),
+                        child: Image.asset(imageDark,
+                          width: double.infinity,
+                          fit: BoxFit.fitWidth
+                        ),
+                      ),
+                    ],
+                  )).toList(),
+                ),
               ),
-            ])
-          ]),
-          ///Door Cover
-          doorCover(context),
+              Column(children: [
+                Container(
+                  margin: EdgeInsets.only(
+                    top: context.doorMarginTop(),
+                    left: context.doorMarginLeft() + context.sideSpacerWidth(),
+                  ),
+                  width: context.width(),
+                  height: context.roomHeight(),
+                  color: transpColor,
+                ),
+                Expanded(
+                  child: Container(color: blackColor),
+                )
+              ]),
+              Row(children: [
+                SizedBox(width: context.sideSpacerWidth()),
+                Stack(children: [
+                  ///Door Frame Image
+                  upAndDownDoorFrame(context, backgroundStyle),
+                  ///Left Door Frame Image
+                  leftDoorFrame(context, isDoorState.value == closedState),
+                  ///Right Door Frame Image
+                  rightDoorFrame(context, isDoorState.value == closedState),
+                  ///Left Door Image
+                  leftDoorImage(context, backgroundStyle, glassStyle, isDoorState.value == closedState),
+                  ///Right Door Image
+                  rightDoorImage(context, backgroundStyle, glassStyle, isDoorState.value == closedState),
+                  ///Elevator Frame Image
+                  elevatorFrameImage(context, backgroundStyle),
+                  ///Display Image
+                  displayNumber(context, counter.value, isMoving.value, nextFloor.value),
+                  ///Elevator Button Image
+                  Container(
+                    width: context.buttonPanelWidth(),
+                    height: context.buttonPanelHeight(),
+                    margin: EdgeInsets.only(
+                      top: context.buttonPanelMarginTop(),
+                      left: context.buttonPanelMarginLeft()
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        ///Operation Buttons (Alert: 2)
+                        if (buttonStyle != 2) GestureDetector(
+                          // onTap: () => pressedButtonAction(true, false)[2],
+                          onTapDown: pressedButtonAction(true, false)[2],
+                          onTapUp: pressedButtonAction(false, false)[2],
+                          onTapCancel: () => pressedButtonAction(false, false)[2],
+                          onLongPress: pressedButtonAction(true, true)[2],
+                          onLongPressStart: (_) => pressedButtonAction(true, true)[2],
+                          onLongPressDown: (_) => pressedButtonAction(true, true)[2],
+                          onLongPressUp:  () => pressedButtonAction(false, true)[2],
+                          onLongPressEnd: pressedButtonAction(false, true)[2],
+                          onLongPressCancel: () => pressedButtonAction(false, true)[2],
+                          child: operationButton(context, buttonStyle, isPressedOperationButtons.value, 2)
+                        ),
+                        ///Floor Buttons
+                        Column(children: floorNumbers.floorNumbersList().asMap().entries.map((row) => Column(children: [
+                          if (row.key != 0) SizedBox(height: context.floorButtonMargin()),
+                          Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: row.value.asMap().entries.map((floor) => Row(children: [
+                              GestureDetector(
+                                child: floorButtonImage(context, buttonStyle, buttonShape, floor.value, floor.value.isSelected(isAboveSelectedList.value, isUnderSelectedList.value)),
+                                onTap: () => floorSelected(floor.value, isFloors[row.key][floor.key]),
+                                onLongPress: () => floorCanceled(floor.value),
+                                onDoubleTap: () => floorCanceled(floor.value),
+                              ),
+                            ])).toList(),
+                          ),
+                        ])).toList()),
+                        ///Operation Buttons (Close: 0, Open: 1)
+                        Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [0, 1].expand((i) => [
+                            GestureDetector(
+                              onTap: () => pressedButtonAction(true, false)[i],
+                              onTapDown: pressedButtonAction(true, false)[i],
+                              onTapUp: pressedButtonAction(false, false)[i],
+                              onTapCancel: () => pressedButtonAction(false, false)[i],
+                              onLongPress: pressedButtonAction(true, true)[i],
+                              onLongPressStart: (_) => pressedButtonAction(true, true)[i],
+                              onLongPressDown: (_) => pressedButtonAction(true, true)[i],
+                              onLongPressUp:  () => pressedButtonAction(false, true)[i],
+                              onLongPressEnd: pressedButtonAction(false, true)[i],
+                              onLongPressCancel: () => pressedButtonAction(false, true)[i],
+                              child: operationButton(context, buttonStyle, isPressedOperationButtons.value, i),
+                            ),
+                          ]).toList()
+                        ),
+                        ///Operation Buttons (Alert: 2)
+                        if (buttonStyle == 2) GestureDetector(
+                          // onTap: () => pressedButtonAction(true, false)[2],
+                            onTapDown: pressedButtonAction(true, false)[2],
+                            onTapUp: pressedButtonAction(false, false)[2],
+                            onTapCancel: () => pressedButtonAction(false, false)[2],
+                            onLongPress: pressedButtonAction(true, true)[2],
+                            onLongPressStart: (_) => pressedButtonAction(true, true)[2],
+                            onLongPressDown: (_) => pressedButtonAction(true, true)[2],
+                            onLongPressUp:  () => pressedButtonAction(false, true)[2],
+                            onLongPressEnd: pressedButtonAction(false, true)[2],
+                            onLongPressCancel: () => pressedButtonAction(false, true)[2],
+                            child: operationButton(context, buttonStyle, isPressedOperationButtons.value, 2)
+                        ),
+                      ]
+                    ),
+                  ),
+                ])
+              ]),
+              ///Door Cover
+              doorCover(context)
+            ]),
+          ),
           ///Admob Banner
           AdBannerWidget(),
           ///Progress Indicator

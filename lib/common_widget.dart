@@ -159,34 +159,32 @@ Container displayArrow(BuildContext context, String arrowImage) =>
 
 ///Button
 //Open or Close Button (Close: 0, Open: 1, Alert:2)
-Container operationButtonImage(BuildContext context, List<bool> isPressedList, int number) =>
-    Container(
-      width: context.operationButtonSize() + 2 * context.buttonBorderWidth(),
-      height: context.operationButtonSize() + 2 * context.buttonBorderWidth(),
-      decoration: BoxDecoration(
-        color: transpColor,
-        shape: BoxShape.rectangle,
-        borderRadius: BorderRadius.circular(context.buttonBorderRadius()),
-        border: Border.all(
-          color: (number == 1) ? whiteColor: (number == 2) ? yellowColor: greenColor,
-          width: context.buttonBorderWidth(),
-        ),
-      ),
-      child: Image.asset(isPressedList.operateBackGround()[number]),
-    );
-//Floor Button
-SizedBox floorButtonImage(BuildContext context, String buttonShape, int floorNumber, bool isSelected) =>
+SizedBox operationButton(BuildContext context, int styleNumber, List<bool> isPressedList, int number) =>
     SizedBox(
-      width: context.floorButtonSize(buttonShape == "diamond"),
-      height: context.floorButtonSize(buttonShape == "diamond"),
+      width: context.operationButtonSize(), //+ 2 * context.buttonBorderWidth(),
+      height: context.operationButtonSize(), //+ 2 * context.buttonBorderWidth(),
+      child: Image.asset(isPressedList.operationButtonImage(styleNumber)[number]),
+    );
+
+//Floor Button
+SizedBox floorButtonImage(BuildContext context, int buttonStyle, String buttonShape, int floorNumber, bool isSelected) =>
+    SizedBox(
+      width: context.buttonSize(),
+      height: context.buttonSize(),
       child: Stack(alignment: Alignment.center,
         children: [
-          Image.asset(isSelected.numberBackground(buttonShape)),
-          Text(floorNumber.buttonNumber(),
-            style: TextStyle(
-              color: isSelected ? lampColor: whiteColor,
-              fontSize: context.buttonNumberFontSize(),
-              fontWeight: FontWeight.bold,
+          Image.asset(isSelected.numberBackground(buttonStyle, buttonShape)),
+          Container(
+            margin: EdgeInsets.only(
+              top: context.floorButtonNumberMarginTop(buttonShape.buttonShapeIndex()),
+              bottom: context.floorButtonNumberMarginBottom(buttonShape.buttonShapeIndex())
+            ),
+            child:Text(floorNumber.buttonNumber(),
+              style: TextStyle(
+                color: (buttonStyle != 0) ? blackColor: isSelected.floorButtonNumberColor(buttonShape),
+                fontSize: context.floorButtonNumberFontSize(buttonShape.buttonShapeIndex()),
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
         ],
@@ -325,3 +323,9 @@ Widget circularProgressIndicator(BuildContext context) =>
         )
       ),
     ]);
+
+Divider myDivider(BuildContext context) => Divider(
+  height: context.dividerHeight(),
+  thickness: context.dividerThickness(),
+  color: grayColor,
+);

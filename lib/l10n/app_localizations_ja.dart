@@ -21,7 +21,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get settings => '各種設定';
 
   @override
-  String get glass => 'ガラス';
+  String get glass => 'ガラス窓';
 
   @override
   String get aboutLetsElevator => 'レッツ・エレベーターとは';
