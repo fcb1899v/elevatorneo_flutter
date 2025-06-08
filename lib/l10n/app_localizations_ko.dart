@@ -57,6 +57,12 @@ class AppLocalizationsKo extends AppLocalizations {
   String get edit => '변경';
 
   @override
+  String get bypass => '통과 층';
+
+  @override
+  String get stop => '정지 층';
+
+  @override
   String get basement => '지하';
 
   @override
@@ -83,7 +89,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get downFloor => '내려갑니다. ';
 
   @override
-  String get notStop => '그 층에는 멈추지 않습니다. ';
+  String get notStop => '해당 층에는 정차하지 않습니다. ';
 
   @override
   String get emergency => '엘리베이터의 상태를 확인하기 위해 긴급 정지합니다. ';
@@ -118,7 +124,8 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
-  String get aboutEVMile => '\n엘리베이터의 상하 운동으로 쌓이는 포인트입니다. \nEV마일이 쌓이면, 메뉴의 각종 설정에서 층수나 목적지 층의 이미지를 변경할 수 있습니다.';
+  String get aboutEVMile =>
+      '\n엘리베이터의 상하 운동으로 쌓이는 포인트입니다. \nEV마일이 쌓이면, 메뉴의 각종 설정에서 층수나 목적지 층의 이미지를 변경할 수 있습니다.';
 
   @override
   String get rooftop => '옥상 층에 도착하셨습니다. ';
@@ -263,7 +270,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String earnMilesAfterAdTitle(Object NUMBER) {
-    return '광고를 보고\n${NUMBER}EV마일 획득!\n';
+    return '광고를 보고\n${NUMBER}EV마일\n획득!\n';
   }
 
   @override

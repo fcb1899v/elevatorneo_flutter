@@ -16,6 +16,8 @@
   "ok" : "OK",
   "cancel" : "キャンセル",
   "edit" : "変更",
+  "bypass" : "通過階",
+  "stop" : "停止階",
   "basement" : "地下",
   "floor" : "{NUMBER}階です。　",
   "ground" : "地上階です。　",
@@ -24,7 +26,7 @@
   "pushNumber" : "行き先階ボタンを押してください。　",
   "upFloor" : "うえにまいります。　",
   "downFloor" : "したにまいります。　",
-  "notStop" : "ランプが点灯しない階には止まりません。　",
+  "notStop" : "ただいま押されたかいにはとまりません。　",
   "emergency" : "エレベーターの状態を確認するため、緊急停止します。 ",
   "return1st" : "確認が完了しました。一階に戻ります。 ",
   "changeNumber" : "行き先階数の変更",
@@ -83,6 +85,6 @@
   "movingElevator" : "エレベーターが動作中のため少々お待ちください",
   "photoAccessRequired" : "写真へのアクセス権の許可\n",
   "photoAccessPermission" : "アルバムから画像選択するため、設定画面で写真へのフルアクセスを許可してください。",
-  "earnMilesAfterAdTitle" : "広告を見て\n{NUMBER}EVマイルゲット!\n",
+  "earnMilesAfterAdTitle" : "広告を見て\n{NUMBER}EVマイル\nゲット!\n",
   "earnMilesAfterAdDesc" : "広告を指定の時間ご覧いただくと、{NUMBER}EVマイルが獲得できます。"
 }

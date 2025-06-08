@@ -57,6 +57,12 @@ class AppLocalizationsJa extends AppLocalizations {
   String get edit => '変更';
 
   @override
+  String get bypass => '通過階';
+
+  @override
+  String get stop => '停止階';
+
+  @override
   String get basement => '地下';
 
   @override
@@ -83,7 +89,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get downFloor => 'したにまいります。　';
 
   @override
-  String get notStop => 'ランプが点灯しない階には止まりません。　';
+  String get notStop => 'ただいま押されたかいにはとまりません。　';
 
   @override
   String get emergency => 'エレベーターの状態を確認するため、緊急停止します。 ';
@@ -118,7 +124,8 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String get aboutEVMile => '\nエレベーターの上下でたまるポイントです。\nEVマイルをためると、メニューの各種設定で、階数や行き先階の画像が変更できます。';
+  String get aboutEVMile =>
+      '\nエレベーターの上下でたまるポイントです。\nEVマイルをためると、メニューの各種設定で、階数や行き先階の画像が変更できます。';
 
   @override
   String get rooftop => '屋上階です。　';
@@ -259,11 +266,12 @@ class AppLocalizationsJa extends AppLocalizations {
   String get photoAccessRequired => '写真へのアクセス権の許可\n';
 
   @override
-  String get photoAccessPermission => 'アルバムから画像選択するため、設定画面で写真へのフルアクセスを許可してください。';
+  String get photoAccessPermission =>
+      'アルバムから画像選択するため、設定画面で写真へのフルアクセスを許可してください。';
 
   @override
   String earnMilesAfterAdTitle(Object NUMBER) {
-    return '広告を見て\n${NUMBER}EVマイルゲット!\n';
+    return '広告を見て\n${NUMBER}EVマイル\nゲット!\n';
   }
 
   @override

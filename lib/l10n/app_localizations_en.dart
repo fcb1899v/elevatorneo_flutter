@@ -12,7 +12,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get letsElevator => 'LETS ELEVATOR NEO';
 
   @override
-  String get thisApp => 'This app is one of the most realistic elevator simulator.';
+  String get thisApp =>
+      'This app is one of the most realistic elevator simulator.';
 
   @override
   String get menu => 'Menu';
@@ -57,6 +58,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get edit => 'EDIT';
 
   @override
+  String get bypass => 'Bypass';
+
+  @override
+  String get stop => 'Stop';
+
+  @override
   String get basement => 'basement ';
 
   @override
@@ -83,7 +90,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get downFloor => 'Going down. ';
 
   @override
-  String get notStop => 'Sorry, the floor selected is a restricted floor. ';
+  String get notStop => 'Sorry, this floor is restricted. ';
 
   @override
   String get emergency => 'Emergency stop for check. ';
@@ -118,7 +125,8 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get aboutEVMile => '\nPoints earned by moving up and down in an elevator. Accumulate these points to customize floor numbers and destination floor images in the menu settings.';
+  String get aboutEVMile =>
+      '\nPoints earned by moving up and down in an elevator. Accumulate these points to customize floor numbers and destination floor images in the menu settings.';
 
   @override
   String get rooftop => 'The top floor, ';
@@ -259,11 +267,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get photoAccessRequired => 'Photo access permission is required\n';
 
   @override
-  String get photoAccessPermission => 'To select your photo, please allow photo full access from settings.';
+  String get photoAccessPermission =>
+      'To select your photo, please allow photo full access from settings.';
 
   @override
   String earnMilesAfterAdTitle(Object NUMBER) {
-    return 'Earn $NUMBER EV miles\nby watching ads\n';
+    return 'Earn\n$NUMBER EV miles\nby watching ads\n';
   }
 
   @override

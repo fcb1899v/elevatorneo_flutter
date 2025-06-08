@@ -1,15 +1,11 @@
 import 'dart:io';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_tts/flutter_tts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vibration/vibration.dart';
 import 'l10n/app_localizations.dart' show AppLocalizations;
 import 'constant.dart';
-import 'my_home_body.dart';
-import 'my_menu.dart';
-import 'my_settings.dart';
+import 'sound_manager.dart';
 
 extension StringExt on String {
 
@@ -18,64 +14,71 @@ extension StringExt on String {
     if (kDebugMode) print(this);
   }
 
-  Future<void> speakText(FlutterTts flutterTts, bool isSoundOn) async {
-    if (isSoundOn) {
-      debugPrint();
-      await flutterTts.stop();
-      await flutterTts.speak(this);
-    }
-  }
-
   //SharedPreferences this is key
-  setSharedPrefString(SharedPreferences prefs, String value) {
-    "$this: $value".debugPrint();
+  void setSharedPrefString(SharedPreferences prefs, String value) {
+    "${replaceAll("Key", "")}: $value".debugPrint();
     prefs.setString(this, value);
   }
-  setSharedPrefInt(SharedPreferences prefs, int value) {
-    "$this: $value".debugPrint();
+  void setSharedPrefInt(SharedPreferences prefs, int value) {
+    "${replaceAll("Key", "")}: $value".debugPrint();
     prefs.setInt(this, value);
   }
-  setSharedPrefBool(SharedPreferences prefs, bool value) {
-    "$this: $value".debugPrint();
+  void setSharedPrefBool(SharedPreferences prefs, bool value) {
+    "${replaceAll("Key", "")}: $value".debugPrint();
     prefs.setBool(this, value);
   }
-  setSharedPrefListString(SharedPreferences prefs, List<String> value) {
-    "$this: $value".debugPrint();
+  void setSharedPrefListString(SharedPreferences prefs, List<String> value) {
+    "${replaceAll("Key", "")}: $value".debugPrint();
     prefs.setStringList(this, value);
   }
-  setSharedPrefListInt(SharedPreferences prefs, List<int> value) {
+  void setSharedPrefListInt(SharedPreferences prefs, List<int> value) {
     for (int i = 0; i < value.length; i++) {
-      prefs.setInt("this$i", value[i]);
+      prefs.setInt("$this$i", value[i]);
     }
-    "$this: $value".debugPrint();
+    "${replaceAll("Key", "")}: $value".debugPrint();
+  }
+  void setSharedPrefListBool(SharedPreferences prefs, List<bool> value) {
+    for (int i = 0; i < value.length; i++) {
+      prefs.setBool("$this$i", value[i]);
+    }
+    "${replaceAll("Key", "")}: $value".debugPrint();
   }
   String getSharedPrefString(SharedPreferences prefs, String defaultString) {
     String value = prefs.getString(this) ?? defaultString;
-    "$this: $value".debugPrint();
+    "${replaceAll("Key", "")}: $value".debugPrint();
     return value;
   }
   int getSharedPrefInt(SharedPreferences prefs, int defaultInt) {
     int value = prefs.getInt(this) ?? defaultInt;
-    "$this: $value".debugPrint();
+    "${replaceAll("Key", "")}: $value".debugPrint();
     return value;
   }
   bool getSharedPrefBool(SharedPreferences prefs, bool defaultBool) {
     bool value = prefs.getBool(this) ?? defaultBool;
-    "$this: $value".debugPrint();
+    "${replaceAll("Key", "")}: $value".debugPrint();
     return value;
   }
   List<String> getSharedPrefListString(SharedPreferences prefs, List<String> defaultList) {
     List<String> values = prefs.getStringList(this) ?? defaultList;
-    "$this: $values".debugPrint();
+    "${replaceAll("Key", "")}: $values".debugPrint();
     return values;
   }
   List<int> getSharedPrefListInt(SharedPreferences prefs, List<int> defaultList) {
     List<int> values = [];
     for (int i = 0; i < defaultList.length; i++) {
-      int v = prefs.getInt("this$i") ?? defaultList[i];
+      int v = prefs.getInt("$this$i") ?? defaultList[i];
       values.add(v);
     }
-    "$this: $values".debugPrint();
+    "${replaceAll("Key", "")}: $values".debugPrint();
+    return (values == []) ? defaultList: values;
+  }
+  List<bool> getSharedPrefListBool(SharedPreferences prefs, List<bool> defaultList) {
+    List<bool> values = [];
+    for (int i = 0; i < defaultList.length; i++) {
+      bool v = prefs.getBool("$this$i") ?? defaultList[i];
+      values.add(v);
+    }
+    "${replaceAll("Key", "")}: $values".debugPrint();
     return (values == []) ? defaultList: values;
   }
 
@@ -85,11 +88,14 @@ extension StringExt on String {
   Image roomImage() => contains("image_cropper") ? cropperImage(): fittedAssetImage();
 
   //this is style
-  String elevatorFrame() => "${assetsElevator}elevatorFrame_$this.png";
+  String elevatorFrame(bool isOutside) => "${assetsElevator}elevatorFrame_$this${isOutside ? "Outside": ""}.png";
   String doorFrame() => "${assetsElevator}doorFrame_$this.png";
   String leftDoor(String glassStyle) => "${assetsElevator}doorLeft_$this${glassStyle == "use" ? "WithGlass": ""}.png";
   String rightDoor(String glassStyle) => "${assetsElevator}doorRight_$this${glassStyle == "use" ? "WithGlass": ""}.png";
   String backGroundImage(String glassStyle) => "$assetsSettings${this}Background${glassStyle == "use" ? "WithGlass": ""}.png";
+  String insideRoom() => "${assetsElevator}inside_$this.png";
+  List<String> insideRoomImages(List<int> floorNumbers, int counter) =>
+      List.generate(initialRoomImages.length, (i) => (counter == floorNumbers[i]) ? insideRoom(): imageDark);
 
   //this is buttonShape
   int buttonShapeIndex() => buttonShapeList.contains(this) ? buttonShapeList.indexOf(this): 0;
@@ -97,11 +103,11 @@ extension StringExt on String {
 
 extension ContextExt on BuildContext {
 
-  void pushMyPage(bool isHome) {
-    Vibration.vibrate(duration: vibTime, amplitude: vibAmp);
+  void pushFadeReplacement(Widget page) {
+    AudioManager().playEffectSound(index: 0, asset: changeModeSound, volume: 1.0);
     Navigator.pushReplacement(this, PageRouteBuilder(
-      pageBuilder: (context, animation, _) => isHome ? MyHomePage(): MyMenuPage(),
-      transitionsBuilder: (context, animation, _, child) => FadeTransition(
+      pageBuilder: (_, animation, __) => page,
+      transitionsBuilder: (_, animation, __, child) => FadeTransition(
         opacity: animation,
         child: child,
       ),
@@ -109,22 +115,18 @@ extension ContextExt on BuildContext {
     ));
   }
 
-  void pushSettingsPage() {
-    Vibration.vibrate(duration: vibTime, amplitude: vibAmp);
-    Navigator.push(this, PageRouteBuilder(
-      pageBuilder: (context, animation, _) => MySettingsPage(),
-      transitionsBuilder: (context, animation, _, child) => FadeTransition(
-        opacity: animation,
-        child: child,
-      ),
-      transitionDuration: const Duration(milliseconds: 500),
-    ));
+  void pushNoBack(Widget page) {
+    AudioManager().playEffectSound(index: 0, asset: changeModeSound, volume: 1.0);
+    Navigator.pushAndRemoveUntil(this,
+      MaterialPageRoute(builder: (_) => page),
+      (route) => false
+    );
   }
-
 
   ///Common
   double width() => MediaQuery.of(this).size.width;
   double height() => MediaQuery.of(this).size.height;
+  double widthResponsible() => (width() < height() / 2) ? width(): height() / 2;
   void popPage() => Navigator.pop(this);
 
   ///Language String
@@ -259,12 +261,13 @@ extension ContextExt on BuildContext {
   List<String> roomNameList() => [...initialRoomName(), ...addRoomName()];
 
   ///Menu
-  String menu() => AppLocalizations.of(this)!.menu;
   String settings() => AppLocalizations.of(this)!.settings;
   String glass() => AppLocalizations.of(this)!.glass;
   String back() => AppLocalizations.of(this)!.back;
   String ok() => AppLocalizations.of(this)!.ok;
   String cancel() => AppLocalizations.of(this)!.cancel;
+  String stop() => AppLocalizations.of(this)!.stop;
+  String bypass() => AppLocalizations.of(this)!.bypass;
   String edit() => AppLocalizations.of(this)!.edit;
   String ranking() => AppLocalizations.of(this)!.ranking;
   String changeNumber() => AppLocalizations.of(this)!.changeNumber;
@@ -282,6 +285,9 @@ extension ContextExt on BuildContext {
   String photoAccessPermission() => AppLocalizations.of(this)!.photoAccessPermission;
   String earnMilesAfterAdTitle(String number) => AppLocalizations.of(this)!.earnMilesAfterAdTitle(number);
   String earnMilesAfterAdDesc(String number) => AppLocalizations.of(this)!.earnMilesAfterAdDesc(number);
+  String landingPageLink() => (lang() == "ja") ? landingPageJa: landingPageEn;
+  String privacyPolicyLink() => (lang() == "ja") ? privacyPolicyJa: privacyPolicyEn;
+  String youtubeLink() => (lang() == "ja") ? youtubeJa: youtubeEn;
 
   List<String> linkLogos() => [
     // if (lang() == "ja") twitterLogo,
@@ -294,9 +300,9 @@ extension ContextExt on BuildContext {
   List<String> linkLinks() => [
     // if (lang() == "ja") elevatorTwitter,
     // if (lang() == "ja") elevatorInstagram,
-    if (Platform.isAndroid) elevatorYoutube,
-    (lang() == "ja") ? landingPageJa: landingPageEn,
-    (lang() == "ja") ? privacyPolicyJa: privacyPolicyEn,
+    if (Platform.isAndroid) youtubeLink(),
+    landingPageLink(),
+    privacyPolicyLink(),
     if (lang() == "ja") shopLink,
   ];
   List<String> linkTitles() => [
@@ -316,44 +322,45 @@ extension ContextExt on BuildContext {
 
   ///Progress Indicator
   double circleSize() => ((height() > width()) ? width(): height()) * 0.1;
-  double circleStrokeWidth() => ((height() > width()) ? width(): height()) * 0.01;
-
-  ///Responsible
-  double responsible() => (height() < responsibleHeight) ? height(): responsibleHeight;
-  double widthResponsible() => (width() < height() / 2) ? width(): height() / 2;
+  double circleStrokeWidth() => ((height() > width()) ? width(): height()) * 0.012;
 
   ///Elevator
   double elevatorWidth() => widthResponsible();
-  double elevatorHeight() => widthResponsible() * elevatorHeightRate;
+  double elevatorHeight() => widthResponsible() * 16/9;
   double doorWidth() => widthResponsible() * 0.355;
   double doorMarginLeft() => widthResponsible() * 0.023;
-  double doorMarginTop() => widthResponsible() * 0.195;
-  double roomHeight() => widthResponsible() * 1.27;
-  double roomWidth() => roomHeight() * 9 / 16;
+  double doorMarginTop() => widthResponsible() * 0.193;
+  double upDownDoorMarginTop() => widthResponsible() * 0.191;
+  double imageMarginTop() => widthResponsible() * 0.045;
+  double changeMarginTop() => widthResponsible() * 0.145;
+  double roomWidth() => widthResponsible() * 0.73;
+  double roomHeight() => roomWidth() * 16/9;
   double floorHeight() => widthResponsible() * 1.57;
   double sideFrameWidth() => widthResponsible() * 0.024;
   double sideSpacerWidth() => (width() - elevatorWidth()) / 2;
-  double menuIconSize() => widthResponsible() * 0.06;
 
   ///Display
-  double displayHeight() => widthResponsible() * 0.12;
-  double displayWidth()  => widthResponsible() * 0.3;
-  double displayMarginTop() => widthResponsible() * 0.035;
-  double displayMarginLeft()  => widthResponsible() * 0.23;
-  double displayNumberHeight() => widthResponsible() * 0.12;
-  double displayNumberWidth() => widthResponsible() * 0.16;
-  double displayArrowHeight() => widthResponsible() * 0.14;
-  double displayArrowWidth() => widthResponsible() * 0.04;
-  double displayArrowMargin() => widthResponsible() * 0.01;
-  double displayNumberFontSize() => widthResponsible() * 0.09;
+  double displayHeight() => widthResponsible() * 0.24;
+  double displayWidth()  => widthResponsible() * 0.18;
+  double displayArrowHeight(int buttonStyle) => widthResponsible() * 0.06;
+  double displayArrowMarginTop(int buttonStyle) => widthResponsible() * 0.04;
+  double displayNumberHeight() => widthResponsible() * 0.10;
+  double displayNumberMarginTop(int buttonStyle) => widthResponsible() * 0.035;
+  double displayNumberMarginRight(int buttonStyle) => widthResponsible() * (buttonStyle == 0 ? 0.012: 0.015);
+  double displayNumberFontSize(int buttonStyle) => widthResponsible() * (buttonStyle == 0 ? 0.063: 0.063);
+  double displayMarginFontSize(int buttonStyle) => widthResponsible() * (buttonStyle == 0 ? 0: 0.03);
+  double displayAlphabetFontSize(int buttonStyle) => widthResponsible() * (buttonStyle == 0 ? 0.065: 0.1);
+  double displayAlphabetMargin(int buttonStyle) => widthResponsible() * (buttonStyle == 0 ? 0: 0.02);
 
   ///Buttons
-  double buttonPanelWidth() =>      widthResponsible() * 0.23;
-  double buttonPanelHeight() =>     widthResponsible() * 0.84;
-  double buttonPanelMarginTop() =>  widthResponsible() * 0.2;
+  double buttonPanelWidth() => widthResponsible() * 0.23;
+  double buttonPanelHeight() => widthResponsible() * 1.05;
+  double buttonPanelMarginTop() => widthResponsible() * 0.1;
   double buttonPanelMarginLeft() => widthResponsible() * 0.76;
-  double buttonSize() =>   widthResponsible() * 0.08;
-  double operationButtonSize() =>   widthResponsible() * 0.085;
+  double buttonSize() => widthResponsible() * 0.08;
+  double operationButtonSize() => widthResponsible() * 0.085;
+  double operationButtonMargin() => widthResponsible() * 0.05;
+  double upDownButtonMargin() => widthResponsible() * 0.05;
   double floorButtonMargin() => widthResponsible() * 0.02;
   double floorButtonNumberFontSize(int i) =>
       widthResponsible() * floorButtonNumberSizeFactor[i] * 0.03;
@@ -363,6 +370,9 @@ extension ContextExt on BuildContext {
       floorButtonNumberMarginFactor[i] < 0 ? 0: widthResponsible() * floorButtonNumberMarginFactor[i];
   double floorButtonNumberMarginBottom(int i) =>
       floorButtonNumberMarginFactor[i] > 0 ? 0: -1 * widthResponsible() * floorButtonNumberMarginFactor[i];
+  double changeViewMarginTop() => widthResponsible() * 0.032;
+  double changeViewMarginLeft() => widthResponsible() * 0.32;
+
 
   ///Tooltip
   double tooltipTitleFontSize() => widthResponsible() * 0.05;
@@ -378,31 +388,28 @@ extension ContextExt on BuildContext {
   double admobWidth() => widthResponsible() - 100;
 
   ///Menu
-  double menuTitleWidth() => widthResponsible() * 0.8;
-  double menuTitleFontSize() => height() * (lang() == "ja" ? 0.032: 0.05);
   double menuButtonSize() => widthResponsible() * 0.28;
-  double menuButtonFontSize() => widthResponsible() * 0.04;
-  double menuButtonBottomMargin() => widthResponsible() * 0.05;
+  double menuButtonMargin() => widthResponsible() * 0.06;
   double menuMarginTop() => height() * 0.02;
   double menuMarginBottom() => height() * 0.25;
-  double menuAlertTitleFontSize()  => (widthResponsible() * 0.045 > 24) ? 24: widthResponsible() * 0.045;
+  double menuAlertTitleFontSize()  => (widthResponsible() * 0.06 > 36) ? 36: widthResponsible() * 0.06;
   double menuAlertDescFontSize()   => (widthResponsible() * 0.032 > 14) ? 14: widthResponsible() * 0.032;
   double menuAlertSelectFontSize() => (widthResponsible() * 0.040 > 24) ? 24: widthResponsible() * 0.040;
   double menuLinksLogoSize() => widthResponsible() * 0.16;
-  double menuLinksTitleSize() => widthResponsible() * ((lang() == "ja" && Platform.isAndroid) ? 0.025: 0.03);
-  double menuLinksMargin() => widthResponsible() * 0.02;
+  double menuLinksTitleSize() => widthResponsible() * (lang() == "en" ? 0.030: 0.025);
+  double menuLinksMargin() => widthResponsible() * 0.01;
 
   ///Settings
   //Divider
   double dividerHeight() => height() * 0.015;
   double dividerThickness() => height() * 0.001;
   //Select top button
-  double settingsSelectButtonSize() => height() * 0.07;
-  double settingsSelectButtonIconSize() => height() * 0.04;
+  double settingsSelectButtonSize() => height() * 0.06;
+  double settingsSelectButtonIconSize() => height() * 0.03;
   double settingsSelectButtonMarginTop() => height() * 0.015;
   double settingsSelectButtonMarginBottom() => height() * 0.007;
   //Common
-  double settingsLockFontSize() => height() * 0.040;
+  double settingsLockFontSize() => height() * 0.03;
   double settingsLockIconSize() => height() * 0.035;
   double settingsLockMargin() => height() * 0.01;
   //Change floor image
@@ -413,21 +420,30 @@ extension ContextExt on BuildContext {
   double settingsFloorImageMargin() => height() * 0.01;
   double settingsArrowMarginTop() => height() * 0.03;
   //Change button number
-  double settingsNumberLockWidth() => height() * 0.18;
-  double settingsNumberLockHeight() => height() * 0.11;
-  double settingsNumberButtonSize()   => height() * 0.09;
-  double settingsNumberButtonFontSize() => height() * 0.03;
-  double settingsNumberButtonMargin() => height() * 0.015;
+  double settingsButtonSize() => height() * 0.07;
+  double settingsButtonNumberSize()   => height() * 0.075;
+  double settingsButtonNumberHideWidth() => height() * 0.15;
+  double settingsButtonNumberFontSize() => height() * 0.03;
+  double settingsButtonNumberMargin() => height() * 0.015;
+  double settingsButtonNumberLockWidth() => height() * 0.18;
+  double settingsButtonNumberLockHeight() => height() * 0.11;
+  //Change floor stop
+  double settingsFloorStopFontSize() => height() * 0.015;
+  double settingsFloorStopMargin() => height() * 0.005;
+  //Change button style
+  double settingsButtonStyleSize() => height() * 0.07;
+  double settingsButtonStyleMargin() => height() * 0.03;
+  double settingsButtonStyleLockWidth() => width() * 0.90;
+  double settingsButtonStyleLockHeight() => height() * 0.19;
+  double settingsButtonStyleLockMargin() => height() * 0.08;
   //Change button shape
-  double settingsShapeButtonSize() => height() * 0.07;
-  double settingsShapeButtonFontSize() => height() * 0.02;
-  double settingsShapeButtonMargin() => height() * 0.025;
-  double settingsShapeButtonMarginTop() => height() * 0.03;
-  double settingsShapeButtonLockHeight() => (settingsShapeButtonSize() + settingsShapeButtonMargin()) * 2;
-  double settingsShapeButtonLockWidth() => width() * 0.9;
-  double settingsShapeButtonLockMarginTop() => height() * 0.112;
-  double settingsShapeButtonLockMarginNext() => height() * 0.141;
-
+  double settingsButtonShapeSize() => height() * 0.07;
+  double settingsButtonShapeFontSize() => height() * 0.02;
+  double settingsButtonShapeMarginTop() => height() * 0.03;
+  double settingsButtonShapeMarginBottom() => height() * 0.025;
+  double settingsButtonShapeLockHeight() => height() * 0.19;
+  double settingsButtonShapeLockWidth() => width() * 0.9;
+  double settingsButtonShapeLockMarginTop() => height() * 0.114;
   //Change background image
   double settingsBackgroundHeight() => height() * 0.27;
   double settingsBackgroundWidth() => settingsBackgroundHeight() * 0.62;
@@ -435,15 +451,19 @@ extension ContextExt on BuildContext {
   double settingsBackgroundLockHeight() => settingsBackgroundHeight() + height() * 0.017;
   double settingsBackgroundLockWidth() => width() * 0.9;
   double settingsBackgroundLockMargin() => height() * 0.292;
-
-  double settingsGlassFontSize() => height() * (lang() == "ja" ? 0.024: 0.032);
+  double settingsBackgroundSelectBorderWidth() =>  height() * 0.007;
+  double settingsGlassFontSize() => height() * (lang() == "en" ? 0.032: 0.024);
   double settingsGlassToggleMargin() => height() * 0.005;
   //Settings Alert Dialog
-  double settingsAlertTitleFontSize() => widthResponsible() * 0.045;
-  double settingsAlertFontSize() => widthResponsible() * 0.04;
-  double settingsAlertSelectFontSize() => widthResponsible() * 0.04;
-  double settingsAlertFloorNumberSize() => widthResponsible() * 0.12;
-  double settingsAlertFloorNumberHeight() => widthResponsible() * 0.2;
+  double settingsAlertTitleFontSize() => widthResponsible() * 0.05;
+  double settingsAlertFontSize() => widthResponsible() * 0.05;
+  double settingsAlertDescFontSize() => widthResponsible() * 0.04;
+  double settingsAlertCloseIconSize() =>  widthResponsible() * 0.1;
+  double settingsAlertCloseIconSpace() =>  widthResponsible() * 0.05;
+  double settingsAlertSelectFontSize() => widthResponsible() * 0.05;
+  double settingsAlertFloorNumberPickerHeight() => widthResponsible() * 0.4;
+  double settingsAlertFloorNumberHeight() => widthResponsible() * 0.16;
+  double settingsAlertFloorNumberFontSize() => widthResponsible() * 0.1;
   double settingsAlertImageSelectHeight() => widthResponsible() * 0.4;
   double settingsAlertDropdownMargin() => widthResponsible() * 0.01;
   double settingsAlertIconSize() => widthResponsible() * 0.06;
@@ -453,7 +473,12 @@ extension ContextExt on BuildContext {
   double settingsAlertLockSpaceSize() => widthResponsible() * 0.02;
   double settingsAlertLockBorderWidth() => widthResponsible() * 0.002;
   double settingsAlertLockBorderRadius() => widthResponsible() * 0.04;
+  //Divider
+  double settingsDividerHeight() => height() * 0.015;
+  double settingsDividerThickness() => height() * 0.001;
 }
+
+
 
 extension IntExt on int {
 
@@ -472,21 +497,37 @@ extension IntExt on int {
   String openButton() => "${assetsButton}open${this + 1}.png";
   String closeButton() => "${assetsButton}close${this + 1}.png";
   String alertButton() => "${assetsButton}phone${this + 1}.png";
+  String upButton() => "${assetsButton}up${this + 1}.png";
+  String downButton() => "${assetsButton}down${this + 1}.png";
   String pressedOpenButton() => "${assetsButton}open${this + 1}Pressed.png";
   String pressedCloseButton() => "${assetsButton}close${this + 1}Pressed.png";
   String pressedAlertButton() => "${assetsButton}phone${this + 1}Pressed.png";
+  String pressedUpButton() => "${assetsButton}up${this + 1}Pressed.png";
+  String pressedDownButton() => "${assetsButton}down${this + 1}Pressed.png";
+
+  ///Elevator inside image
+  //This is currentFloor
+  List<Image> insideImages(String elevatorStyle) =>
+      [for (int i = -6; i <= 163; i++) if (i != 0) ((this == i) ? elevatorStyle.insideRoom(): imageDark).fittedAssetImage()];
 
   ///Display
   // this is counter
   String displayNumber() =>
+      (this == max || this == 0) ? "":
+      (this < 0) ? "${abs()}":
+      "$this";
+  String displayAlphabet() =>
       (this == max) ? "R":
       (this == 0) ? "G":
-      (this < 0) ? "B${abs()}":
-      "$this";
+      (this < 0) ? "B":
+      "";
 
-  String arrowImage(bool isMoving, int nextFloor) =>
-      (isMoving && this < nextFloor) ? upArrow:
-      (isMoving && this > nextFloor) ? downArrow:
+  ///Image Display
+  String upArrow() => "${assetsElevator}up${this + 1}.png";
+  String downArrow() => "${assetsElevator}down${this + 1}.png";
+  String arrowImage(bool isMoving, int nextFloor, int buttonStyle) =>
+      (isMoving && this < nextFloor) ? buttonStyle.upArrow():
+      (isMoving && this > nextFloor) ? buttonStyle.downArrow():
       transpImage;
 
   ///Speed
@@ -660,6 +701,15 @@ extension ListIntExt on List<int> {
     [this[2], this[3]],
     [this[1], this[0]],
   ];
+
+  int selectFirstFloor(int row, int col) =>
+      (row == 3 && col == 3) ? min: this[reversedButtonIndex[row][col] - 1] + 1;
+  int selectLastFloor(int row, int col) =>
+      (row == 0 && col == 3) ? max: this[reversedButtonIndex[row][col] + 1] - 1;
+  int selectDiffFloor(int row, int col) =>
+      selectLastFloor(row, col) - selectFirstFloor(row, col) + 1;
+  int selectedFloor(int index, int row, int col) =>
+      index + selectFirstFloor(row, col);
 }
 
 extension ListStringExt on List<String> {
@@ -706,9 +756,11 @@ extension BoolExt on bool {
   ///This is isPressed
   String pressed() => this ? 'Pressed': '';
   String numberBackground(int buttonStyle, String buttonShape) => "$assetsButton$buttonShape${buttonStyle + 1}${pressed()}.png";
-  String openBackGround(int styleNumber) => this ? styleNumber.pressedOpenButton(): styleNumber.openButton();
-  String closeBackGround(int styleNumber) => this ? styleNumber.pressedCloseButton(): styleNumber.closeButton();
-  String phoneBackGround(int styleNumber) => this ? styleNumber.pressedAlertButton(): styleNumber.alertButton();
+  String openBackGround(int buttonStyle) => this ? buttonStyle.pressedOpenButton(): buttonStyle.openButton();
+  String closeBackGround(int buttonStyle) => this ? buttonStyle.pressedCloseButton(): buttonStyle.closeButton();
+  String phoneBackGround(int buttonStyle) => this ? buttonStyle.pressedAlertButton(): buttonStyle.alertButton();
+  String upBackGround(int buttonStyle) => this ? buttonStyle.pressedUpButton(): buttonStyle.upButton();
+  String downBackGround(int buttonStyle) => this ? buttonStyle.pressedDownButton(): buttonStyle.downButton();
   Color numberColor(int i) => this ? numberColorList[i]: whiteColor;
   Color floorButtonNumberColor(String buttonShape) => numberColor(buttonShape.buttonShapeIndex());
 
@@ -730,19 +782,37 @@ extension BoolExt on bool {
   double operationTopMarginShapeFactor() => this ? 3: 1.6;
   double operationSideMarginShapeFactor() => this ? 1.8: 0.8;
   double emergencyBottomMarginShapeFactor() => this ? 1.8: 0.8;
+
+  //This is isMenu
+  Future<bool> pressedMenu() async {
+    await AudioManager().playEffectSound(index: 0, asset: selectButton, volume: 1.0);
+    await Vibration.vibrate(duration: vibTime, amplitude: vibAmp);
+    return !this;
+  }
 }
 
 extension ListBoolExt on List<bool> {
 
-  List<String> operationButtonImage(int styleNumber) => [
-    this[0].openBackGround(styleNumber),
-    this[1].closeBackGround(styleNumber),
-    this[2].phoneBackGround(styleNumber)
+  List<String> operationButtonImage(int buttonStyle) => [
+    this[0].openBackGround(buttonStyle),
+    this[1].closeBackGround(buttonStyle),
+    this[2].phoneBackGround(buttonStyle),
   ];
 }
 
 extension ListDynamicExt<T> on List<T> {
-  List<List<T>> toGroups(int n) =>
+  List<List<T>> toMatrix(int n) =>
       [for (var i = 0; i < length; i += n) sublist(i, (i + n <= length) ? i + n : length)];
+
+  List<List<T>> toReversedMatrix(int n) {
+    final chunks = <List<T>>[];
+    for (int i = 0; i < length; i += n) {
+      final end = (i + n).clamp(0, length);
+      final chunk = (i == 0) ? sublist(i, end).reversed.toList(): sublist(i, end);
+      chunks.add(chunk);
+    }
+    // "chunks: ${chunks.reversed.toList()}".debugPrint();
+    return chunks.reversed.toList();
+  }
 
 }

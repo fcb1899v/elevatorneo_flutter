@@ -12,10 +12,12 @@ class TtsManager {
 
   final FlutterTts flutterTts = FlutterTts();
 
-  Future<void> speakText(String text) async {
-    await flutterTts.stop();
-    await flutterTts.speak(text);
-    text.debugPrint();
+  Future<void> speakText(String text, bool isSoundOn) async {
+    if (isSoundOn) {
+      await flutterTts.stop();
+      await flutterTts.speak(text);
+      text.debugPrint();
+    }
   }
 
   Future<void> stopTts() async {
@@ -23,16 +25,16 @@ class TtsManager {
     "Stop TTS".debugPrint();
   }
 
-  initTts() async {
+  Future<void> initTts() async {
     await flutterTts.setSharedInstance(true);
     await flutterTts.setIosAudioCategory(
-        IosTextToSpeechAudioCategory.playback,
-        [
-          IosTextToSpeechAudioCategoryOptions.allowBluetooth,
-          IosTextToSpeechAudioCategoryOptions.allowBluetoothA2DP,
-          IosTextToSpeechAudioCategoryOptions.mixWithOthers,
-          IosTextToSpeechAudioCategoryOptions.defaultToSpeaker
-        ]
+      IosTextToSpeechAudioCategory.playback,
+      [
+        IosTextToSpeechAudioCategoryOptions.allowBluetooth,
+        IosTextToSpeechAudioCategoryOptions.allowBluetoothA2DP,
+        IosTextToSpeechAudioCategoryOptions.mixWithOthers,
+        IosTextToSpeechAudioCategoryOptions.defaultToSpeaker
+      ]
     );
     await flutterTts.setVolume(1);
     if (context.mounted) await flutterTts.setLanguage(context.ttsLang());
@@ -44,7 +46,7 @@ class TtsManager {
     }
     await flutterTts.setSpeechRate(0.5);
     if (context.mounted) context.voiceName(Platform.isAndroid).debugPrint();
-    if (context.mounted) speakText(context.pushNumber());
+    if (context.mounted) speakText(context.pushNumber(), true);
   }
 }
 

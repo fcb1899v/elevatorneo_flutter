@@ -9,20 +9,27 @@ import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:letselevatorneo/extension.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'firebase_options.dart';
-import 'games_manager.dart';
 import 'l10n/app_localizations.dart' show AppLocalizations;
-import 'my_home_body.dart';
 import 'constant.dart';
+import 'homepage.dart';
+import 'menu.dart';
+import 'settings.dart';
 
 final isTest = false;
+final isMenuProvider = StateProvider<bool>((ref) => false);
 final floorNumbersProvider = StateProvider<List<int>>((ref) => initialFloorNumbers);
+final floorStopsProvider = StateProvider<List<bool>>((ref) => initialFloorStops);
 final roomImagesProvider = StateProvider<List<String>>((ref) => initialRoomImages);
-final pointProvider = StateProvider<int>((ref) => initialPoint);
 final buttonShapeProvider = StateProvider<String>((ref) => initialButtonShape);
 final buttonStyleProvider = StateProvider<int>((ref) => initialButtonStyle);
 final backgroundStyleProvider = StateProvider<String>((ref) => initialBackgroundStyle);
 final glassStyleProvider = StateProvider<String>((ref) => initialGlassStyle);
+final outsideProvider =  StateProvider<bool>((ref) => true);
+final gamesSignInProvider =  StateProvider<bool>((ref) => false);
+final pointProvider = StateProvider<int>((ref) => 0);
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -35,15 +42,31 @@ Future<void> main() async {
     systemNavigationBarIconBrightness: Brightness.light,
   )); // Status bar style
   await dotenv.load(fileName: "assets/.env");
+  final prefs = await SharedPreferences.getInstance();
+  final savedFloorNumbers = "numbersKey".getSharedPrefListInt(prefs, initialFloorNumbers);
+  final savedFloorStops = "stopsKey".getSharedPrefListBool(prefs, initialFloorStops);
+  final savedButtonShape = "buttonShapeKey".getSharedPrefString(prefs, initialButtonShape);
+  final savedButtonStyle = "buttonStyleKey".getSharedPrefInt(prefs, initialButtonStyle);
+  final savedBackgroundStyle = "backgroundStyleKey".getSharedPrefString(prefs, initialBackgroundStyle);
+  final savedGlassStyle = "glassStyleKey".getSharedPrefString(prefs, initialGlassStyle);
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await FirebaseAppCheck.instance.activate(
     androidProvider: androidProvider,
     appleProvider: appleProvider,
   );
   await MobileAds.instance.initialize();
-  if (!Platform.isAndroid || isTest) await gamesSignIn();
   await initATTPlugin();
-  runApp(ProviderScope(child: const MyApp()));
+  runApp(ProviderScope(
+    overrides: [
+      floorNumbersProvider.overrideWith((ref) => savedFloorNumbers),
+      floorStopsProvider.overrideWith((ref) => savedFloorStops),
+      buttonStyleProvider.overrideWith((ref) => savedButtonStyle),
+      buttonShapeProvider.overrideWith((ref) => savedButtonShape),
+      backgroundStyleProvider.overrideWith((ref) => savedBackgroundStyle),
+      glassStyleProvider.overrideWith((ref) => savedGlassStyle),
+    ],
+    child: const MyApp())
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -60,7 +83,11 @@ class MyApp extends StatelessWidget {
     theme: ThemeData(primarySwatch: Colors.grey),
     debugShowCheckedModeBanner: false,
     initialRoute: "/h",
-    routes: {"/h": (context) => const MyHomePage()},
+    routes: {
+      "/h": (context) => const HomePage(),
+      "/m": (context) => const MenuPage(),
+      "/s": (context) => const SettingsPage(),
+    },
     navigatorObservers: <NavigatorObserver>[
       FirebaseAnalyticsObserver(analytics: FirebaseAnalytics.instance),
       RouteObserver<ModalRoute>()

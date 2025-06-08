@@ -13,10 +13,19 @@ final appleProvider = kDebugMode ? AppleProvider.debug: AppleProvider.appAttestW
 ///最高階と最低階
 const int min = -6;
 const int max = 163;
+const int initialFloor = 2;
 
 /// ボタンの階数
 const List<int> initialFloorNumbers = [
   min, -1, 1, 2, 4, 6, 14, 100, 154, max,
+];
+List<bool> initialFloorStops = List.generate(initialFloorNumbers.length, (_) => true);
+const List<List<int>> reversedButtonIndex = [
+  [8, 9],
+  [6, 7],
+  [4, 5],
+  [2, 3],
+  [1, 0],
 ];
 
 /// Button Index
@@ -35,18 +44,12 @@ List<List<int>> changePointList = [
   [ 1000, 10000],
 ];
 const int albumImagePoint = 2000;
-const initialPoint = 0;
+const int buttonStyleLockPoint = 10000;
+const int buttonShapeLockPoint = 10000;
+const int backgroundLockPoint = 10000;
 const String earnMiles = "1,000";
 const int earnMilesInt = 1000;
 
-/// 停止する：true・しない：false
-const List<List<bool>> isFloors = [
-  [true, true],
-  [true, true],
-  [true, true],
-  [true, true],
-  [true, true],
-];
 
 const String numberValidation = r'-?\d*';
 List<FilteringTextInputFormatter> numberFormat = [
@@ -61,10 +64,10 @@ const int vibAmp = 128;
 const int toolTipTime = 10000; //[msec]
 
 /// エレベータードアの開閉時間
-const int openTime = 10;      //[sec]
-const int waitTime = 2;       //[sec]
-const int flashTime = 500;    //[msec]
-const int snackBarTime = 3;   //[sec]
+const int initialOpenTime = 10; //[sec]
+const int initialWaitTime =  2; //[sec]
+const int flashTime = 500;      //[msec]
+const int snackBarTime = 3;     //[sec]
 
 /// エレベータードアの状態
 final List<bool> openedState = [true, false, false, false];
@@ -92,9 +95,9 @@ const String callSound = "audios/call.mp3";
 
 ///Font
 const String elevatorFont = "cornerstone";
-const String menuFont = "noto";
-const String settingsFont = "noto";
-const String numberFont = "teleIndicators";
+const String normalFont = "noto";
+const List<String> numberFont = ["lcd", "dseg", "dseg"];
+const List<String> alphabetFont = ["lcd", "letsgo", "letsgo"];
 
 ///Image Folder
 const String assetsButton = "assets/images/button/";
@@ -104,7 +107,6 @@ const String assetsRoom = "assets/images/room/";
 const String assetsSettings = "assets/images/settings/";
 
 ///Image Elevator
-const int buttonShapeLockPoint = 10000;
 const int operationButtonCount = 3;
 const int initialButtonStyle = 0;
 String initialButtonShape = buttonShapeList[1];
@@ -119,11 +121,6 @@ const List<String> buttonShapeList = [
   "diamond", "hexagon", "clover",
   "star", "heart", "cat",
 ];
-const List<Color> numberColorList = [
-  lampColor, lampColor, blueLightColor,
-  redLightColor, purpleLightColor, greenLightColor,
-  yellowColor, pinkLightColor, goldLightColor,
-];
 const List<double> floorButtonNumberSizeFactor = [
   1.0, 1.0, 1.0,
   1.0, 1.0, 1.0,
@@ -134,7 +131,6 @@ const List<double> floorButtonNumberMarginFactor = [
   0.0, 0.0, 0.0,
   0.006, -0.01, 0.002,
 ];
-const int backgroundLockPoint = 10000;
 const String leftSideFrame = "${assetsElevator}sideFrameLeft.png";
 const String rightSideFrame = "${assetsElevator}sideFrameRight.png";
 const String pointImage = "${assetsElevator}elevatorPoint.png";
@@ -176,15 +172,13 @@ const List<String> addRoomImages = [
 ];
 const List<String> roomImageList = [...initialRoomImages, ...addRoomImages];
 
-///Image Display
-const String upArrow = "${assetsElevator}up.png";
-const String downArrow = "${assetsElevator}down.png";
 
 ///Image Buttons
 const String transpImage = "${assetsButton}transparent.png";
 const String squareButton = "${assetsButton}normal1.png";
 
 ///Asset Menu
+const String menuBackGroundImage = "${assetsMenu}metal.png";
 const String settingsButton = "${assetsMenu}settings.png";
 const String rankingButton = "${assetsMenu}ranking.png";
 const String adRewardButton = "${assetsMenu}adReward.png";
@@ -200,31 +194,31 @@ const String landingPageJa = "https://nakajimamasao-appstudio.web.app/elevatorne
 const String landingPageEn = "https://nakajimamasao-appstudio.web.app/elevatorneo/";
 const String privacyPolicyJa = "https://nakajimamasao-appstudio.web.app/terms/ja/";
 const String privacyPolicyEn = "https://nakajimamasao-appstudio.web.app/terms/";
+const String youtubeJa = "https://www.youtube.com/watch?v=CQuYL0wG47E";
+const String youtubeEn = "https://www.youtube.com/watch?v=oMhqBiNHAtA";
 const String shopLink = "https://letselevator.designstore.jp";
 const String elevatorTwitter = "https://twitter.com/letselevator";
 const String elevatorInstagram = "https://www.instagram.com/letselevator/";
 const String elevatorYoutube = "https://www.youtube.com/channel/UCIEVfzFOhUTMOXos1zaZrQQ";
 
-///Size
-const double responsibleHeight = 1000;
-const double elevatorHeightRate = 16/9;
-
 /// Color
 const Color lampColor = Color.fromRGBO(247, 178, 73, 1); //#f7b249
 const Color transpLampColor = Color.fromRGBO(247, 178, 73, 0.7);
+const Color lightBlueColor = Colors.lightBlue;
 const Color goldLightColor = Color.fromRGBO(212, 175, 55, 1);
 const Color pinkLightColor = Color.fromRGBO(255, 128, 192, 1);
 const Color redLightColor = Color.fromRGBO(255, 64, 64, 1);
-const Color blueLightColor = Color.fromRGBO(16, 192, 255, 1);
+const Color blueLightColor = Color.fromRGBO(16, 192, 255, 1); //#10c0ff
 const Color purpleLightColor = Color.fromRGBO(192, 128, 255, 1);
 const Color greenLightColor = Color.fromRGBO(64, 255, 64, 1);
 const Color yellowColor = Color.fromRGBO(255, 234, 0, 1); //#ffea00
-const Color greenColor = Color.fromRGBO(105, 184, 0, 1);  //#69b800
+const Color greenColor = Color.fromRGBO(105, 184, 0, 1); //#69b800
 const Color redColor = Color.fromRGBO(255, 0, 0, 1);
 const Color blackColor = Color.fromRGBO(56, 54, 53, 1);
 const Color lightGrayColor =Color.fromRGBO(192, 192, 192, 1);
 const Color grayColor = Colors.grey;
 const Color transpBlackColor = Color.fromRGBO(0, 0, 0, 0.6);
+const Color transpDarkColor = Color.fromRGBO(0, 0, 0, 0.6);
 const Color darkBlackColor = Colors.black;
 const Color transpWhiteColor = Color.fromRGBO(255, 255, 255, 0.95);
 const Color whiteColor = Colors.white;
@@ -236,6 +230,13 @@ const Color metalColor4 = Colors.white10;
 const Color metalColor5 = Colors.black12;
 const List<Color> metalColor = [metalColor1, metalColor2, metalColor3, metalColor4, metalColor5];
 const List<double> metalSort = [0.1, 0.3, 0.4, 0.7, 0.9];
+const List<Color> displayBackgroundColor = [darkBlackColor, darkBlackColor, lightBlueColor];
+const List<Color> displayNumberColor = [lampColor, whiteColor, whiteColor];
+const List<Color> numberColorList = [
+  lampColor, lampColor, blueLightColor,
+  redLightColor, purpleLightColor, greenLightColor,
+  yellowColor, pinkLightColor, goldLightColor,
+];
 
 //＜電球色lampColor＞
 // 電球色 → F7B249

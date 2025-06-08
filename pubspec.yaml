@@ -1,7 +1,7 @@
 name: letselevatorneo
 description: elevatorsimulatorneo
 publish_to: 'none'
-version: 1.4.4+43
+version: 1.5.1+46
 
 environment:
   sdk: '>=2.18.0 <4.0.0'
@@ -9,27 +9,25 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  webview_flutter_android: ^4.4.2
-  webview_flutter: ^4.11.0
+  webview_flutter_android: ^4.7.0
+  webview_flutter: ^4.13.0
   # Firebase Analytics
-  firebase_core: ^3.13.0
-  firebase_analytics: ^11.4.5
-  firebase_app_check: ^0.3.2+5
+  firebase_core: ^3.13.1
+  firebase_analytics: ^11.4.6
+  firebase_app_check: ^0.3.2+6
   # App Icon
   cupertino_icons: ^1.0.8
   flutter_launcher_icons: ^0.14.3
   # Text to Speech
-  flutter_tts: ^4.2.2
+  flutter_tts: ^4.2.3
   # Audio Player
   audioplayers: ^6.4.0
   # Vibration
   vibration: ^3.1.3
   # SharedPreference
   shared_preferences: ^2.5.3
-  # Font
-  google_fonts: ^6.2.1
   # Game Center
-  games_services: ^4.1.0
+  games_services: ^4.1.1
   # Admob
   google_mobile_ads: ^6.0.0
   app_tracking_transparency: ^2.0.6+1
@@ -41,7 +39,7 @@ dependencies:
   hooks_riverpod: ^2.6.1
   flutter_hooks: ^0.21.2
   # Image
-  file_picker: ^10.1.2
+  file_picker: ^10.1.9
   image_picker: ^1.1.2
   image_cropper: ^9.1.0
   path_provider: ^2.1.5
@@ -56,31 +54,43 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^5.0.0
+  flutter_lints: ^6.0.0
   # App Splash
   flutter_native_splash: ^2.4.6
 
-flutter_icons:
-  image_path: "assets/images/menu/iconImage.png"
+flutter_launcher_icons:
   android: true
   ios: true
+  image_path: "assets/icon/icon.png"
+  adaptive_icon_background: "#F7B249"
+  adaptive_icon_foreground: "assets/icon/foreground.png"
+  image_path_ios: "assets/icon/ios.png"
+  adaptive_icon_foreground_inset: 18
+  adaptive_icon_padding: false
   remove_alpha_ios: true
-  adaptive_icon_background: "#f7b249"
-  adaptive_icon_foreground: "assets/images/menu/appIcon.png"
+
+#android: true
+#ios: true
+#image_path: "assets/images/logo/app_icon.png"
+#image_path_android: "assets/images/logo/app_icon.png"
+#background_color_ios: "#FFC68D"
+#adaptive_icon_background: "#FFC68D"
+#adaptive_icon_foreground: "assets/images/logo/app_icon.png"
+#adaptive_icon_foreground_inset: 18
 
 flutter_native_splash:
-  image: "assets/images/menu/appIcon.png"
-  color: "#f7b249"
+  image: "assets/icon/foreground.png"
+  color: "#F7B249"
   android_12:
-    image: "assets/images/menu/appIcon.png"
-    icon_background_color: "#f7b249"
-  ios: false
-  web: false
+    image: "assets/icon/foreground.png"
+    icon_background_color: "#F7B249"
+  ios: true
 
 flutter:
   generate: true
   uses-material-design: true
   assets:
+    - assets/icon/
     - assets/audios/
     - assets/images/button/
     - assets/images/elevator/
@@ -98,3 +108,15 @@ flutter:
     - family: noto
       fonts:
         - asset: assets/fonts/NotoSansJP-Regular.otf
+    #For dot number
+    - family: lcd
+      fonts:
+        - asset: assets/fonts/5x8_lcd_hd44780u_a02.ttf
+    #For digital number
+    - family: dseg
+      fonts:
+        - asset: assets/fonts/DSEG7Classic-BoldItalic.ttf
+    #For digital alphabet
+    - family: letsgo
+      fonts:
+        - asset: assets/fonts/letsgodigital.ttf

@@ -57,6 +57,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get edit => '编辑';
 
   @override
+  String get bypass => '经过层';
+
+  @override
+  String get stop => '停止层';
+
+  @override
   String get basement => '地下';
 
   @override
@@ -83,7 +89,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get downFloor => '向下前往。';
 
   @override
-  String get notStop => '不停靠未点亮的楼层。';
+  String get notStop => '本层不停车。';
 
   @override
   String get emergency => '为了检查电梯状态，将进行紧急停车。';
@@ -118,7 +124,8 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get aboutEVMile => '\n通过电梯上下运动累积的积分。\n积累足够的积分后，您可以在菜单设置中更改楼层数和目的楼层的图片。';
+  String get aboutEVMile =>
+      '\n通过电梯上下运动累积的积分。\n积累足够的积分后，您可以在菜单设置中更改楼层数和目的楼层的图片。';
 
   @override
   String get rooftop => '屋顶层。';

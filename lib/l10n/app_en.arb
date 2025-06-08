@@ -16,6 +16,8 @@
   "ok" : "OK",
   "cancel" : "CANCEL",
   "edit" : "EDIT",
+  "bypass" : "Bypass",
+  "stop" : "Stop",
   "basement" : "basement ",
   "floor" : "{NUMBER} floor, ",
   "ground" : "Ground floor, ",
@@ -24,7 +26,7 @@
   "pushNumber" : "Please press destination floor",
   "upFloor" : "Going up. ",
   "downFloor" : "Going down. ",
-  "notStop" : "Sorry, the floor selected is a restricted floor. ",
+  "notStop" : "Sorry, this floor is restricted. ",
   "emergency" : "Emergency stop for check. ",
   "return1st" : "Check complete. Returning to first floor.",
   "changeNumber" : "Change floor number",
@@ -83,6 +85,6 @@
   "movingElevator" : "Elevator in use, please wait a moment.",
   "photoAccessRequired" : "Photo access permission is required\n",
   "photoAccessPermission" : "To select your photo, please allow photo full access from settings.",
-  "earnMilesAfterAdTitle" : "Earn {NUMBER} EV miles\nby watching ads\n",
+  "earnMilesAfterAdTitle" : "Earn\n{NUMBER} EV miles\nby watching ads\n",
   "earnMilesAfterAdDesc" : "To earn {NUMBER} EV miles, please watch ads for the specified duration."
 }

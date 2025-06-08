@@ -15,6 +15,8 @@
   "back" : "뒤로",
   "ok" : "확인",
   "cancel" : "취소",
+  "bypass" : "통과 층",
+  "stop" : "정지 층",
   "basement" : "지하",
   "edit" : "변경",
   "floor" : "{NUMBER}층에 도착하셨습니다. ",
@@ -24,7 +26,7 @@
   "pushNumber" : "가고 싶은 층 버튼을 누르십시오.",
   "upFloor" : "올라갑니다. ",
   "downFloor" : "내려갑니다. ",
-  "notStop" : "그 층에는 멈추지 않습니다. ",
+  "notStop" : "해당 층에는 정차하지 않습니다. ",
   "emergency" : "엘리베이터의 상태를 확인하기 위해 긴급 정지합니다. ",
   "return1st" : "확인이 완료되었습니다. 1층으로 돌아갑니다.  ",
   "changeNumber" : "목적지 층수 변경",
@@ -83,6 +85,6 @@
   "movingElevator" : "엘리베이터가 운행 중이므로 잠시 기다려 주십시오.",
   "photoAccessRequired" : "사진 접근 권한이 필요합니다.",
   "photoAccessPermission" : "앱 설정에서 사진 전체 액세스를 허용해주세요.",
-  "earnMilesAfterAdTitle" : "광고를 보고\n{NUMBER}EV마일 획득!\n",
+  "earnMilesAfterAdTitle" : "광고를 보고\n{NUMBER}EV마일\n획득!\n",
   "earnMilesAfterAdDesc" : "지정된 시간 동안 광고를 보시면 {NUMBER}EV마일를 획득할 수 있습니다."
 }

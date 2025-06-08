@@ -57,21 +57,21 @@ class PhotoManager {
     return null;
   }
 
-  photoPermissionAlert() => showDialog(
+  void photoPermissionAlert() => showDialog(
     context: context,
     builder: (context) => CupertinoAlertDialog(
       title: Text(context.photoAccessRequired(),
         style: TextStyle(
           color: blackColor,
           fontSize: context.settingsAlertTitleFontSize(),
-          fontFamily: settingsFont,
+          fontFamily: normalFont,
         ),
       ),
       content: Text(context.photoAccessPermission(),
         style: TextStyle(
           color: blackColor,
           fontSize: context.settingsAlertFontSize(),
-          fontFamily: settingsFont,
+          fontFamily: normalFont,
         ),
       ),
       actions: [
@@ -80,7 +80,7 @@ class PhotoManager {
             style: TextStyle(
               color: blackColor,
               fontSize: context.settingsAlertSelectFontSize(),
-              fontFamily: settingsFont,
+              fontFamily: normalFont,
               fontWeight: FontWeight.bold
             ),
           ),
@@ -91,16 +91,20 @@ class PhotoManager {
             style: TextStyle(
               color: blackColor,
               fontSize: context.settingsAlertSelectFontSize(),
-              fontFamily: settingsFont,
+              fontFamily: normalFont,
             ),
           ),
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: () => context.popPage(),
         ),
       ],
     ),
   );
 
-  selectMyPhoto(int row, int col, List<String> currentList) async {
+  Future<List<String>> selectMyPhoto({
+    required int row,
+    required int col,
+    required List<String> currentList
+  }) async {
     final photoPermission = await Permission.photos.status;
     "photoPermission: $photoPermission";
     if (Platform.isAndroid || photoPermission.isGranted) {
@@ -125,7 +129,7 @@ class ImageManager {
   Future<List<String>> getImagesList() async {
     final prefs = await SharedPreferences.getInstance();
     final directory = await getApplicationDocumentsDirectory();
-    final images = prefs.getStringList("roomsKey");
+    final images = prefs.getStringList("floorsKey");
     if (images == null) return initialRoomImages;
     for (int i = 0; i < images.length; i++) {
       if (!(images[i].contains("assets/images/room/"))) {
@@ -148,11 +152,24 @@ class ImageManager {
       final newList = List<int>.from(currentList);
       newList[newIndex] = newValue;
       "newNumber: $newValue".debugPrint();
-      await "floorsKey".setSharedPrefListInt(prefs, newList);
+      "numbersKey".setSharedPrefListInt(prefs, newList);
       return newList;
     } else {
       return currentList;
     }
+  }
+
+  Future<List<bool>> saveFloorStops({
+    required List<bool> currentList,
+    required bool newValue,
+    required int newIndex,
+  }) async {
+    final prefs = await SharedPreferences.getInstance();
+    final newList = List<bool>.from(currentList);
+    newList[newIndex] = newValue;
+    "newNumber: $newValue".debugPrint();
+    "stopsKey".setSharedPrefListBool(prefs, newList);
+    return newList;
   }
 
   Future<List<String>> saveImagePath({
@@ -165,7 +182,7 @@ class ImageManager {
       final newList = List<String>.from(currentList);
       newList[newIndex] = newValue;
       "newPath: $newValue".debugPrint();
-      await "roomsKey".setSharedPrefListString(prefs, newList);
+      "floorsKey".setSharedPrefListString(prefs, newList);
       final images = await getImagesList();
       return images;
     } else {
@@ -180,7 +197,7 @@ class ImageManager {
   }) async {
     if (next != current) {
       final prefs = await SharedPreferences.getInstance();
-      await key.setSharedPrefString(prefs, next);
+      key.setSharedPrefString(prefs, next);
       return next;
     } else {
       return current;
@@ -194,7 +211,7 @@ class ImageManager {
   }) async {
     if (next != current) {
       final prefs = await SharedPreferences.getInstance();
-      await key.setSharedPrefInt(prefs, next);
+      key.setSharedPrefInt(prefs, next);
       return next;
     } else {
       return current;
