@@ -1,103 +1,128 @@
+import 'dart:io';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:games_services/games_services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'extension.dart';
 
-///Signing in to Game Services
-Future<bool> gamesSignIn(bool isGamesSignIn) async {
-  if (isGamesSignIn) {
-    "Already signed in to games services: true".debugPrint();
-    return true;
-  } else {
-    "gamesSignIn".debugPrint();
+class GamesManager {
+
+  final bool isGamesSignIn;
+  final bool isConnectedInternet;
+
+  GamesManager({
+    required this.isGamesSignIn,
+    required this.isConnectedInternet
+  });
+
+  Future<bool> checkConnectedInternet() async {
     try {
-      await GameAuth.signIn();
-      final isSignedIn = await GameAuth.isSignedIn;
-      if (isSignedIn) {
-        'Success to sign in to games services: $isSignedIn'.debugPrint();
-        return true;
-      } else {
-        'Fail to sign in to games services: $isSignedIn'.debugPrint();
-        return false;
-      }
-    } catch (e) {
-      'Fail to sign in to games services: $e'.debugPrint();
+      final result = await InternetAddress.lookup('example.com');
+      return result.isNotEmpty && result[0].rawAddress.isNotEmpty;
+    } catch (_) {
       return false;
     }
   }
-}
 
-///Submitting games score
-Future<void> gamesSubmitScore(int value, bool isGamesSignIn) async {
-  final SharedPreferences prefs = await SharedPreferences.getInstance();
-  final prefBestScore = prefs.getInt('pointKey') ?? 0;
-  final isSignedIn = (isGamesSignIn) ? isGamesSignIn: await gamesSignIn(isGamesSignIn);
-  if (isSignedIn) {
-    "gamesSubmitScore".debugPrint();
-    try {
-      await Leaderboards.submitScore(
-        score: Score(
+  ///Signing in to Game Services
+  Future<bool> gamesSignIn() async {
+    if (!isConnectedInternet) {
+      "Not connected Internet".debugPrint();
+      return false;
+    } else if (isGamesSignIn) {
+      "Already signed in to games services: true".debugPrint();
+      return true;
+    } else {
+      "gamesSignIn".debugPrint();
+      try {
+        await GameAuth.signIn();
+        final isSignedIn = await GameAuth.isSignedIn;
+        if (isSignedIn) {
+          'Success to sign in to games services: $isSignedIn'.debugPrint();
+          return true;
+        } else {
+          'Fail to sign in to games services: $isSignedIn'.debugPrint();
+          return false;
+        }
+      } catch (e) {
+        'Fail to sign in to games services: $e'.debugPrint();
+        return false;
+      }
+    }
+  }
+
+  ///Submitting games score
+  Future<void> gamesSubmitScore(int value) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final savedBestScore = 'pointKey'.getSharedPrefInt(prefs, 0);
+    final isSignedIn = (isGamesSignIn && isConnectedInternet) ? true : await gamesSignIn();
+    if (isSignedIn) {
+      "gamesSubmitScore".debugPrint();
+      try {
+        await Leaderboards.submitScore(
+          score: Score(
+            androidLeaderboardID: dotenv.get("ANDROID_LEADERBOARD_ID"),
+            iOSLeaderboardID: dotenv.get("IOS_LEADERBOARD_ID"),
+            value: value,
+          ),
+        );
+        "Success submitting leaderboard: $value".debugPrint();
+      } catch (e) {
+        'Error submitting score: $e'.debugPrint();
+      }
+    }
+    if (value > savedBestScore) {
+      "pointKey".setSharedPrefInt(prefs, value);
+      "point: $value".debugPrint();
+    }
+  }
+
+  ///Showing games leaderboards
+  Future<void> gamesShowLeaderboard() async {
+    final isSignedIn = (isGamesSignIn && isConnectedInternet) ? true : await gamesSignIn();
+    if (isSignedIn) {
+      "gamesShowLeaderboard".debugPrint();
+      try {
+        await Leaderboards.showLeaderboards(
+            androidLeaderboardID: dotenv.get("ANDROID_LEADERBOARD_ID"),
+            iOSLeaderboardID: dotenv.get("IOS_LEADERBOARD_ID")
+        );
+        "Success showing leaderboard".debugPrint();
+      } catch (e) {
+        'Error showing leaderboards: $e'.debugPrint();
+      }
+    }
+  }
+
+  ///Get best score games leaderboards
+  Future<int> getBestScore() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final savedBestScore = "pointKey".getSharedPrefInt(prefs, 0);
+    "savedBestScore: $savedBestScore".debugPrint();
+    final isSignedIn = (isGamesSignIn && isConnectedInternet) ? true : await gamesSignIn();
+    if (isSignedIn) {
+      try {
+        final gamesBestScore = await Player.getPlayerScore(
           androidLeaderboardID: dotenv.get("ANDROID_LEADERBOARD_ID"),
           iOSLeaderboardID: dotenv.get("IOS_LEADERBOARD_ID"),
-          value: value,
-        ),
-      );
-      "Success submitting leaderboard: $value".debugPrint();
-    } catch (e) {
-      'Error submitting score: $e'.debugPrint();
-    }
-  }
-  if (value > prefBestScore) {
-    "bestScore".setSharedPrefInt(prefs, value);
-    "bestScore: $value".debugPrint();
-  }
-}
-
-///Showing games leaderboards
-Future<void> gamesShowLeaderboard(bool isGamesSignIn) async {
-  final isSignedIn = (isGamesSignIn) ? isGamesSignIn: await gamesSignIn(isGamesSignIn);
-  if (isSignedIn) {
-    "gamesShowLeaderboard".debugPrint();
-    try {
-      await Leaderboards.showLeaderboards(
-        androidLeaderboardID: dotenv.get("ANDROID_LEADERBOARD_ID"),
-        iOSLeaderboardID: dotenv.get("IOS_LEADERBOARD_ID")
-      );
-      "Success showing leaderboard".debugPrint();
-    } catch (e) {
-      'Error showing leaderboards: $e'.debugPrint();
-    }
-  }
-}
-
-///Get best score games leaderboards
-Future<int> getBestScore(bool isGamesSignIn) async {
-  final SharedPreferences prefs = await SharedPreferences.getInstance();
-  final prefBestScore = prefs.getInt('pointKey') ?? 0;
-  final isSignedIn = (isGamesSignIn) ? isGamesSignIn: await gamesSignIn(isGamesSignIn);
-  if (isSignedIn) {
-    "gamesBestScore".debugPrint();
-    try {
-      final gamesBestScore = await Player.getPlayerScore(
-        androidLeaderboardID: dotenv.get("ANDROID_LEADERBOARD_ID"),
-        iOSLeaderboardID: dotenv.get("IOS_LEADERBOARD_ID"),
-      ) ?? 0;
-      "gamesBestScore: $gamesBestScore".debugPrint();
-      if (prefBestScore >= gamesBestScore) {
-        if (gamesBestScore != 0) gamesSubmitScore(prefBestScore, isGamesSignIn);
-        "bestScore: $prefBestScore".debugPrint();
-        return prefBestScore;
-      } else {
-        "pointKey".setSharedPrefInt(prefs, gamesBestScore);
-        "bestScore: $gamesBestScore".debugPrint();
-        return gamesBestScore;
+        ) ?? savedBestScore;
+        "gamesBestScore: $gamesBestScore".debugPrint();
+        if (gamesBestScore > savedBestScore) {
+          'pointKey'.setSharedPrefInt(prefs, gamesBestScore);
+          "gamesBestScore: $gamesBestScore".debugPrint();
+          return savedBestScore;
+        } else {
+          await gamesSubmitScore(savedBestScore);
+          "bestScore: $savedBestScore".debugPrint();
+          return gamesBestScore;
+        }
+      } catch (e) {
+        "bestScore: $savedBestScore (Fail to get from server)".debugPrint();
+        return savedBestScore;
       }
-    } catch (e) {
-      "bestScore: $prefBestScore (Fail to get)".debugPrint();
-      return prefBestScore;
+    } else {
+      "bestScore: $savedBestScore (Can't sign in the server)".debugPrint();
+      return savedBestScore;
     }
-  } else {
-    "bestScore: $prefBestScore (Can't sign in)".debugPrint();
-    return prefBestScore;
   }
+
 }

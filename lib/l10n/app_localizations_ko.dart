@@ -60,7 +60,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get bypass => '통과 층';
 
   @override
-  String get stop => '정지 층';
+  String get stop => '정차 층';
 
   @override
   String get basement => '지하';
@@ -116,7 +116,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get eVMile => 'EV마일';
 
   @override
-  String get eVMileRanking => 'EV마일\n랭킹';
+  String get eVMileRanking => 'EV마일\n순위';
 
   @override
   String earnMile(Object NUMBER) {
@@ -125,7 +125,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get aboutEVMile =>
-      '\n엘리베이터의 상하 운동으로 쌓이는 포인트입니다. \nEV마일이 쌓이면, 메뉴의 각종 설정에서 층수나 목적지 층의 이미지를 변경할 수 있습니다.';
+      '\n엘리베이터를 많이 탈수록 쌓이는 포인트입니다.\nEV 마일을 모으면 다양한 기능이 해제되고, 메뉴의 설정에서 변경할 수 있습니다.';
 
   @override
   String get rooftop => '옥상 층에 도착하셨습니다. ';
@@ -275,6 +275,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String earnMilesAfterAdDesc(Object NUMBER) {
-    return '지정된 시간 동안 광고를 보시면 ${NUMBER}EV마일를 획득할 수 있습니다.';
+    return '지정된 시간 동안 광고를 보시면 ${NUMBER}EV마일을 획득할 수 있습니다.';
   }
 }

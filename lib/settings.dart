@@ -20,8 +20,9 @@ class SettingsPage extends HookConsumerWidget {
 
     final floorNumbers = ref.watch(floorNumbersProvider);
     final floorStops = ref.watch(floorStopsProvider);
-    final roomImages = ref.watch(roomImagesProvider);
+    final roomImages = ref.watch(floorImagesProvider);
     final isGamesSignIn = ref.watch(gamesSignInProvider);
+    final isConnectedInternet = ref.watch(internetProvider);
     final point = ref.watch(pointProvider);
     final buttonShape = ref.watch(buttonShapeProvider);
     final buttonStyle = ref.watch(buttonStyleProvider);
@@ -36,6 +37,7 @@ class SettingsPage extends HookConsumerWidget {
     final selectedNumber = useState(0);
     final showSettingNumber = useState(0);
     final hasScrolledOnce = useState(false);
+    final isLoadingData = useState(false);
     final animationController = useAnimationController(duration:Duration(milliseconds: flashTime))..repeat(reverse: true);
 
     //Class
@@ -50,9 +52,29 @@ class SettingsPage extends HookConsumerWidget {
       backgroundStyle: backgroundStyle,
       glassStyle: glassStyle,
     );
+    final gamesManager = useMemoized(() => GamesManager(
+      isGamesSignIn: isGamesSignIn,
+      isConnectedInternet: isConnectedInternet
+    ));
 
-    // Control scroll position
+    initState() async {
+      isLoadingData.value = true;
+      try {
+        ref.read(internetProvider.notifier).state = await gamesManager.checkConnectedInternet();
+        ref.read(gamesSignInProvider.notifier).state = await gamesManager.gamesSignIn();
+        ref.read(pointProvider.notifier).state = await gamesManager.getBestScore();
+        isLoadingData.value = false;
+      } catch (e) {
+        "Error: $e".debugPrint();
+        isLoadingData.value = false;
+      }
+    }
+
     useEffect(() {
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        await initState();
+      });
+      // Control scroll position
       void listener() {
         if (scrollController.offset > 10) hasScrolledOnce.value = true;
       }
@@ -71,7 +93,7 @@ class SettingsPage extends HookConsumerWidget {
 
     useEffect(() {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!isGamesSignIn) gamesSignIn(isGamesSignIn);
+        if (!isGamesSignIn) gamesManager.gamesSignIn();
         if (scrollController.hasClients) {
           scrollController.jumpTo(scrollController.position.maxScrollExtent);
         }
@@ -96,7 +118,7 @@ class SettingsPage extends HookConsumerWidget {
         onChanged: (String? newValue, int row, int col) async {
           if (newValue != null) {
             Vibration.vibrate(duration: vibTime, amplitude: vibAmp);
-            ref.read(roomImagesProvider.notifier).state = await imageManager.saveImagePath(
+            ref.read(floorImagesProvider.notifier).state = await imageManager.saveImagePath(
               currentList: roomImages,
               newIndex: buttonIndex(row, col),
               newValue: newValue
@@ -106,7 +128,7 @@ class SettingsPage extends HookConsumerWidget {
         },
         onChangedMyPhoto: (row, col) async {
           Vibration.vibrate(duration: vibTime, amplitude: vibAmp);
-          ref.read(roomImagesProvider.notifier).state = await photoManager.selectMyPhoto(
+          ref.read(floorImagesProvider.notifier).state = await photoManager.selectMyPhoto(
             row: row,
             col: col,
             currentList: roomImages
@@ -287,10 +309,15 @@ class SettingsPage extends HookConsumerWidget {
             ]
           ): SizedBox(),
           ///Admob banner space
-          SizedBox(height: context.admobHeight()),
+          Container(
+            height: context.admobHeight(),
+            color: blackColor,
+          )
         ]),
         ///Admob banner
         if (!isTest) const AdBannerWidget(),
+        ///Progress Indicator
+        if (isLoadingData.value) common.commonCircularProgressIndicator(),
       ])
     );
   }
@@ -395,35 +422,26 @@ class SettingsWidget {
     required AnimationController animation,
     required void Function() onPressed,
   }) => AppBar(
+    toolbarHeight: context.settingsAppBarHeight(),
     backgroundColor: blackColor,
-    shadowColor: Colors.transparent,
+    centerTitle: true,
+    shadowColor: darkBlackColor,
     iconTheme: IconThemeData(color: whiteColor),
-    title: Row(children: [
-      Spacer(flex: 1),
-      Container(
-        alignment: Alignment.center,
-        height: 50,
-        margin: EdgeInsets.only(right: 50),
-        child: Text(context.settings(),
-          style: TextStyle(
-            color: whiteColor,
-            fontSize: context.lang() == "en" ? 40: 28,
-            fontFamily: elevatorFont,
-            fontWeight: context.lang() == "en" ? FontWeight.normal: FontWeight.bold
-          ),
-        ),
+    title: Text(context.settings(),
+      style: TextStyle(
+        color: whiteColor,
+        fontSize: context.settingsAppBarFontSize(),
+        fontFamily: context.lang() == "en" ? elevatorFont: normalFont,
+        fontWeight: context.lang() == "en" ? FontWeight.normal: FontWeight.bold
       ),
-      Spacer(flex: 1),
-    ]),
+    ),
     leading: FadeTransition(
       opacity: animation,
       child: Container(
-        margin: EdgeInsets.only(left: 10),
+        margin: EdgeInsets.only(left: context.settingsAppBarBackButtonMargin()),
         child: IconButton(
-          iconSize: 40, // 大きめ
-          icon: const Icon(CupertinoIcons.arrow_left_circle_fill,
-            color: whiteColor
-          ),
+          iconSize: context.settingsAppBarBackButtonSize(),
+          icon: Icon(CupertinoIcons.arrow_left_circle_fill),
           onPressed: onPressed,
         ),
       ),
@@ -538,12 +556,12 @@ class SettingsWidget {
   }) => Container(
     margin: EdgeInsets.all(context.settingsAlertDropdownMargin()),
     child: DropdownButton<String>(
-      value: roomImageList.selectedRoomImage(roomImages, buttonIndex(row, col)),
+      value: floorImageList.selectedRoomImage(roomImages, buttonIndex(row, col)),
       onChanged: (String? newValue) => onChanged(newValue, row, col),
-      items: roomImageList.remainIterable(roomImages, buttonIndex(row, col)).map((image) =>
+      items: floorImageList.remainIterable(roomImages, buttonIndex(row, col)).map((image) =>
         DropdownMenuItem<String>(
           value: image,
-          child: Text(roomImageList.roomName(context, image),
+          child: Text(floorImageList.roomName(context, image),
             style: TextStyle(
               fontSize: context.settingsAlertFontSize(),
               fontFamily: normalFont,
@@ -725,7 +743,8 @@ class SettingsWidget {
               ),
               if (isNotSelectFloor(row.key, col.key)) Container(
                 width: context.settingsButtonNumberHideWidth(),
-                height: context.settingsButtonNumberSize(),
+                height: context.settingsButtonNumberHideHeight(),
+                margin: EdgeInsets.only(right: context.settingsButtonNumberHideMargin()),
                 color: transpBlackColor,
               ),
               /// Lock Overlay
@@ -840,18 +859,21 @@ class SettingsWidget {
       children: [
         Text(floorStops[reversedButtonIndex[row][col]] ? context.stop(): context.bypass(),
           style: TextStyle(
-            color: blackColor,
+            color: whiteColor,
             fontSize: context.settingsFloorStopFontSize(),
             fontFamily: normalFont,
             fontWeight: FontWeight.bold,
           ),
         ),
-        CupertinoSwitch(
-          activeTrackColor: lampColor,
-          inactiveTrackColor: blackColor,
-          thumbColor: whiteColor,
-          value: floorStops[reversedButtonIndex[row][col]],
-          onChanged: (value) => changeFloorStopFlag(value, row, col),
+        Transform.scale(
+          scale: context.settingsFloorStopToggleScale(),
+          child: CupertinoSwitch(
+            activeTrackColor: lampColor,
+            inactiveTrackColor: blackColor,
+            thumbColor: whiteColor,
+            value: floorStops[reversedButtonIndex[row][col]],
+            onChanged: (value) => changeFloorStopFlag(value, row, col),
+          ),
         ),
       ]
     ),
@@ -897,7 +919,7 @@ class SettingsWidget {
       children: [
         Text(context.glass(),
           style: TextStyle(
-            color: blackColor,
+            color: whiteColor,
             fontSize: context.settingsGlassFontSize(),
             fontFamily: elevatorFont,
             fontWeight: context.lang() == "en" ? FontWeight.normal: FontWeight.bold

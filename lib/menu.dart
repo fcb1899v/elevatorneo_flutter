@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -20,12 +21,18 @@ class MenuPage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
 
+    final isConnectedInternet = ref.watch(internetProvider);
     final isGamesSignIn = ref.watch(gamesSignInProvider);
     final RewardedAd? ad = rewardedAd();
+    final isLoadingData = useState(false);
 
     //Class
     final common = CommonWidget(context);
     final menu = MenuWidget(context);
+    final gamesManager = useMemoized(() => GamesManager(
+      isGamesSignIn: isGamesSignIn,
+      isConnectedInternet: isConnectedInternet,
+    ));
 
     ///Show Rewarded Ad
     showRewardedAd() => ad!.show(
@@ -37,7 +44,7 @@ class MenuPage extends HookConsumerWidget {
         ref.read(pointProvider.notifier).update((p) => p + addPoint);
         final newPoint = ref.read(pointProvider.notifier).state;
         "pointKey".setSharedPrefInt(prefs, newPoint);
-        await gamesSubmitScore(newPoint, isGamesSignIn);
+        await gamesManager.gamesSubmitScore(newPoint);
         ref.read(isMenuProvider.notifier).update((f) => !f);
         if (context.mounted) context.pushFadeReplacement(HomePage());
       }
@@ -50,11 +57,32 @@ class MenuPage extends HookConsumerWidget {
         "$ad".debugPrint();
         if (ad != null) menu.rewardedAdPermissionAlert(onTap: () => showRewardedAd());
       } else if (i == 2) {
-        await gamesShowLeaderboard(isGamesSignIn);
+        await gamesManager.gamesShowLeaderboard();
       } else {
-        context.pushFadeReplacement(SettingsPage());
+        if (context.mounted) context.pushFadeReplacement(SettingsPage());
       }
     }
+
+    initState() async {
+      isLoadingData.value = true;
+      try {
+        ref.read(internetProvider.notifier).state = await gamesManager.checkConnectedInternet();
+        ref.read(gamesSignInProvider.notifier).state = await gamesManager.gamesSignIn();
+        ref.read(pointProvider.notifier).state = await gamesManager.getBestScore();
+        isLoadingData.value = false;
+      } catch (e) {
+        "Error: $e".debugPrint();
+        isLoadingData.value = false;
+      }
+    }
+
+    useEffect(() {
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        await initState();
+      });
+      return null;
+    }, []);
+
 
     ///Menu
     return Scaffold(
@@ -67,7 +95,7 @@ class MenuPage extends HookConsumerWidget {
             children: [
               Spacer(flex: 1),
               /// Menu Rows
-              ...List.generate(isGamesSignIn ? 3: 2, (i) =>
+              ...List.generate((isGamesSignIn && isConnectedInternet) ? 3: (isConnectedInternet) ? 2: 1, (i) =>
                 GestureDetector(
                   onTap: () async => await pressedMenuLink(i),
                   child: menu.menuButton(i),
@@ -76,10 +104,15 @@ class MenuPage extends HookConsumerWidget {
               Spacer(flex: 1),
               ///Bottom menu links
               menu.bottomMenuLink(),
-              ///Admob
-              SizedBox(height: context.admobHeight())
+              ///Admob banner space
+              Container(
+                height: context.admobHeight(),
+                color: blackColor,
+              )
             ]
           ),
+          ///Progress Indicator
+          if (isLoadingData.value) common.commonCircularProgressIndicator(),
         ]
       ),
     );

@@ -24,12 +24,13 @@ class HomePage extends HookConsumerWidget {
     final isMenu = ref.watch(isMenuProvider);
     final floorNumbers = ref.watch(floorNumbersProvider);
     final floorStops = ref.watch(floorStopsProvider);
-    final roomImages = ref.watch(roomImagesProvider);
+    final floorImages = ref.watch(floorImagesProvider);
     final buttonShape = ref.watch(buttonShapeProvider);
     final buttonStyle = ref.watch(buttonStyleProvider);
     final backgroundStyle = ref.watch(backgroundStyleProvider);
     final glassStyle = ref.watch(glassStyleProvider);
     final isGamesSignIn = ref.watch(gamesSignInProvider);
+    final isConnectedInternet = ref.watch(internetProvider);
     final point = ref.watch(pointProvider);
 
     //Hooks
@@ -46,36 +47,45 @@ class HomePage extends HookConsumerWidget {
     final isLoadingData = useState(false);
     final imageTopMargin = useState(0.0);
     final imageDurationTime = useState(0);
-    final lifecycle = useAppLifecycleState();
     final isWaitingUp = useState(false);
     final isWaitingDown = useState(false);
     final waitTime = useState(initialWaitTime);
     final openTime = useState(initialOpenTime);
     final animationController = useAnimationController(duration: Duration(milliseconds: flashTime))..repeat(reverse: true);
+    final lifecycle = useAppLifecycleState();
 
     //Manager
     final imageManager = useMemoized(() => ImageManager());
     final ttsManager = useMemoized(() => TtsManager(context: context));
     final audioManager = useMemoized(() => AudioManager());
+    final gamesManager = useMemoized(() => GamesManager(
+      isGamesSignIn: isGamesSignIn,
+      isConnectedInternet: isConnectedInternet,
+    ));
 
     //Class
     final common = CommonWidget(context);
     final home = HomeWidget(context,
-      roomImages: roomImages,
       floorNumbers: floorNumbers,
+      floorStops: floorStops,
+      floorImages: floorImages,
       buttonStyle: buttonStyle,
       buttonShape: buttonShape,
       backgroundStyle: backgroundStyle,
       glassStyle: glassStyle,
+      isGamesSignIn: isGamesSignIn,
+      isConnectedInternet: isConnectedInternet,
+      point: point
     );
 
     initState() async {
       isLoadingData.value = true;
       try {
         if (context.mounted) imageTopMargin.value = context.imageMarginTop() - (max - initialFloor) * context.floorHeight();
-        ref.read(roomImagesProvider.notifier).state = await imageManager.getImagesList();
-        ref.read(gamesSignInProvider.notifier).state = await gamesSignIn(isGamesSignIn);
-        ref.read(pointProvider.notifier).state = await getBestScore(isGamesSignIn);
+        ref.read(floorImagesProvider.notifier).state = await imageManager.getImagesList();
+        ref.read(internetProvider.notifier).state = await gamesManager.checkConnectedInternet();
+        ref.read(gamesSignInProvider.notifier).state = await gamesManager.gamesSignIn();
+        ref.read(pointProvider.notifier).state = await gamesManager.getBestScore();
         await ttsManager.initTts();
         isLoadingData.value = false;
       } catch (e) {
@@ -122,7 +132,7 @@ class HomePage extends HookConsumerWidget {
             if (isMoving.value && (counter.value == nextFloor.value || counter.value == max)) {
               await Future.delayed(Duration(seconds: waitTime.value)).then((_) async {
                 if (counter.value == 1 && context.mounted) imageTopMargin.value = context.imageMarginTop() - (max - 1) * context.floorHeight();
-                if (context.mounted) ttsManager.speakText(context.openingSound(counter.value, counter.value.roomImageFile(floorNumbers, roomImages)), !isOutside.value || currentFloor.value == counter.value);
+                if (context.mounted) ttsManager.speakText(context.openingSound(counter.value, counter.value.roomImageFile(floorNumbers, floorImages)), !isOutside.value || currentFloor.value == counter.value);
                 counter.value.clearLowerFloor(isAboveSelectedList.value, isUnderSelectedList.value);
                 nextFloor.value = counter.value.upNextFloor(isAboveSelectedList.value, isUnderSelectedList.value);
                 if (!isOutside.value) currentFloor.value = counter.value;
@@ -131,7 +141,7 @@ class HomePage extends HookConsumerWidget {
                 if (isOutside.value && counter.value == currentFloor.value) isWaitingDown.value = false;
                 final newPoint = ref.read(pointProvider.notifier).state;
                 "pointKey".setSharedPrefInt(prefs, newPoint);
-                await gamesSubmitScore(newPoint, isGamesSignIn);
+                await gamesManager.gamesSubmitScore(newPoint);
                 if (isEmergency.value) {
                   await Future.delayed(Duration(seconds: waitTime.value)).then((_) async {
                     isEmergency.value = false;
@@ -168,7 +178,7 @@ class HomePage extends HookConsumerWidget {
             if (isMoving.value && (counter.value == nextFloor.value || counter.value == min)) {
               await Future.delayed(Duration(seconds: waitTime.value)).then((_) async {
                 if (counter.value == 1 && context.mounted) imageTopMargin.value = context.imageMarginTop() - (max - 1) * context.floorHeight();
-                if (context.mounted) ttsManager.speakText(context.openingSound(counter.value, counter.value.roomImageFile(floorNumbers, roomImages)), !isOutside.value || currentFloor.value == counter.value);
+                if (context.mounted) ttsManager.speakText(context.openingSound(counter.value, counter.value.roomImageFile(floorNumbers, floorImages)), !isOutside.value || currentFloor.value == counter.value);
                 counter.value.clearUpperFloor(isAboveSelectedList.value, isUnderSelectedList.value);
                 nextFloor.value = counter.value.downNextFloor(isAboveSelectedList.value, isUnderSelectedList.value);
                 if (!isOutside.value) currentFloor.value = counter.value;
@@ -177,7 +187,7 @@ class HomePage extends HookConsumerWidget {
                 if (isOutside.value && counter.value == currentFloor.value) isWaitingDown.value = false;
                 final newPoint = ref.read(pointProvider.notifier).state;
                 "pointKey".setSharedPrefInt(prefs, newPoint);
-                await gamesSubmitScore(newPoint, isGamesSignIn);
+                await gamesManager.gamesSubmitScore(newPoint);
                 if (isEmergency.value) {
                   await Future.delayed(Duration(seconds: waitTime.value)).then((_) async {
                     isEmergency.value = false;
@@ -402,14 +412,15 @@ class HomePage extends HookConsumerWidget {
       return null;
     }, [isDoorState.value]);
 
+    Future<void> pressedMenu() async {
+      await Vibration.vibrate(duration: vibTime, amplitude: vibAmp);
+      ref.read(isMenuProvider.notifier).state = await isMenu.pressedMenu();
+    }
+
     return Scaffold(
       backgroundColor: blackColor,
       ///My AppBar
-      appBar: home.homeAppBar(
-        isGamesSignIn: isGamesSignIn,
-        point: point,
-        onPressed: () async => ref.read(isMenuProvider.notifier).state = await isMenu.pressedMenu()
-      ),
+      appBar: home.homeAppBar(onPressed: () => pressedMenu()),
       ///Body
       body: SafeArea(
         top: true,
@@ -420,7 +431,7 @@ class HomePage extends HookConsumerWidget {
             maxScale: 1.5,
             child: Stack(children: [
               ///Room Image
-              home.floorImages(
+              home.floorImagesWidget(
                 currentFloorNumber: currentFloor.value,
                 isOutside: isOutside.value,
                 margin: imageTopMargin.value,
@@ -566,75 +577,87 @@ class HomePage extends HookConsumerWidget {
 
 class HomeWidget {
   final BuildContext context;
-  final List<String> roomImages;
   final List<int> floorNumbers;
+  final List<bool> floorStops;
+  final List<String> floorImages;
   final int buttonStyle;
   final String buttonShape;
   final String glassStyle;
   final String backgroundStyle;
+  final bool isGamesSignIn;
+  final bool isConnectedInternet;
+  final int point;
 
   HomeWidget(this.context, {
-    required this.roomImages,
     required this.floorNumbers,
+    required this.floorStops,
+    required this.floorImages,
     required this.buttonStyle,
     required this.buttonShape,
     required this.glassStyle,
     required this.backgroundStyle,
+    required this.isGamesSignIn,
+    required this.isConnectedInternet,
+    required this.point,
   });
 
   ///AppBar
   AppBar homeAppBar({
-    required bool isGamesSignIn,
-    required int point,
     required void Function() onPressed,
   }) => AppBar(
+    toolbarHeight: context.settingsAppBarHeight(),
     backgroundColor: blackColor,
-    shadowColor: Colors.transparent,
+    shadowColor: darkBlackColor,
+    iconTheme: IconThemeData(color: whiteColor),
     automaticallyImplyLeading: false,
     title: Row(children: [
-      evMileageIcon(isGamesSignIn),
-      evMileage(point),
+      //Icon for EV Mileage
+      GestureDetector(
+        onTap: () async {
+          await Vibration.vibrate(duration: vibTime, amplitude: vibAmp);
+          await GamesManager(isGamesSignIn: isGamesSignIn, isConnectedInternet: isConnectedInternet).gamesShowLeaderboard();
+        },
+        child: Image.asset(pointImage,
+          height: context.homeAppBarIconSize()
+        ),
+      ),
+      //EV Mileage
+      Container(
+        margin: EdgeInsets.only(
+          left: context.homeAppBarPointMarginLeft(),
+          bottom: context.homeAppBarPointMarginBottom()
+        ),
+        child: HookBuilder(
+          builder: (context) => Text(isTest ? "99999": "$point",
+            style: TextStyle(
+              color: lampColor,
+              fontSize: context.homeAppBarPointFontSize(),
+              fontWeight: FontWeight.normal,
+              fontFamily: numberFont[0],
+            ),
+          ),
+        ),
+      ),
       evMileTooltip(),
     ]),
     actions: [
-      IconButton(
-        icon: Icon(Icons.menu, color: whiteColor, size: 35),
-        onPressed: onPressed,
-      ),
-      const SizedBox(width: 15),
-    ],
-  );
-
-  //EV Mileage Icon
-  Widget evMileageIcon(bool isGamesSignIn) => GestureDetector(
-    onTap: () async {
-      await Vibration.vibrate(duration: vibTime, amplitude: vibAmp);
-      await gamesShowLeaderboard(isGamesSignIn);
-    },
-    child: Image.asset(pointImage, height: 40),
-  );
-
-  //EV Mileage
-  Container evMileage(int point) => Container(
-    height: 50,
-    margin: const EdgeInsets.only(left: 10),
-    child: HookBuilder(
-      builder: (context) => Text(isTest ? "99999": "$point",
-        style: TextStyle(
-          color: lampColor,
-          fontSize: 35,
-          fontWeight: FontWeight.normal,
-          fontFamily: numberFont[0],
+      GestureDetector(
+        onTap: onPressed,
+        child: Container(
+          margin: EdgeInsets.only(right: context.homeAppBarMenuButtonMargin()),
+          child: Icon(Icons.menu,
+            size: context.homeAppBarMenuButtonSize(),
+          ),
         ),
       ),
-    ),
+    ],
   );
 
   //Tooltip for EV Mileage
   Container evMileTooltip() => Container(
-    height: 40,
+    height: context.tooltipHeight(),
     alignment: Alignment.topCenter,
-    margin: const EdgeInsets.only(left: 5),
+    margin: EdgeInsets.only(left: context.tooltipMarginLeft()),
     child: Tooltip(
       richMessage: TextSpan(
         children: <InlineSpan>[
@@ -671,26 +694,26 @@ class HomeWidget {
           ),
         ],
       ),
-      padding: EdgeInsets.all(context.tooltipPaddingSize()), //吹き出しのpadding
-      margin: EdgeInsets.all(context.tooltipMarginSize()), //吹き出しのmargin
-      verticalOffset: context.tooltipOffsetSize(), //childのwidget２ら垂直方向にどれだけ離すか
-      preferBelow: true, //メッセージを子widgetの上に出すか下に出すか
+      padding: EdgeInsets.all(context.tooltipPaddingSize()),
+      margin: EdgeInsets.all(context.tooltipMarginSize()),
+      verticalOffset: context.tooltipOffsetSize(),
+      preferBelow: true, //isBelow for tooltip position
       decoration: BoxDecoration(
         color: transpBlackColor,
         borderRadius: BorderRadius.all(Radius.circular(context.tooltipBorderRadius()))
-      ),//吹き出しの形や色の調整
+      ),
       showDuration: const Duration(milliseconds: toolTipTime),
       triggerMode: TooltipTriggerMode.tap,
       enableFeedback: true,
-      child: const Icon(CupertinoIcons.question_circle,
+      child: Icon(CupertinoIcons.question_circle,
         color: Colors.white,
-        size: 15,
+        size: context.tooltipIconSize(),
       ),
     ),
   );
 
   ///floor image
-  AnimatedPositioned floorImages({
+  AnimatedPositioned floorImagesWidget({
     required int currentFloorNumber,
     required bool isOutside,
     required double margin,
@@ -700,7 +723,7 @@ class HomeWidget {
     top: margin,
     left: context.doorMarginLeft() + context.sideSpacerWidth(),
     child: Column(
-      children: roomImages.floorImages(floorNumbers).reversed.map((img) => Column(
+      children: floorImages.floorImages(floorNumbers).reversed.map((img) => Column(
         children: [
           SizedBox(
             width: context.roomWidth(),

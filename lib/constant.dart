@@ -161,16 +161,16 @@ const String imageSweets  = "${assetsRoom}20sweets.jpg";
 const String imageFurnit  = "${assetsRoom}21furniture.jpg";
 const String imageCinema  = "${assetsRoom}22cinema.jpg";
 
-const List<String> initialRoomImages = [
+const List<String> initialFloorImages = [
   imageParking, imageStation, imageSuper, imageArcade, imageFood,
   imageBook, imageSpa, imageRest, imageVip, imageTop
 ];
-const List<String> addRoomImages = [
+const List<String> addFloorImages = [
   imageApparel, imageElectro, imagePark, imageOutdoor, imageCandy,
   imageToy, imageLuxury, imageSports, imageGym, imageSweets,
   imageFurnit, imageCinema
 ];
-const List<String> roomImageList = [...initialRoomImages, ...addRoomImages];
+const List<String> floorImageList = [...initialFloorImages, ...addFloorImages];
 
 
 ///Image Buttons

@@ -327,7 +327,7 @@ abstract class AppLocalizations {
   /// No description provided for @aboutEVMile.
   ///
   /// In en, this message translates to:
-  /// **'\nPoints earned by moving up and down in an elevator. Accumulate these points to customize floor numbers and destination floor images in the menu settings.'**
+  /// **'\nPoints accumulated through frequent elevator rides.\nAccumulated EV miles unlock various features, which can be adjusted in the menu settings.'**
   String get aboutEVMile;
 
   /// No description provided for @rooftop.

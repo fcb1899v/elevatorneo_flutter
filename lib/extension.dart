@@ -93,9 +93,9 @@ extension StringExt on String {
   String leftDoor(String glassStyle) => "${assetsElevator}doorLeft_$this${glassStyle == "use" ? "WithGlass": ""}.png";
   String rightDoor(String glassStyle) => "${assetsElevator}doorRight_$this${glassStyle == "use" ? "WithGlass": ""}.png";
   String backGroundImage(String glassStyle) => "$assetsSettings${this}Background${glassStyle == "use" ? "WithGlass": ""}.png";
-  String insideRoom() => "${assetsElevator}inside_$this.png";
-  List<String> insideRoomImages(List<int> floorNumbers, int counter) =>
-      List.generate(initialRoomImages.length, (i) => (counter == floorNumbers[i]) ? insideRoom(): imageDark);
+  String insideElevator() => "${assetsElevator}inside_$this.png";
+  List<String> insideElevatorImages(List<int> floorNumbers, int counter) =>
+      List.generate(initialFloorImages.length, (i) => (counter == floorNumbers[i]) ? insideElevator(): imageDark);
 
   //this is buttonShape
   int buttonShapeIndex() => buttonShapeList.contains(this) ? buttonShapeList.indexOf(this): 0;
@@ -105,22 +105,15 @@ extension ContextExt on BuildContext {
 
   void pushFadeReplacement(Widget page) {
     AudioManager().playEffectSound(index: 0, asset: changeModeSound, volume: 1.0);
-    Navigator.pushReplacement(this, PageRouteBuilder(
+    Navigator.pushAndRemoveUntil(this, PageRouteBuilder(
       pageBuilder: (_, animation, __) => page,
       transitionsBuilder: (_, animation, __, child) => FadeTransition(
         opacity: animation,
         child: child,
       ),
       transitionDuration: const Duration(milliseconds: 500),
-    ));
-  }
-
-  void pushNoBack(Widget page) {
-    AudioManager().playEffectSound(index: 0, asset: changeModeSound, volume: 1.0);
-    Navigator.pushAndRemoveUntil(this,
-      MaterialPageRoute(builder: (_) => page),
-      (route) => false
-    );
+    ),
+    (route) => false);
   }
 
   ///Common
@@ -324,6 +317,28 @@ extension ContextExt on BuildContext {
   double circleSize() => ((height() > width()) ? width(): height()) * 0.1;
   double circleStrokeWidth() => ((height() > width()) ? width(): height()) * 0.012;
 
+  ///AppBar
+  double homeAppBarHeight() => height() * 0.07;
+  double homeAppBarIconSize() => widthResponsible() * 0.09;
+  double homeAppBarIconMarginLeft() => widthResponsible() * 0.02;
+  double homeAppBarPointFontSize() => widthResponsible() * 0.08;
+  double homeAppBarPointMarginLeft() => widthResponsible() * 0.04;
+  double homeAppBarPointMarginBottom() => widthResponsible() * 0.01;
+  double homeAppBarMenuButtonSize() => widthResponsible() * 0.09;
+  double homeAppBarMenuButtonMargin() => widthResponsible() * 0.045;
+
+  ///Tooltip
+  double tooltipIconSize() => widthResponsible() * 0.04;
+  double tooltipHeight() => widthResponsible() * 0.09;
+  double tooltipMarginLeft() => widthResponsible() * 0.01;
+  double tooltipTitleFontSize() => widthResponsible() * 0.05;
+  double tooltipDescFontSize() => widthResponsible() *0.04;
+  double tooltipTitleMargin() => widthResponsible() * 0.01;
+  double tooltipPaddingSize() => widthResponsible() * 0.04;
+  double tooltipMarginSize() => widthResponsible() * 0.02;
+  double tooltipBorderRadius() => widthResponsible() * 0.04;
+  double tooltipOffsetSize() => widthResponsible() * 0.02;
+
   ///Elevator
   double elevatorWidth() => widthResponsible();
   double elevatorHeight() => widthResponsible() * 16/9;
@@ -373,16 +388,6 @@ extension ContextExt on BuildContext {
   double changeViewMarginTop() => widthResponsible() * 0.032;
   double changeViewMarginLeft() => widthResponsible() * 0.32;
 
-
-  ///Tooltip
-  double tooltipTitleFontSize() => widthResponsible() * 0.05;
-  double tooltipDescFontSize() => widthResponsible() *0.04;
-  double tooltipTitleMargin() => widthResponsible() * 0.01;
-  double tooltipPaddingSize() => widthResponsible() * 0.04;
-  double tooltipMarginSize() => widthResponsible() * 0.02;
-  double tooltipBorderRadius() => widthResponsible() * 0.04;
-  double tooltipOffsetSize() => widthResponsible() * 0.02;
-
   ///Admob
   double admobHeight() => (height() < 600) ? 50: (height() < 1000) ? (height() / 8 - 25): 100;
   double admobWidth() => widthResponsible() - 100;
@@ -400,9 +405,11 @@ extension ContextExt on BuildContext {
   double menuLinksMargin() => widthResponsible() * 0.01;
 
   ///Settings
-  //Divider
-  double dividerHeight() => height() * 0.015;
-  double dividerThickness() => height() * 0.001;
+  //App Bar
+  double settingsAppBarHeight() => height() * 0.07;
+  double settingsAppBarFontSize() => height() * (lang() == "en" ? 0.045: 0.032);
+  double settingsAppBarBackButtonSize() => height() * 0.05;
+  double settingsAppBarBackButtonMargin() => height() * 0.01;
   //Select top button
   double settingsSelectButtonSize() => height() * 0.06;
   double settingsSelectButtonIconSize() => height() * 0.03;
@@ -422,14 +429,17 @@ extension ContextExt on BuildContext {
   //Change button number
   double settingsButtonSize() => height() * 0.07;
   double settingsButtonNumberSize()   => height() * 0.075;
-  double settingsButtonNumberHideWidth() => height() * 0.15;
+  double settingsButtonNumberHideWidth() => height() * 0.165;
+  double settingsButtonNumberHideHeight() => height() * 0.085;
+  double settingsButtonNumberHideMargin() => height() * 0.009;
   double settingsButtonNumberFontSize() => height() * 0.03;
   double settingsButtonNumberMargin() => height() * 0.015;
-  double settingsButtonNumberLockWidth() => height() * 0.18;
+  double settingsButtonNumberLockWidth() => height() * 0.20;
   double settingsButtonNumberLockHeight() => height() * 0.11;
   //Change floor stop
   double settingsFloorStopFontSize() => height() * 0.015;
   double settingsFloorStopMargin() => height() * 0.005;
+  double settingsFloorStopToggleScale() => height() * 0.001;
   //Change button style
   double settingsButtonStyleSize() => height() * 0.07;
   double settingsButtonStyleMargin() => height() * 0.03;
@@ -508,7 +518,7 @@ extension IntExt on int {
   ///Elevator inside image
   //This is currentFloor
   List<Image> insideImages(String elevatorStyle) =>
-      [for (int i = -6; i <= 163; i++) if (i != 0) ((this == i) ? elevatorStyle.insideRoom(): imageDark).fittedAssetImage()];
+      [for (int i = -6; i <= 163; i++) if (i != 0) ((this == i) ? elevatorStyle.insideElevator(): imageDark).fittedAssetImage()];
 
   ///Display
   // this is counter
@@ -742,7 +752,7 @@ extension ListStringExt on List<String> {
       roomImages[buttonIndex];
   //room name
   String roomName(BuildContext context, String image) =>
-      context.roomNameList()[roomImageList.indexOf(image)];
+      context.roomNameList()[floorImageList.indexOf(image)];
   String remainName(BuildContext context, List<String> roomImages, int buttonIndex) =>
       context.roomNameList()[remainIndex(roomImages, buttonIndex)];
   String selectedRoomName(BuildContext context, List<String> roomImages, int buttonIndex) =>

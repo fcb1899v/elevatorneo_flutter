@@ -12,6 +12,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:letselevatorneo/extension.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'firebase_options.dart';
+import 'games_manager.dart';
 import 'l10n/app_localizations.dart' show AppLocalizations;
 import 'constant.dart';
 import 'homepage.dart';
@@ -19,16 +20,18 @@ import 'menu.dart';
 import 'settings.dart';
 
 final isTest = false;
+// final isTest = true;
 final isMenuProvider = StateProvider<bool>((ref) => false);
 final floorNumbersProvider = StateProvider<List<int>>((ref) => initialFloorNumbers);
 final floorStopsProvider = StateProvider<List<bool>>((ref) => initialFloorStops);
-final roomImagesProvider = StateProvider<List<String>>((ref) => initialRoomImages);
+final floorImagesProvider = StateProvider<List<String>>((ref) => initialFloorImages);
 final buttonShapeProvider = StateProvider<String>((ref) => initialButtonShape);
 final buttonStyleProvider = StateProvider<int>((ref) => initialButtonStyle);
 final backgroundStyleProvider = StateProvider<String>((ref) => initialBackgroundStyle);
 final glassStyleProvider = StateProvider<String>((ref) => initialGlassStyle);
-final outsideProvider =  StateProvider<bool>((ref) => true);
-final gamesSignInProvider =  StateProvider<bool>((ref) => false);
+final outsideProvider = StateProvider<bool>((ref) => true);
+final gamesSignInProvider = StateProvider<bool>((ref) => false);
+final internetProvider = StateProvider<bool>((ref) => false);
 final pointProvider = StateProvider<int>((ref) => 0);
 
 Future<void> main() async {
@@ -49,6 +52,9 @@ Future<void> main() async {
   final savedButtonStyle = "buttonStyleKey".getSharedPrefInt(prefs, initialButtonStyle);
   final savedBackgroundStyle = "backgroundStyleKey".getSharedPrefString(prefs, initialBackgroundStyle);
   final savedGlassStyle = "glassStyleKey".getSharedPrefString(prefs, initialGlassStyle);
+  final isConnectedInternet = await GamesManager(isGamesSignIn: false, isConnectedInternet: false).checkConnectedInternet();
+  final isGamesSignIn = await GamesManager(isGamesSignIn: false, isConnectedInternet: isConnectedInternet).gamesSignIn();
+  final savedPoint = await GamesManager(isGamesSignIn: isGamesSignIn, isConnectedInternet: isConnectedInternet).getBestScore();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await FirebaseAppCheck.instance.activate(
     androidProvider: androidProvider,
@@ -64,6 +70,8 @@ Future<void> main() async {
       buttonShapeProvider.overrideWith((ref) => savedButtonShape),
       backgroundStyleProvider.overrideWith((ref) => savedBackgroundStyle),
       glassStyleProvider.overrideWith((ref) => savedGlassStyle),
+      gamesSignInProvider.overrideWith((ref) => isGamesSignIn),
+      pointProvider.overrideWith((ref) => savedPoint),
     ],
     child: const MyApp())
   );

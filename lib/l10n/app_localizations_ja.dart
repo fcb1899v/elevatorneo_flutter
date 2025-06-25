@@ -125,7 +125,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get aboutEVMile =>
-      '\nエレベーターの上下でたまるポイントです。\nEVマイルをためると、メニューの各種設定で、階数や行き先階の画像が変更できます。';
+      '\nエレベーターの乗れば乗るほどたまるポイントです。\nEVマイルをためると、様々な機能が解放され、メニューの各種設定で変更できます。';
 
   @override
   String get rooftop => '屋上階です。　';

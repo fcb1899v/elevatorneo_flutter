@@ -126,7 +126,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get aboutEVMile =>
-      '\nPoints earned by moving up and down in an elevator. Accumulate these points to customize floor numbers and destination floor images in the menu settings.';
+      '\nPoints accumulated through frequent elevator rides.\nAccumulated EV miles unlock various features, which can be adjusted in the menu settings.';
 
   @override
   String get rooftop => 'The top floor, ';

@@ -130,11 +130,11 @@ class ImageManager {
     final prefs = await SharedPreferences.getInstance();
     final directory = await getApplicationDocumentsDirectory();
     final images = prefs.getStringList("floorsKey");
-    if (images == null) return initialRoomImages;
+    if (images == null) return initialFloorImages;
     for (int i = 0; i < images.length; i++) {
       if (!(images[i].contains("assets/images/room/"))) {
         final newPath = path.join(directory.path, images[i]);
-        images[i] = (await File(newPath).exists()) ? newPath: initialRoomImages[i];
+        images[i] = (await File(newPath).exists()) ? newPath: initialFloorImages[i];
         "newPath[$i]: ${images[i]}".debugPrint();
       }
     }
