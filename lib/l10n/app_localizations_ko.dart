@@ -277,4 +277,12 @@ class AppLocalizationsKo extends AppLocalizations {
   String earnMilesAfterAdDesc(Object NUMBER) {
     return '지정된 시간 동안 광고를 보시면 ${NUMBER}EV마일을 획득할 수 있습니다.';
   }
+
+  @override
+  String get notConnectedInternet => '인터넷 연결이 없습니다';
+
+  @override
+  String notSignedInGameCenter(Object Platform) {
+    return '$Platform에 로그인해주세요';
+  }
 }

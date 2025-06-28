@@ -86,5 +86,7 @@
   "photoAccessRequired" : "写真へのアクセス権の許可\n",
   "photoAccessPermission" : "アルバムから画像選択するため、設定画面で写真へのフルアクセスを許可してください。",
   "earnMilesAfterAdTitle" : "広告を見て\n{NUMBER}EVマイル\nゲット!\n",
-  "earnMilesAfterAdDesc" : "広告を指定の時間ご覧いただくと、{NUMBER}EVマイルが獲得できます。"
+  "earnMilesAfterAdDesc" : "広告を指定の時間ご覧いただくと、{NUMBER}EVマイルが獲得できます。",
+  "notConnectedInternet" : "インターネット接続がありません",
+  "notSignedInGameCenter" : "{Platform}にサインインが必要です"
 }

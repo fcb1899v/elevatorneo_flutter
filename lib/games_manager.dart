@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'dart:io';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:games_services/games_services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -14,11 +16,25 @@ class GamesManager {
     required this.isConnectedInternet
   });
 
-  Future<bool> checkConnectedInternet() async {
+  Future<bool> checkInternetConnection() async {
+    final Duration timeout = const Duration(seconds: 5);
+    final connectivity = await Connectivity().checkConnectivity();
+    if (connectivity == ConnectivityResult.none) return false;
     try {
-      final result = await InternetAddress.lookup('example.com');
-      return result.isNotEmpty && result[0].rawAddress.isNotEmpty;
-    } catch (_) {
+      final socket = await Socket.connect('1.1.1.1', 53, timeout: timeout);
+      socket.destroy();
+      return true;
+    } on SocketException catch (e) {
+      "SocketException: $e".debugPrint();
+    }
+    try {
+      final res = await InternetAddress.lookup('example.com').timeout(timeout);
+      return res.isNotEmpty && res[0].rawAddress.isNotEmpty;
+    } on TimeoutException catch (e) {
+      "TimeoutException: $e".debugPrint();
+      return false;
+    } on SocketException catch (e) {
+      "SocketException: $e".debugPrint();
       return false;
     }
   }

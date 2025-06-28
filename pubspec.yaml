@@ -1,7 +1,7 @@
 name: letselevatorneo
 description: elevatorsimulatorneo
 publish_to: 'none'
-version: 1.5.5+50
+version: 1.5.8+53
 
 environment:
   sdk: '>=2.18.0 <4.0.0'
@@ -60,10 +60,10 @@ dev_dependencies:
   flutter_native_splash: ^2.4.6
 
 flutter_native_splash:
-  image: "assets/icon/foreground.png"
+  image: "assets/icon/icon.png"
   color: "#F7B249"
   android_12:
-    image: "assets/icon/foreground.png"
+    image: "assets/icon/icon_splash.png"
     icon_background_color: "#F7B249"
   ios: true
 
@@ -73,6 +73,7 @@ flutter:
   assets:
     - assets/icon/
     - assets/audios/
+    - assets/images/
     - assets/images/button/
     - assets/images/elevator/
     - assets/images/room/
@@ -80,15 +81,26 @@ flutter:
     - assets/images/settings/
     - assets/.env
   fonts:
-    - family: teleIndicators
-      fonts:
-        - asset: assets/fonts/teleindicadores.ttf
+    #For title font
     - family: cornerstone
       fonts:
         - asset: assets/fonts/cornerstone.ttf
-    - family: noto
+    #For English font
+    - family: roboto
       fonts:
-        - asset: assets/fonts/NotoSansJP-Regular.otf
+        - asset: assets/fonts/Roboto-Bold.ttf
+    #For Japanese font
+    - family: notoJP
+      fonts:
+        - asset: assets/fonts/NotoSansJP-Bold.ttf
+    #For Chinese font
+    - family: notoSC
+      fonts:
+        - asset: assets/fonts/NotoSansSC-Bold.ttf
+    #For Korean font
+    - family: bmDohyeon
+      fonts:
+        - asset: assets/fonts/bm-dohyeon.regular.ttf
     #For dot number
     - family: lcd
       fonts:

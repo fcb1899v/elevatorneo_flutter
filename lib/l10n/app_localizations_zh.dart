@@ -277,4 +277,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String earnMilesAfterAdDesc(Object NUMBER) {
     return '如果您在指定的时间内观看广告，您可以获得$NUMBER电梯里程。';
   }
+
+  @override
+  String get notConnectedInternet => '当前没有网络连接';
+
+  @override
+  String notSignedInGameCenter(Object Platform) {
+    return '请登录 $Platform';
+  }
 }

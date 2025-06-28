@@ -38,7 +38,7 @@ class SettingsPage extends HookConsumerWidget {
     final showSettingNumber = useState(0);
     final hasScrolledOnce = useState(false);
     final isLoadingData = useState(false);
-    final animationController = useAnimationController(duration:Duration(milliseconds: flashTime))..repeat(reverse: true);
+    final animationController = useAnimationController(duration:Duration(seconds: flashTime))..repeat(reverse: true);
 
     //Class
     final common = CommonWidget(context);
@@ -60,7 +60,7 @@ class SettingsPage extends HookConsumerWidget {
     initState() async {
       isLoadingData.value = true;
       try {
-        ref.read(internetProvider.notifier).state = await gamesManager.checkConnectedInternet();
+        ref.read(internetProvider.notifier).state = await gamesManager.checkInternetConnection();
         ref.read(gamesSignInProvider.notifier).state = await gamesManager.gamesSignIn();
         ref.read(pointProvider.notifier).state = await gamesManager.getBestScore();
         isLoadingData.value = false;
@@ -86,7 +86,7 @@ class SettingsPage extends HookConsumerWidget {
 
     void scrollToTop() {
       scrollController.animateTo(0.0,
-        duration: Duration(milliseconds: flashTime),
+        duration: Duration(seconds: flashTime),
         curve: Curves.easeOut,
       );
     }
@@ -400,8 +400,7 @@ class SettingsWidget {
       Text(title,
         style: TextStyle(
           fontSize: context.settingsAlertTitleFontSize(),
-          fontWeight: FontWeight.bold,
-          fontFamily: normalFont,
+          fontFamily: context.normalFont(),
           color: whiteColor,
         ),
       ),
@@ -431,8 +430,7 @@ class SettingsWidget {
       style: TextStyle(
         color: whiteColor,
         fontSize: context.settingsAppBarFontSize(),
-        fontFamily: context.lang() == "en" ? elevatorFont: normalFont,
-        fontWeight: context.lang() == "en" ? FontWeight.normal: FontWeight.bold
+        fontFamily: context.elevatorFont(),
       ),
     ),
     leading: FadeTransition(
@@ -519,8 +517,7 @@ class SettingsWidget {
       onTap: onTap,
       child: CommonWidget(context).flashButton(
         animationController: animation,
-        icon: CupertinoIcons.arrow_down,
-        isDark: true
+        isUp: false,
       )
     ),
   );
@@ -564,7 +561,7 @@ class SettingsWidget {
           child: Text(floorImageList.roomName(context, image),
             style: TextStyle(
               fontSize: context.settingsAlertFontSize(),
-              fontFamily: normalFont,
+              fontFamily: context.normalFont(),
               color: whiteColor,
             ),
           ),
@@ -594,7 +591,7 @@ class SettingsWidget {
             style: TextStyle(
               color: whiteColor,
               fontSize: context.settingsAlertFontSize(),
-              fontFamily: normalFont,
+              fontFamily: context.normalFont(),
             ),
           ),
         ]
@@ -775,8 +772,7 @@ class SettingsWidget {
             style: TextStyle(
               color: blackColor,
               fontSize: context.settingsButtonNumberFontSize(),
-              fontWeight: FontWeight.bold,
-              fontFamily: normalFont
+              fontFamily: context.normalFont(),
             ),
           ),
         ),
@@ -803,7 +799,7 @@ class SettingsWidget {
             style: TextStyle(
               color: whiteColor,
               fontSize: context.settingsAlertDescFontSize(),
-              fontFamily: normalFont,
+              fontFamily: context.normalFont(),
             ),
           ),
         ),
@@ -813,8 +809,7 @@ class SettingsWidget {
             style: TextStyle(
               color: lampColor,
               fontSize: context.settingsAlertSelectFontSize(),
-              fontFamily: normalFont,
-              fontWeight: FontWeight.bold
+              fontFamily: context.normalFont(),
             ),
           ),
         )
@@ -861,8 +856,7 @@ class SettingsWidget {
           style: TextStyle(
             color: whiteColor,
             fontSize: context.settingsFloorStopFontSize(),
-            fontFamily: normalFont,
-            fontWeight: FontWeight.bold,
+            fontFamily: context.normalFont(),
           ),
         ),
         Transform.scale(
@@ -921,9 +915,8 @@ class SettingsWidget {
           style: TextStyle(
             color: whiteColor,
             fontSize: context.settingsGlassFontSize(),
-            fontFamily: elevatorFont,
-            fontWeight: context.lang() == "en" ? FontWeight.normal: FontWeight.bold
-         ),
+            fontFamily: context.elevatorFont(),
+          ),
         ),
         CupertinoSwitch(
           activeTrackColor: lampColor,

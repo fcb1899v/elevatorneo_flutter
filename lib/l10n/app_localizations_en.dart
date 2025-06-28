@@ -279,4 +279,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String earnMilesAfterAdDesc(Object NUMBER) {
     return 'To earn $NUMBER EV miles, please watch ads for the specified duration.';
   }
+
+  @override
+  String get notConnectedInternet => 'No internet connection';
+
+  @override
+  String notSignedInGameCenter(Object Platform) {
+    return 'Sign in to $Platform';
+  }
 }

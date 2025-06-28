@@ -12,6 +12,22 @@ class TtsManager {
 
   final FlutterTts flutterTts = FlutterTts();
 
+  Future<void> setTtsVoice() async {
+    final voices = await flutterTts.getVoices;
+    List<dynamic> localFemaleVoices = (Platform.isIOS || Platform.isMacOS) ? voices.where((voice) {
+      final isLocalMatch = voice['locale'].toString().contains(context.ttsLocale());
+      final isFemale = voice['gender'].toString().contains('female');
+      return isLocalMatch && isFemale;
+    }).toList(): [];
+    "localFemaleVoices: $localFemaleVoices".debugPrint();
+    if (context.mounted) {
+      final voiceName = (localFemaleVoices.isNotEmpty) ? localFemaleVoices[0]['name']: context.defaultVoiceName();
+      final voiceLocale = (localFemaleVoices.isNotEmpty) ? localFemaleVoices[0]['locale']: context.ttsLocale();
+      final result = await flutterTts.setVoice({'name': voiceName, 'locale': voiceLocale,});
+      "setVoice: $voiceName, result: $result".debugPrint();
+    }
+  }
+
   Future<void> speakText(String text, bool isSoundOn) async {
     if (isSoundOn) {
       await flutterTts.stop();
@@ -36,16 +52,13 @@ class TtsManager {
         IosTextToSpeechAudioCategoryOptions.defaultToSpeaker
       ]
     );
+    await flutterTts.awaitSpeakCompletion(true);
+    await flutterTts.awaitSynthCompletion(true);
+    if (context.mounted) await flutterTts.setLanguage(context.lang());
+    if (context.mounted) await flutterTts.isLanguageAvailable(context.lang());
+    if (context.mounted) await setTtsVoice();
     await flutterTts.setVolume(1);
-    if (context.mounted) await flutterTts.setLanguage(context.ttsLang());
-    if (context.mounted) {
-      await flutterTts.setVoice({
-        "name": context.voiceName(Platform.isAndroid),
-        "locale": context.ttsVoice()
-      });
-    }
     await flutterTts.setSpeechRate(0.5);
-    if (context.mounted) context.voiceName(Platform.isAndroid).debugPrint();
     if (context.mounted) speakText(context.pushNumber(), true);
   }
 }

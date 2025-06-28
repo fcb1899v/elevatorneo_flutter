@@ -86,5 +86,7 @@
   "photoAccessRequired": "需要照片访问权限\n",
   "photoAccessPermission": "请在设置中允许完全访问照片。",
   "earnMilesAfterAdTitle" : "观看广告赚取{NUMBER}电梯里程!\n",
-  "earnMilesAfterAdDesc" : "如果您在指定的时间内观看广告，您可以获得{NUMBER}电梯里程。"
+  "earnMilesAfterAdDesc" : "如果您在指定的时间内观看广告，您可以获得{NUMBER}电梯里程。",
+  "notConnectedInternet" : "当前没有网络连接",
+  "notSignedInGameCenter" : "请登录 {Platform}"
 }

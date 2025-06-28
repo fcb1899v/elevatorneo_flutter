@@ -278,4 +278,12 @@ class AppLocalizationsJa extends AppLocalizations {
   String earnMilesAfterAdDesc(Object NUMBER) {
     return '広告を指定の時間ご覧いただくと、${NUMBER}EVマイルが獲得できます。';
   }
+
+  @override
+  String get notConnectedInternet => 'インターネット接続がありません';
+
+  @override
+  String notSignedInGameCenter(Object Platform) {
+    return '$Platformにサインインが必要です';
+  }
 }

@@ -64,14 +64,14 @@ class PhotoManager {
         style: TextStyle(
           color: blackColor,
           fontSize: context.settingsAlertTitleFontSize(),
-          fontFamily: normalFont,
+          fontFamily: context.normalFont(),
         ),
       ),
       content: Text(context.photoAccessPermission(),
         style: TextStyle(
           color: blackColor,
           fontSize: context.settingsAlertFontSize(),
-          fontFamily: normalFont,
+          fontFamily: context.normalFont(),
         ),
       ),
       actions: [
@@ -80,8 +80,7 @@ class PhotoManager {
             style: TextStyle(
               color: blackColor,
               fontSize: context.settingsAlertSelectFontSize(),
-              fontFamily: normalFont,
-              fontWeight: FontWeight.bold
+              fontFamily: context.normalFont(),
             ),
           ),
           onPressed: () => openAppSettings(),
@@ -91,7 +90,7 @@ class PhotoManager {
             style: TextStyle(
               color: blackColor,
               fontSize: context.settingsAlertSelectFontSize(),
-              fontFamily: normalFont,
+              fontFamily: context.normalFont(),
             ),
           ),
           onPressed: () => context.popPage(),

@@ -86,5 +86,7 @@
   "photoAccessRequired" : "Photo access permission is required\n",
   "photoAccessPermission" : "To select your photo, please allow photo full access from settings.",
   "earnMilesAfterAdTitle" : "Earn\n{NUMBER} EV miles\nby watching ads\n",
-  "earnMilesAfterAdDesc" : "To earn {NUMBER} EV miles, please watch ads for the specified duration."
+  "earnMilesAfterAdDesc" : "To earn {NUMBER} EV miles, please watch ads for the specified duration.",
+  "notConnectedInternet" : "No internet connection",
+  "notSignedInGameCenter" : "Sign in to {Platform}"
 }

@@ -52,7 +52,7 @@ Future<void> main() async {
   final savedButtonStyle = "buttonStyleKey".getSharedPrefInt(prefs, initialButtonStyle);
   final savedBackgroundStyle = "backgroundStyleKey".getSharedPrefString(prefs, initialBackgroundStyle);
   final savedGlassStyle = "glassStyleKey".getSharedPrefString(prefs, initialGlassStyle);
-  final isConnectedInternet = await GamesManager(isGamesSignIn: false, isConnectedInternet: false).checkConnectedInternet();
+  final isConnectedInternet = await GamesManager(isGamesSignIn: false, isConnectedInternet: false).checkInternetConnection();
   final isGamesSignIn = await GamesManager(isGamesSignIn: false, isConnectedInternet: isConnectedInternet).gamesSignIn();
   final savedPoint = await GamesManager(isGamesSignIn: isGamesSignIn, isConnectedInternet: isConnectedInternet).getBestScore();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
@@ -70,6 +70,7 @@ Future<void> main() async {
       buttonShapeProvider.overrideWith((ref) => savedButtonShape),
       backgroundStyleProvider.overrideWith((ref) => savedBackgroundStyle),
       glassStyleProvider.overrideWith((ref) => savedGlassStyle),
+      internetProvider.overrideWith((ref) => isConnectedInternet),
       gamesSignInProvider.overrideWith((ref) => isGamesSignIn),
       pointProvider.overrideWith((ref) => savedPoint),
     ],

@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'constant.dart';
 import 'extension.dart';
@@ -34,8 +35,7 @@ class CommonWidget {
   ///Flash button
   FadeTransition flashButton({
     required AnimationController animationController,
-    required IconData icon,
-    required bool isDark
+    required bool isUp
   }) => FadeTransition(
     opacity: animationController.drive(CurveTween(curve: Curves.easeInOut)),
     child: Container(
@@ -43,11 +43,18 @@ class CommonWidget {
       height: context.settingsSelectButtonSize(),
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: isDark ? blackColor: whiteColor,
+        color: blackColor,
+        border: Border.all(color: whiteColor,                  // 縁の色
+          width: context.settingsSelectBorderWidth(),                             // 縁の太さ
+        ),
       ),
-      child: Icon(icon,
-        size: context.settingsSelectButtonIconSize(),
-        color: isDark ? whiteColor: blackColor,
+      child: Container(
+        margin: isUp ? EdgeInsets.only(bottom: context.settingsSelectIconMargin()):
+          EdgeInsets.only(top: context.settingsSelectIconMargin()),
+        child: Icon(isUp ? CupertinoIcons.arrowtriangle_up_fill: CupertinoIcons.arrowtriangle_down_fill,
+          size: context.settingsSelectIconSize(),
+          color: whiteColor,
+        ),
       ),
     ),
   );
@@ -58,10 +65,14 @@ class CommonWidget {
     width: context.width(),
     height: context.height(),
     color: transpBlackColor,
-    child: CircularProgressIndicator(
-      color: lampColor,
-      strokeWidth: context.circleStrokeWidth(),
-    ),
+    child: SizedBox(
+      width: context.circleSize(),
+      height: context.circleSize(),
+      child: CircularProgressIndicator(
+        color: lampColor,
+        strokeWidth: context.circleStrokeWidth(),
+      ),
+    )
   );
 }
 

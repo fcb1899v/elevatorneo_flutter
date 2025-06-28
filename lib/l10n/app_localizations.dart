@@ -623,6 +623,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'To earn {NUMBER} EV miles, please watch ads for the specified duration.'**
   String earnMilesAfterAdDesc(Object NUMBER);
+
+  /// No description provided for @notConnectedInternet.
+  ///
+  /// In en, this message translates to:
+  /// **'No internet connection'**
+  String get notConnectedInternet;
+
+  /// No description provided for @notSignedInGameCenter.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to {Platform}'**
+  String notSignedInGameCenter(Object Platform);
 }
 
 class _AppLocalizationsDelegate

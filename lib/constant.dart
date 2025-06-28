@@ -66,7 +66,7 @@ const int toolTipTime = 10000; //[msec]
 /// エレベータードアの開閉時間
 const int initialOpenTime = 10; //[sec]
 const int initialWaitTime =  2; //[sec]
-const int flashTime = 500;      //[msec]
+const int flashTime = 1;        //[sec]
 const int snackBarTime = 3;     //[sec]
 
 /// エレベータードアの状態
@@ -84,18 +84,14 @@ final List<bool> allPressed = [true, true, true];
 
 ///Audio
 const int audioPlayerNumber = 1;
-const String countdown = "audios/pon.mp3";
-const String countdownFinish = "audios/chan.mp3";
-const String bestScoreSound = "audios/jajan.mp3";
-const String selectButton = "audios/kako.mp3";
-const String cancelButton = "audios/hi.mp3";
-const String changeModeSound = "audios/popi.mp3";
-const String changePageSound = "audios/tetete.mp3";
-const String callSound = "audios/call.mp3";
+const String selectSound = "audios/kako.mp3";
+const String cancelSound = "audios/hi.mp3";
+const String changeSound = "audios/popi.mp3";
+const String callSound   = "audios/call.mp3";
+const String openSound   = "audios/pingpong.mp3";
+const String closeSound  = "audios/ping.mp3";
 
 ///Font
-const String elevatorFont = "cornerstone";
-const String normalFont = "noto";
 const List<String> numberFont = ["lcd", "dseg", "dseg"];
 const List<String> alphabetFont = ["lcd", "letsgo", "letsgo"];
 

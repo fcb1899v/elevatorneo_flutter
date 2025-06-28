@@ -104,7 +104,7 @@ extension StringExt on String {
 extension ContextExt on BuildContext {
 
   void pushFadeReplacement(Widget page) {
-    AudioManager().playEffectSound(index: 0, asset: changeModeSound, volume: 1.0);
+    AudioManager().playEffectSound(index: 0, asset: changeSound, volume: 1.0);
     Navigator.pushAndRemoveUntil(this, PageRouteBuilder(
       pageBuilder: (_, animation, __) => page,
       transitionsBuilder: (_, animation, __, child) => FadeTransition(
@@ -120,29 +120,34 @@ extension ContextExt on BuildContext {
   double width() => MediaQuery.of(this).size.width;
   double height() => MediaQuery.of(this).size.height;
   double widthResponsible() => (width() < height() / 2) ? width(): height() / 2;
+  Orientation orientation() => MediaQuery.of(this).orientation;
   void popPage() => Navigator.pop(this);
 
   ///Language String
   String lang() => Localizations.localeOf(this).languageCode;
-  String ttsLang() =>
-      (lang() != "en") ? lang(): "en";
-  String ttsVoice() =>
+  String normalFont() =>
+      (lang() == "ja") ? "notoJP":
+      (lang() == "zh") ? "notoSC":
+      (lang() == "ko") ? "bmDohyeon":
+      "roboto";
+  String elevatorFont() => (lang() == "en") ? "cornerstone": normalFont();
+  String ttsLocale() =>
       (lang() == "ja") ? "ja-JP":
-      (lang() == "ko") ? "ko-KR":
       (lang() == "zh") ? "zh-CN":
+      (lang() == "ko") ? "ko-KR":
       "en-US";
-  String voiceName(bool isAndroid) =>
-      isAndroid ? (
-          lang() == "ja" ? "ja-JP-language":
-          lang() == "ko" ? "ko-KR-language":
-          lang() == "zh" ? "ko-CN-language":
-          "en-US-language"
-      ): (
-          lang() == "ja" ? "Kyoko":
-          lang() == "ko" ? "Yuna":
-          lang() == "zh" ? "Lili":
-          "Samantha"
-      );
+  String androidVoiceName() =>
+      (lang() == "ja") ? "ja-JP-language":
+      (lang() == "zh") ? "zh-CN-language":
+      (lang() == "ko") ? "ko-KR-language":
+      "en-US-language";
+  String iOSVoiceName() =>
+      (lang() == "ja") ? "Kyoko":
+      (lang() == "zh") ? "婷婷":
+      (lang() == "ko") ? "유나":
+      "Samantha";
+  String defaultVoiceName() =>
+      (Platform.isIOS || Platform.isMacOS) ? iOSVoiceName(): androidVoiceName();
 
   ///Localized String
   //Common
@@ -281,6 +286,10 @@ extension ContextExt on BuildContext {
   String landingPageLink() => (lang() == "ja") ? landingPageJa: landingPageEn;
   String privacyPolicyLink() => (lang() == "ja") ? privacyPolicyJa: privacyPolicyEn;
   String youtubeLink() => (lang() == "ja") ? youtubeJa: youtubeEn;
+  String notConnectedInternet() => AppLocalizations.of(this)!.notConnectedInternet;
+  String notSignedInGameCenter() => AppLocalizations.of(this)!.notSignedInGameCenter(
+    (Platform.isIOS || Platform.isMacOS) ? "Game Center": "Play Games"
+  );
 
   List<String> linkLogos() => [
     // if (lang() == "ja") twitterLogo,
@@ -314,8 +323,8 @@ extension ContextExt on BuildContext {
   ];
 
   ///Progress Indicator
-  double circleSize() => ((height() > width()) ? width(): height()) * 0.1;
-  double circleStrokeWidth() => ((height() > width()) ? width(): height()) * 0.012;
+  double circleSize() => widthResponsible() * 0.08;
+  double circleStrokeWidth() => widthResponsible() * 0.01;
 
   ///AppBar
   double homeAppBarHeight() => height() * 0.07;
@@ -346,13 +355,20 @@ extension ContextExt on BuildContext {
   double doorMarginLeft() => widthResponsible() * 0.023;
   double doorMarginTop() => widthResponsible() * 0.193;
   double upDownDoorMarginTop() => widthResponsible() * 0.191;
-  double imageMarginTop() => widthResponsible() * 0.045;
+  double elevatorMarginTop() => widthResponsible() * 0.045;
+
   double changeMarginTop() => widthResponsible() * 0.145;
   double roomWidth() => widthResponsible() * 0.73;
   double roomHeight() => roomWidth() * 16/9;
   double floorHeight() => widthResponsible() * 1.57;
   double sideFrameWidth() => widthResponsible() * 0.024;
   double sideSpacerWidth() => (width() - elevatorWidth()) / 2;
+  double outsideMarginTop(int counter, int max) =>
+      elevatorMarginTop() - (max - counter - (counter < 0 ? 1: 0)) * floorHeight();
+  double insideMarginTop(int counter, int max) =>
+      elevatorMarginTop() + changeMarginTop() - (max - counter - (counter < 0 ? 1: 0)) * floorHeight();
+  double imageMarginTop(bool isOutside, int counter, int max) =>
+      (isOutside) ? outsideMarginTop(counter, max): insideMarginTop(counter, max);
 
   ///Display
   double displayHeight() => widthResponsible() * 0.24;
@@ -382,10 +398,10 @@ extension ContextExt on BuildContext {
   double floorButtonNumberBottomMargin(int i) =>
       widthResponsible() * floorButtonNumberMarginFactor[i] * 0.01;
   double floorButtonNumberMarginTop(int i) =>
-      floorButtonNumberMarginFactor[i] < 0 ? 0: widthResponsible() * floorButtonNumberMarginFactor[i];
+      floorButtonNumberMarginFactor[i] < 0 ? 0: widthResponsible() * (0.002 + floorButtonNumberMarginFactor[i]);
   double floorButtonNumberMarginBottom(int i) =>
       floorButtonNumberMarginFactor[i] > 0 ? 0: -1 * widthResponsible() * floorButtonNumberMarginFactor[i];
-  double changeViewMarginTop() => widthResponsible() * 0.032;
+  double changeViewMarginTop() => widthResponsible() * 0.028;
   double changeViewMarginLeft() => widthResponsible() * 0.32;
 
   ///Admob
@@ -403,6 +419,12 @@ extension ContextExt on BuildContext {
   double menuLinksLogoSize() => widthResponsible() * 0.16;
   double menuLinksTitleSize() => widthResponsible() * (lang() == "en" ? 0.030: 0.025);
   double menuLinksMargin() => widthResponsible() * 0.01;
+  ///SnackBar
+  double snackBarFontSize() => widthResponsible() * 0.04;
+  double snackBarBorderRadius() => widthResponsible()  * 0.05;
+  double snackBarPadding() => widthResponsible()  * 0.02;
+  double snackBarSideMargin(TextPainter textPainter) => (widthResponsible() * 0.9 - textPainter.size.width) / 2;
+  double snackBarBottomMargin() => height() * 0.03;
 
   ///Settings
   //App Bar
@@ -412,9 +434,11 @@ extension ContextExt on BuildContext {
   double settingsAppBarBackButtonMargin() => height() * 0.01;
   //Select top button
   double settingsSelectButtonSize() => height() * 0.06;
-  double settingsSelectButtonIconSize() => height() * 0.03;
   double settingsSelectButtonMarginTop() => height() * 0.015;
   double settingsSelectButtonMarginBottom() => height() * 0.007;
+  double settingsSelectBorderWidth() => height() * 0.002;
+  double settingsSelectIconMargin() => height() * 0.004;
+  double settingsSelectIconSize() => height() * 0.036;
   //Common
   double settingsLockFontSize() => height() * 0.03;
   double settingsLockIconSize() => height() * 0.035;
@@ -795,7 +819,7 @@ extension BoolExt on bool {
 
   //This is isMenu
   Future<bool> pressedMenu() async {
-    await AudioManager().playEffectSound(index: 0, asset: selectButton, volume: 1.0);
+    await AudioManager().playEffectSound(index: 0, asset: selectSound, volume: 1.0);
     await Vibration.vibrate(duration: vibTime, amplitude: vibAmp);
     return !this;
   }

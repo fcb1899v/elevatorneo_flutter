@@ -28,11 +28,35 @@ class MenuPage extends HookConsumerWidget {
 
     //Class
     final common = CommonWidget(context);
-    final menu = MenuWidget(context);
+    final menu = MenuWidget(context,
+      isConnectedInternet: isConnectedInternet,
+      isGamesSignIn: isGamesSignIn,
+    );
     final gamesManager = useMemoized(() => GamesManager(
       isGamesSignIn: isGamesSignIn,
       isConnectedInternet: isConnectedInternet,
     ));
+
+    //Initialize
+    initState() async {
+      isLoadingData.value = true;
+      try {
+        ref.read(internetProvider.notifier).state = await gamesManager.checkInternetConnection();
+        ref.read(gamesSignInProvider.notifier).state = await gamesManager.gamesSignIn();
+        isLoadingData.value = false;
+      } catch (e) {
+        "Error: $e".debugPrint();
+        isLoadingData.value = false;
+      }
+    }
+
+    useEffect(() {
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        await initState();
+      });
+      return null;
+    }, []);
+
 
     ///Show Rewarded Ad
     showRewardedAd() => ad!.show(
@@ -53,36 +77,19 @@ class MenuPage extends HookConsumerWidget {
     ///Pressed menu links action
     pressedMenuLink(int i) async {
       Vibration.vibrate(duration: vibTime, amplitude: vibAmp);
-      if (i == 1) {
+      if (i == 0) {
+        if (context.mounted) context.pushFadeReplacement(SettingsPage());
+      } else if (!isConnectedInternet) {
+        menu.showSnackBar(context.notConnectedInternet());
+      } else if (i == 1) {
         "$ad".debugPrint();
         if (ad != null) menu.rewardedAdPermissionAlert(onTap: () => showRewardedAd());
-      } else if (i == 2) {
-        await gamesManager.gamesShowLeaderboard();
+      } else if (!isGamesSignIn) {
+        menu.showSnackBar(context.notSignedInGameCenter());
       } else {
-        if (context.mounted) context.pushFadeReplacement(SettingsPage());
+        await gamesManager.gamesShowLeaderboard();
       }
     }
-
-    initState() async {
-      isLoadingData.value = true;
-      try {
-        ref.read(internetProvider.notifier).state = await gamesManager.checkConnectedInternet();
-        ref.read(gamesSignInProvider.notifier).state = await gamesManager.gamesSignIn();
-        ref.read(pointProvider.notifier).state = await gamesManager.getBestScore();
-        isLoadingData.value = false;
-      } catch (e) {
-        "Error: $e".debugPrint();
-        isLoadingData.value = false;
-      }
-    }
-
-    useEffect(() {
-      WidgetsBinding.instance.addPostFrameCallback((_) async {
-        await initState();
-      });
-      return null;
-    }, []);
-
 
     ///Menu
     return Scaffold(
@@ -95,7 +102,7 @@ class MenuPage extends HookConsumerWidget {
             children: [
               Spacer(flex: 1),
               /// Menu Rows
-              ...List.generate((isGamesSignIn && isConnectedInternet) ? 3: (isConnectedInternet) ? 2: 1, (i) =>
+              ...List.generate(3, (i) =>
                 GestureDetector(
                   onTap: () async => await pressedMenuLink(i),
                   child: menu.menuButton(i),
@@ -122,8 +129,13 @@ class MenuPage extends HookConsumerWidget {
 class MenuWidget {
 
   final BuildContext context;
+  final bool isConnectedInternet;
+  final bool isGamesSignIn;
 
-  MenuWidget(this.context);
+  MenuWidget(this.context, {
+    required this.isConnectedInternet,
+    required this.isGamesSignIn,
+  });
 
   ///Menu Button
   Widget menuButton(int i) => Container(
@@ -157,7 +169,8 @@ class MenuWidget {
       type: BottomNavigationBarType.fixed,
       onTap: (i) =>{
         Vibration.vibrate(duration: vibTime, amplitude: vibAmp),
-        launchUrl(Uri.parse(context.linkLinks()[i]))
+        (isConnectedInternet) ? launchUrl(Uri.parse(context.linkLinks()[i])):
+          showSnackBar(context.notConnectedInternet()),
       },
       elevation: 0,
       selectedItemColor: lampColor,
@@ -180,14 +193,14 @@ class MenuWidget {
         style: TextStyle(
           color: blackColor,
           fontSize: context.menuAlertTitleFontSize(),
-          fontFamily: normalFont,
+          fontFamily: context.normalFont(),
         ),
       ),
       content: Text(context.earnMilesAfterAdDesc(earnMiles),
         style: TextStyle(
           color: blackColor,
           fontSize: context.menuAlertDescFontSize(),
-          fontFamily: normalFont,
+          fontFamily: context.normalFont(),
         ),
       ),
       actions: [
@@ -197,7 +210,7 @@ class MenuWidget {
             style: TextStyle(
               color: blackColor,
               fontSize: context.menuAlertSelectFontSize(),
-              fontFamily: normalFont,
+              fontFamily: context.normalFont(),
             ),
           ),
         ),
@@ -207,13 +220,50 @@ class MenuWidget {
             style: TextStyle(
               color: blackColor,
               fontSize: context.menuAlertSelectFontSize(),
-              fontFamily: normalFont,
-              fontWeight: FontWeight.bold
+              fontFamily: context.normalFont(),
             ),
           ),
         ),
       ],
     ),
   );
+
+  void showSnackBar(String text) {
+    final textPainter = TextPainter(
+      text: TextSpan(
+        text: text,
+        style: TextStyle(
+          color: blackColor,
+          fontSize: context.snackBarFontSize(),
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    );
+    textPainter.layout();
+
+    final snackBar = SnackBar(
+      content: Text(text,
+        style: TextStyle(
+          color: blackColor,
+          fontWeight: FontWeight.bold,
+          fontSize: context.snackBarFontSize(),
+        ),
+        textAlign: TextAlign.center,
+      ),
+      backgroundColor: lampColor,
+      behavior: SnackBarBehavior.floating,
+      duration: const Duration(seconds: 2),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(context.snackBarBorderRadius()),
+      ),
+      padding: EdgeInsets.all(context.snackBarPadding()),
+      margin: EdgeInsets.symmetric(
+        horizontal: context.snackBarSideMargin(textPainter),
+        vertical: context.snackBarBottomMargin(),
+      ),
+    );
+    "showSnackBar: $text".debugPrint();
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  }
 
 }
