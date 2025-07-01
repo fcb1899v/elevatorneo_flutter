@@ -486,8 +486,10 @@ extension ContextExt on BuildContext {
   double settingsBackgroundLockWidth() => width() * 0.9;
   double settingsBackgroundLockMargin() => height() * 0.292;
   double settingsBackgroundSelectBorderWidth() =>  height() * 0.007;
-  double settingsGlassFontSize() => height() * (lang() == "en" ? 0.032: 0.024);
-  double settingsGlassToggleMargin() => height() * 0.005;
+  double settingsGlassFontSize() => height() * (lang() == "en" ? 0.036: 0.024);
+  double settingsGlassToggleMarginTop() => height() *  (lang() == "en" ? 0.005: 0.000);
+  double settingsGlassToggleMarginBottom() => height() *  (lang() == "en" ? 0.000: 0.002);
+  double settingsGlassShadowShift() => height() * 0.002;
   //Settings Alert Dialog
   double settingsAlertTitleFontSize() => widthResponsible() * 0.05;
   double settingsAlertFontSize() => widthResponsible() * 0.05;

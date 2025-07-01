@@ -99,8 +99,8 @@ class GamesManager {
       "gamesShowLeaderboard".debugPrint();
       try {
         await Leaderboards.showLeaderboards(
-            androidLeaderboardID: dotenv.get("ANDROID_LEADERBOARD_ID"),
-            iOSLeaderboardID: dotenv.get("IOS_LEADERBOARD_ID")
+          androidLeaderboardID: dotenv.get("ANDROID_LEADERBOARD_ID"),
+          iOSLeaderboardID: dotenv.get("IOS_LEADERBOARD_ID")
         );
         "Success showing leaderboard".debugPrint();
       } catch (e) {
@@ -125,11 +125,11 @@ class GamesManager {
         if (gamesBestScore > savedBestScore) {
           'pointKey'.setSharedPrefInt(prefs, gamesBestScore);
           "gamesBestScore: $gamesBestScore".debugPrint();
-          return savedBestScore;
+          return gamesBestScore;
         } else {
           await gamesSubmitScore(savedBestScore);
           "bestScore: $savedBestScore".debugPrint();
-          return gamesBestScore;
+          return savedBestScore;
         }
       } catch (e) {
         "bestScore: $savedBestScore (Fail to get from server)".debugPrint();

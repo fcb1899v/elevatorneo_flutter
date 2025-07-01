@@ -12,7 +12,6 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:letselevatorneo/extension.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'firebase_options.dart';
-import 'games_manager.dart';
 import 'l10n/app_localizations.dart' show AppLocalizations;
 import 'constant.dart';
 import 'homepage.dart';
@@ -36,14 +35,22 @@ final pointProvider = StateProvider<int>((ref) => 0);
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]); //縦向き指定
+  await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-  SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
-    statusBarColor: Colors.transparent,
-    statusBarIconBrightness: Brightness.light,
-    systemNavigationBarColor: Colors.transparent,
-    systemNavigationBarIconBrightness: Brightness.light,
-  )); // Status bar style
+  if (Platform.isAndroid) {
+    SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+      statusBarIconBrightness: Brightness.light,
+      systemNavigationBarIconBrightness: Brightness.light,
+    ));
+  } else {
+    // iOS用の設定
+    SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.light,
+      systemNavigationBarColor: Colors.transparent,
+      systemNavigationBarIconBrightness: Brightness.light,
+    ));
+  }// Status bar style
   await dotenv.load(fileName: "assets/.env");
   final prefs = await SharedPreferences.getInstance();
   final savedFloorNumbers = "numbersKey".getSharedPrefListInt(prefs, initialFloorNumbers);
@@ -52,16 +59,7 @@ Future<void> main() async {
   final savedButtonStyle = "buttonStyleKey".getSharedPrefInt(prefs, initialButtonStyle);
   final savedBackgroundStyle = "backgroundStyleKey".getSharedPrefString(prefs, initialBackgroundStyle);
   final savedGlassStyle = "glassStyleKey".getSharedPrefString(prefs, initialGlassStyle);
-  final isConnectedInternet = await GamesManager(isGamesSignIn: false, isConnectedInternet: false).checkInternetConnection();
-  final isGamesSignIn = await GamesManager(isGamesSignIn: false, isConnectedInternet: isConnectedInternet).gamesSignIn();
-  final savedPoint = await GamesManager(isGamesSignIn: isGamesSignIn, isConnectedInternet: isConnectedInternet).getBestScore();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  await FirebaseAppCheck.instance.activate(
-    androidProvider: androidProvider,
-    appleProvider: appleProvider,
-  );
-  await MobileAds.instance.initialize();
-  await initATTPlugin();
   runApp(ProviderScope(
     overrides: [
       floorNumbersProvider.overrideWith((ref) => savedFloorNumbers),
@@ -70,12 +68,18 @@ Future<void> main() async {
       buttonShapeProvider.overrideWith((ref) => savedButtonShape),
       backgroundStyleProvider.overrideWith((ref) => savedBackgroundStyle),
       glassStyleProvider.overrideWith((ref) => savedGlassStyle),
-      internetProvider.overrideWith((ref) => isConnectedInternet),
-      gamesSignInProvider.overrideWith((ref) => isGamesSignIn),
-      pointProvider.overrideWith((ref) => savedPoint),
+      internetProvider.overrideWith((ref) => false),
+      gamesSignInProvider.overrideWith((ref) => false),
+      pointProvider.overrideWith((ref) => 0),
     ],
     child: const MyApp())
   );
+  await FirebaseAppCheck.instance.activate(
+    androidProvider: androidProvider,
+    appleProvider: appleProvider,
+  );
+  await MobileAds.instance.initialize();
+  await initATTPlugin();
 }
 
 class MyApp extends StatelessWidget {

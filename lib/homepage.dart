@@ -1031,6 +1031,5 @@ class HomeWidget {
       ),
     ): SizedBox(),
   ));
-
 }
 

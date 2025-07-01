@@ -1,17 +1,17 @@
+import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:vibration/vibration.dart';
-import 'admob_rewarded.dart';
 import 'games_manager.dart';
 import 'common_widget.dart';
 import 'extension.dart';
 import 'constant.dart';
-import 'homepage.dart';
 import 'main.dart';
 import 'settings.dart';
 
@@ -23,7 +23,9 @@ class MenuPage extends HookConsumerWidget {
 
     final isConnectedInternet = ref.watch(internetProvider);
     final isGamesSignIn = ref.watch(gamesSignInProvider);
-    final RewardedAd? ad = rewardedAd();
+    final rewardedAd = useState<RewardedAd?>(null);
+    final retryAttempt = useState(0);
+    final cancelToken = useMemoized(() => Completer<void>(), []);
     final isLoadingData = useState(false);
 
     //Class
@@ -37,10 +39,50 @@ class MenuPage extends HookConsumerWidget {
       isConnectedInternet: isConnectedInternet,
     ));
 
+    void loadRewardedAd() {
+      RewardedAd.load(
+        adUnitId: dotenv.get(rewardAdUnitID),
+        request: const AdRequest(),
+        rewardedAdLoadCallback: RewardedAdLoadCallback(
+          onAdLoaded: (RewardedAd ad) async {
+            if (!cancelToken.isCompleted) {
+              'ad loaded'.debugPrint();
+              rewardedAd.value = ad;
+              retryAttempt.value = 0;
+            }
+          },
+          onAdFailedToLoad: (LoadAdError error) {
+            'Ad failed to load: $error'.debugPrint();
+            if (!cancelToken.isCompleted) {
+              Future.delayed(Duration(seconds: 2 * retryAttempt.value), () {
+                if (!cancelToken.isCompleted) {
+                  retryAttempt.value += 1;
+                  loadRewardedAd();
+                }
+              });
+            }
+          },
+        ),
+      );
+    }
+
+    useEffect(() {
+      if (!cancelToken.isCompleted) {
+        loadRewardedAd();
+      }
+      return () {
+        if (!cancelToken.isCompleted) {
+          cancelToken.complete();
+        }
+        rewardedAd.value?.dispose();
+      };
+    }, [retryAttempt.value]);
+
     //Initialize
     initState() async {
       isLoadingData.value = true;
       try {
+        loadRewardedAd();
         ref.read(internetProvider.notifier).state = await gamesManager.checkInternetConnection();
         ref.read(gamesSignInProvider.notifier).state = await gamesManager.gamesSignIn();
         isLoadingData.value = false;
@@ -59,7 +101,7 @@ class MenuPage extends HookConsumerWidget {
 
 
     ///Show Rewarded Ad
-    showRewardedAd() => ad!.show(
+    showRewardedAd() => rewardedAd.value!.show(
       onUserEarnedReward: (AdWithoutView ad, RewardItem reward) async {
         "showRewardedAd".debugPrint();
         final prefs = await SharedPreferences.getInstance();
@@ -69,8 +111,7 @@ class MenuPage extends HookConsumerWidget {
         final newPoint = ref.read(pointProvider.notifier).state;
         "pointKey".setSharedPrefInt(prefs, newPoint);
         await gamesManager.gamesSubmitScore(newPoint);
-        ref.read(isMenuProvider.notifier).update((f) => !f);
-        if (context.mounted) context.pushFadeReplacement(HomePage());
+        loadRewardedAd();
       }
     );
 
@@ -82,8 +123,11 @@ class MenuPage extends HookConsumerWidget {
       } else if (!isConnectedInternet) {
         menu.showSnackBar(context.notConnectedInternet());
       } else if (i == 1) {
-        "$ad".debugPrint();
-        if (ad != null) menu.rewardedAdPermissionAlert(onTap: () => showRewardedAd());
+        (rewardedAd.value == null) ? loadRewardedAd():
+          menu.rewardedAdPermissionAlert(onTap: () {
+            context.popPage();
+            showRewardedAd();
+          });
       } else if (!isGamesSignIn) {
         menu.showSnackBar(context.notSignedInGameCenter());
       } else {
@@ -265,5 +309,4 @@ class MenuWidget {
     "showSnackBar: $text".debugPrint();
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
-
 }

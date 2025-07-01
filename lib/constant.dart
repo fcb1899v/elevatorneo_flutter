@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -184,6 +185,13 @@ const String twitterLogo = "${assetsMenu}x.png";
 const String instagramLogo = "${assetsMenu}instagram.png";
 const String youtubeLogo = "${assetsMenu}youtube.png";
 const String privacyPolicyLogo = "${assetsMenu}privacyPolicy.png";
+String rewardAdUnitID =
+  (!kDebugMode && (Platform.isIOS || Platform.isMacOS)) ? "IOS_REWARDED_UNIT_ID":
+  (!kDebugMode) ? "ANDROID_REWARDED_UNIT_ID":
+  (Platform.isIOS || Platform.isMacOS) ? "IOS_REWARDED_TEST_ID":
+  "ANDROID_REWARDED_TEST_ID";
+
+
 
 ///Web Page
 const String landingPageJa = "https://nakajimamasao-appstudio.web.app/elevatorneo/ja/";

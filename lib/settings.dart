@@ -907,7 +907,7 @@ class SettingsWidget {
   Widget settingsGlassToggleWidget({
     required void Function(bool) onChanged,
   }) => Column(children: [
-    SizedBox(height: context.settingsGlassToggleMargin()),
+    SizedBox(height: context.settingsGlassToggleMarginTop()),
     Row(mainAxisAlignment: MainAxisAlignment.spaceAround,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
@@ -916,6 +916,12 @@ class SettingsWidget {
             color: whiteColor,
             fontSize: context.settingsGlassFontSize(),
             fontFamily: context.elevatorFont(),
+            shadows: [
+              Shadow(
+                color: blackColor,
+                offset: Offset(context.settingsGlassShadowShift(), context.settingsGlassShadowShift()),
+              ),
+            ]
           ),
         ),
         CupertinoSwitch(
@@ -927,7 +933,7 @@ class SettingsWidget {
         ),
       ],
     ),
-    SizedBox(height: context.settingsGlassToggleMargin()),
+    SizedBox(height: context.settingsGlassToggleMarginBottom()),
     settingsDivider(),
   ]);
 }
