@@ -165,3 +165,5 @@ pids
 
 # TernJS port file
 .tern-port
+assets/.env
+android/app/google-services.json
