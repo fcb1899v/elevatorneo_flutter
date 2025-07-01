@@ -167,3 +167,5 @@ pids
 .tern-port
 assets/.env
 android/app/google-services.json
+ios/Runner/GoogleService-Info.plist
+ios/firebase_app_id_file.json
