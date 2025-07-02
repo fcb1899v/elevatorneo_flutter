@@ -1,7 +1,7 @@
 # LETS ELEVATOR NEO - Elevator Simulator
 
 <div align="center">
-  <img src="assets/images/menu/icon.png" alt="Let's Elevator NEO Icon" width="120" height="120">
+  <img src="assets/icon/icon.png" alt="Let's Elevator NEO Icon" width="120" height="120">
   <br>
   <strong>Enjoy your favorite elevator anytime, anywhere</strong>
   <br>
