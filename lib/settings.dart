@@ -430,7 +430,7 @@ class SettingsWidget {
       style: TextStyle(
         color: whiteColor,
         fontSize: context.settingsAppBarFontSize(),
-        fontFamily: context.elevatorFont(),
+        fontFamily: context.normalFont(),
       ),
     ),
     leading: FadeTransition(
@@ -907,7 +907,6 @@ class SettingsWidget {
   Widget settingsGlassToggleWidget({
     required void Function(bool) onChanged,
   }) => Column(children: [
-    SizedBox(height: context.settingsGlassToggleMarginTop()),
     Row(mainAxisAlignment: MainAxisAlignment.spaceAround,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
@@ -915,7 +914,7 @@ class SettingsWidget {
           style: TextStyle(
             color: whiteColor,
             fontSize: context.settingsGlassFontSize(),
-            fontFamily: context.elevatorFont(),
+            fontFamily: context.normalFont(),
             shadows: [
               Shadow(
                 color: blackColor,
@@ -933,7 +932,6 @@ class SettingsWidget {
         ),
       ],
     ),
-    SizedBox(height: context.settingsGlassToggleMarginBottom()),
     settingsDivider(),
   ]);
 }

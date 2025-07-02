@@ -80,16 +80,16 @@ class AppLocalizationsZh extends AppLocalizations {
   String get closeDoor => '关门。';
 
   @override
-  String get pushNumber => '请按楼层按钮。';
+  String get pushNumber => '选择楼层。';
 
   @override
-  String get upFloor => '向上前往。';
+  String get upFloor => '上行。';
 
   @override
-  String get downFloor => '向下前往。';
+  String get downFloor => '下行。';
 
   @override
-  String get notStop => '本层不停车。';
+  String get notStop => '本层不停。';
 
   @override
   String get emergency => '为了检查电梯状态，将进行紧急停车。';
@@ -270,7 +270,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String earnMilesAfterAdTitle(Object NUMBER) {
-    return '观看广告赚取$NUMBER电梯里程!\n';
+    return '看广告赚取$NUMBER电梯里程!\n';
   }
 
   @override

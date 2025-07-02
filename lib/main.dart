@@ -42,6 +42,7 @@ Future<void> main() async {
       statusBarIconBrightness: Brightness.light,
       systemNavigationBarIconBrightness: Brightness.light,
     ));
+    print('Android system UI overlay style configured');
   } else {
     // iOS用の設定
     SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
@@ -50,6 +51,7 @@ Future<void> main() async {
       systemNavigationBarColor: Colors.transparent,
       systemNavigationBarIconBrightness: Brightness.light,
     ));
+    print('iOS system UI overlay style configured');
   }// Status bar style
   await dotenv.load(fileName: "assets/.env");
   final prefs = await SharedPreferences.getInstance();

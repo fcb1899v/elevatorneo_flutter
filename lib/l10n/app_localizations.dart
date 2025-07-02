@@ -6,6 +6,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/intl.dart' as intl;
 
 import 'app_localizations_en.dart';
+import 'app_localizations_es.dart';
 import 'app_localizations_ja.dart';
 import 'app_localizations_ko.dart';
 import 'app_localizations_zh.dart';
@@ -97,6 +98,7 @@ abstract class AppLocalizations {
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
     Locale('en'),
+    Locale('es'),
     Locale('ja'),
     Locale('ko'),
     Locale('zh')
@@ -141,7 +143,7 @@ abstract class AppLocalizations {
   /// No description provided for @termsAndPrivacyPolicy.
   ///
   /// In en, this message translates to:
-  /// **'Terms and privacy policy'**
+  /// **'Terms and Privacy Policy'**
   String get termsAndPrivacyPolicy;
 
   /// No description provided for @terms.
@@ -309,19 +311,19 @@ abstract class AppLocalizations {
   /// No description provided for @eVMile.
   ///
   /// In en, this message translates to:
-  /// **'EV Miles'**
+  /// **'EV miles'**
   String get eVMile;
 
   /// No description provided for @eVMileRanking.
   ///
   /// In en, this message translates to:
-  /// **'EV Miles\nRanking'**
+  /// **'EV miles\nRanking'**
   String get eVMileRanking;
 
   /// No description provided for @earnMile.
   ///
   /// In en, this message translates to:
-  /// **'Earn\n{NUMBER}\nEV Miles!'**
+  /// **'Earn\n{NUMBER}\nEV miles!'**
   String earnMile(Object NUMBER);
 
   /// No description provided for @aboutEVMile.
@@ -603,25 +605,25 @@ abstract class AppLocalizations {
   /// No description provided for @photoAccessRequired.
   ///
   /// In en, this message translates to:
-  /// **'Photo access permission is required\n'**
+  /// **'Photo access is required\n'**
   String get photoAccessRequired;
 
   /// No description provided for @photoAccessPermission.
   ///
   /// In en, this message translates to:
-  /// **'To select your photo, please allow photo full access from settings.'**
+  /// **'To select a photo, please allow full photo access in settings.'**
   String get photoAccessPermission;
 
   /// No description provided for @earnMilesAfterAdTitle.
   ///
   /// In en, this message translates to:
-  /// **'Earn\n{NUMBER} EV miles\nby watching ads\n'**
+  /// **'Earn {NUMBER} EV miles\nby watching ads\n'**
   String earnMilesAfterAdTitle(Object NUMBER);
 
   /// No description provided for @earnMilesAfterAdDesc.
   ///
   /// In en, this message translates to:
-  /// **'To earn {NUMBER} EV miles, please watch ads for the specified duration.'**
+  /// **'To earn {NUMBER} EV miles, please watch the ad for the required time.'**
   String earnMilesAfterAdDesc(Object NUMBER);
 
   /// No description provided for @notConnectedInternet.
@@ -648,7 +650,7 @@ class _AppLocalizationsDelegate
 
   @override
   bool isSupported(Locale locale) =>
-      <String>['en', 'ja', 'ko', 'zh'].contains(locale.languageCode);
+      <String>['en', 'es', 'ja', 'ko', 'zh'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
@@ -659,6 +661,8 @@ AppLocalizations lookupAppLocalizations(Locale locale) {
   switch (locale.languageCode) {
     case 'en':
       return AppLocalizationsEn();
+    case 'es':
+      return AppLocalizationsEs();
     case 'ja':
       return AppLocalizationsJa();
     case 'ko':

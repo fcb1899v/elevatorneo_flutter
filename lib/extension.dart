@@ -130,21 +130,23 @@ extension ContextExt on BuildContext {
       (lang() == "zh") ? "notoSC":
       (lang() == "ko") ? "bmDohyeon":
       "roboto";
-  String elevatorFont() => (lang() == "en") ? "cornerstone": normalFont();
   String ttsLocale() =>
       (lang() == "ja") ? "ja-JP":
       (lang() == "zh") ? "zh-CN":
       (lang() == "ko") ? "ko-KR":
+      (lang() == "es") ? "es-ES":
       "en-US";
   String androidVoiceName() =>
       (lang() == "ja") ? "ja-JP-language":
       (lang() == "zh") ? "zh-CN-language":
       (lang() == "ko") ? "ko-KR-language":
+      (lang() == "es") ? "es-ES-language":
       "en-US-language";
   String iOSVoiceName() =>
       (lang() == "ja") ? "Kyoko":
       (lang() == "zh") ? "婷婷":
       (lang() == "ko") ? "유나":
+      (lang() == "es") ? "Mónica":
       "Samantha";
   String defaultVoiceName() =>
       (Platform.isIOS || Platform.isMacOS) ? iOSVoiceName(): androidVoiceName();
@@ -243,6 +245,7 @@ extension ContextExt on BuildContext {
   String soundFloor(int counter) =>
       (counter == max) ? "":
       (lang() == "en") ? floor("${counter.enRankNumber()}${basement(counter)}"):
+      (lang() == "es") ? "${counter.esRankNumber()}${basement(counter)}":
       floor("${basement(counter)}${counter.abs()}");
   String openingSound(int counter, String room) =>
       "${soundFloor(counter)}${soundPlace(room)}${openDoor()}";
@@ -417,7 +420,7 @@ extension ContextExt on BuildContext {
   double menuAlertDescFontSize()   => (widthResponsible() * 0.032 > 14) ? 14: widthResponsible() * 0.032;
   double menuAlertSelectFontSize() => (widthResponsible() * 0.040 > 24) ? 24: widthResponsible() * 0.040;
   double menuLinksLogoSize() => widthResponsible() * 0.16;
-  double menuLinksTitleSize() => widthResponsible() * (lang() == "en" ? 0.030: 0.025);
+  double menuLinksTitleSize() => widthResponsible() * 0.025;
   double menuLinksMargin() => widthResponsible() * 0.01;
   ///SnackBar
   double snackBarFontSize() => widthResponsible() * 0.04;
@@ -429,7 +432,7 @@ extension ContextExt on BuildContext {
   ///Settings
   //App Bar
   double settingsAppBarHeight() => height() * 0.07;
-  double settingsAppBarFontSize() => height() * (lang() == "en" ? 0.045: 0.032);
+  double settingsAppBarFontSize() => height() * 0.032;
   double settingsAppBarBackButtonSize() => height() * 0.05;
   double settingsAppBarBackButtonMargin() => height() * 0.01;
   //Select top button
@@ -486,9 +489,7 @@ extension ContextExt on BuildContext {
   double settingsBackgroundLockWidth() => width() * 0.9;
   double settingsBackgroundLockMargin() => height() * 0.292;
   double settingsBackgroundSelectBorderWidth() =>  height() * 0.007;
-  double settingsGlassFontSize() => height() * (lang() == "en" ? 0.036: 0.024);
-  double settingsGlassToggleMarginTop() => height() *  (lang() == "en" ? 0.005: 0.000);
-  double settingsGlassToggleMarginBottom() => height() *  (lang() == "en" ? 0.000: 0.002);
+  double settingsGlassFontSize() => height() * 0.03;
   double settingsGlassShadowShift() => height() * 0.002;
   //Settings Alert Dialog
   double settingsAlertTitleFontSize() => widthResponsible() * 0.05;
@@ -524,6 +525,47 @@ extension IntExt on int {
       (abs() % 10 == 2 && abs() ~/ 10 != 1) ? "${abs()}nd ":
       (abs() % 10 == 3 && abs() ~/ 10 != 1) ? "${abs()}rd ":
       "${abs()}th ";
+
+  String esRankNumber() => //1~199
+      (this == 0) ? '':
+      (this == 1) ? 'primer ' :
+      (this == 2) ? 'segundo ' :
+      (this == 3) ? 'tercer ' :
+      (this == 4) ? 'cuarto ' :
+      (this == 5) ? 'quinto ' :
+      (this == 6) ? 'sexto ' :
+      (this == 7) ? 'séptimo ' :
+      (this == 8) ? 'octavo ' :
+      (this == 9) ? 'noveno ' :
+      (this == 10) ? 'décimo ' :
+      (this == 11) ? 'undécimo ' :
+      (this == 12) ? 'duodécimo ' :
+      (this == 13) ? 'decimotercero ' :
+      (this == 14) ? 'decimocuarto ' :
+      (this == 15) ? 'decimoquinto ' :
+      (this == 16) ? 'decimosexto ' :
+      (this == 17) ? 'decimoséptimo ' :
+      (this == 18) ? 'decimoctavo ' :
+      (this == 19) ? 'decimonoveno ' :
+      (this == 20) ? 'vigésimo ':
+      (this < 100) ? esRankNumberOver20():
+      esRankNumberOver100();
+
+  String esRankNumberOver20() =>
+      (this < 100) ? "${
+        (this < 30) ? 'vigésimo ':
+        (this < 40) ? 'trigésimo ':
+        (this < 50) ? 'cuadragésimo ':
+        (this < 60) ? 'quincuagésimo ':
+        (this < 70) ? 'sexagésimo ':
+        (this < 80) ? 'septuagésimo ':
+        (this < 90) ? 'octogésimo ':
+        'nonagésimo '
+      } ${(this % 10).esRankNumber()} ":
+      esRankNumberOver100();
+
+  String esRankNumberOver100() =>
+      'centésimo ${(this % 100).esRankNumberOver20()} ';
 
   ///Settings
   //this is selected number

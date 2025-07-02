@@ -18,7 +18,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get menu => '메뉴';
 
   @override
-  String get settings => '각종 설정';
+  String get settings => '설정';
 
   @override
   String get glass => '관찰창';
@@ -74,22 +74,22 @@ class AppLocalizationsKo extends AppLocalizations {
   String get ground => '지상층에 도착하셨습니다. ';
 
   @override
-  String get openDoor => '문이 열립니다. ';
+  String get openDoor => '문이 열립니다.';
 
   @override
-  String get closeDoor => '문이 닫힙니다. ';
+  String get closeDoor => '문이 닫힙니다.';
 
   @override
-  String get pushNumber => '가고 싶은 층 버튼을 누르십시오.';
+  String get pushNumber => '층을 선택하세요.';
 
   @override
-  String get upFloor => '올라갑니다. ';
+  String get upFloor => '올라갑니다.';
 
   @override
-  String get downFloor => '내려갑니다. ';
+  String get downFloor => '내려갑니다.';
 
   @override
-  String get notStop => '해당 층에는 정차하지 않습니다. ';
+  String get notStop => '정차하지 않습니다.';
 
   @override
   String get emergency => '엘리베이터의 상태를 확인하기 위해 긴급 정지합니다. ';
@@ -263,14 +263,14 @@ class AppLocalizationsKo extends AppLocalizations {
   String get movingElevator => '엘리베이터가 운행 중이므로 잠시 기다려 주십시오.';
 
   @override
-  String get photoAccessRequired => '사진 접근 권한이 필요합니다.';
+  String get photoAccessRequired => '사진 권한이 필요합니다.';
 
   @override
-  String get photoAccessPermission => '앱 설정에서 사진 전체 액세스를 허용해주세요.';
+  String get photoAccessPermission => '사진 권한을 허용해주세요.';
 
   @override
   String earnMilesAfterAdTitle(Object NUMBER) {
-    return '광고를 보고\n${NUMBER}EV마일\n획득!\n';
+    return '광고를 보고\n${NUMBER}EV마일\n얻자!\n';
   }
 
   @override

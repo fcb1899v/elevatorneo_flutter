@@ -28,7 +28,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get aboutLetsElevator => 'About LETS ELEVATOR';
 
   @override
-  String get termsAndPrivacyPolicy => 'Terms and privacy policy';
+  String get termsAndPrivacyPolicy => 'Terms and Privacy Policy';
 
   @override
   String get terms => 'Terms';
@@ -114,14 +114,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get cropPhoto => 'Crop your image';
 
   @override
-  String get eVMile => 'EV Miles';
+  String get eVMile => 'EV miles';
 
   @override
-  String get eVMileRanking => 'EV Miles\nRanking';
+  String get eVMileRanking => 'EV miles\nRanking';
 
   @override
   String earnMile(Object NUMBER) {
-    return 'Earn\n$NUMBER\nEV Miles!';
+    return 'Earn\n$NUMBER\nEV miles!';
   }
 
   @override
@@ -264,20 +264,20 @@ class AppLocalizationsEn extends AppLocalizations {
   String get movingElevator => 'Elevator in use, please wait a moment.';
 
   @override
-  String get photoAccessRequired => 'Photo access permission is required\n';
+  String get photoAccessRequired => 'Photo access is required\n';
 
   @override
   String get photoAccessPermission =>
-      'To select your photo, please allow photo full access from settings.';
+      'To select a photo, please allow full photo access in settings.';
 
   @override
   String earnMilesAfterAdTitle(Object NUMBER) {
-    return 'Earn\n$NUMBER EV miles\nby watching ads\n';
+    return 'Earn $NUMBER EV miles\nby watching ads\n';
   }
 
   @override
   String earnMilesAfterAdDesc(Object NUMBER) {
-    return 'To earn $NUMBER EV miles, please watch ads for the specified duration.';
+    return 'To earn $NUMBER EV miles, please watch the ad for the required time.';
   }
 
   @override

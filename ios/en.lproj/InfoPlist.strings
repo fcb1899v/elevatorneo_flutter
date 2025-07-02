@@ -7,7 +7,8 @@
 */
 
 CFBundleName = "LETS ELEVATOR NEO";
-CFBundleDisplayName = "LETS ELEVATOR";
-NSUserTrackingUsageDescription = "This app is operated solely based on advertising revenue as it is developed by an individual. If you agree, please tap 'Allow' to grant permission. You will see ads that suit your preferences.";
-NSLocalNetworkUsageDescription = "To successfully retrieve audio, this app requires a local network connection. Please tap 'Allow' to grant permission.";
-NSPhotoLibraryUsageDescription = "In this app, you can select your favorite images from your photo library and customize the floor images within the app. To use this customization feature, access to your photo library is required. We prioritize providing a safe user experience above all else in this app, ensuring that the selected images are processed only on the device and never shared or transmitted outside the app for any other purpose. If you wish to use this feature, please tap 'Allow' to grant permission. You can revoke this permission at any time from the settings.";
+CFBundleDisplayName = "LETS ELEVATOR NEO";
+NSUserTrackingUsageDescription = "This app relies solely on ad revenue as it is developed by an individual. Tap 'Allow' to grant permission and see ads tailored to your interests.";
+NSLocalNetworkUsageDescription = "This app needs local network access to retrieve audio correctly. Tap 'Allow' to grant permission.";
+NSPhotoLibraryUsageDescription = "This app lets you choose photos from your library to customize floor images. Access is needed for this feature. Images stay on your device and are never shared or sent elsewhere. Tap 'Allow' to grant permission. You can revoke it anytime in settings.";
+
