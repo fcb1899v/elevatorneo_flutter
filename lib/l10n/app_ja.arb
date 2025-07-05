@@ -1,23 +1,18 @@
 {
   "@@locale": "ja",
+  
   "letsElevator" : "レッツ・エレベーター・ネオ",
   "thisApp": "このアプリはすごくリアルなエレベーターシミュレーターです。",
+  
   "menu" : "メニュー",
   "settings" : "各種設定",
   "glass": "ガラス窓",
-  "aboutLetsElevator" : "レッツ・エレベーターとは",
-  "termsAndPrivacyPolicy" : "利用規約・プライバシーポリシー",
-  "terms" : "利用規約",
-  "officialPage" : "公式ページ",
-  "officialShop" : "公式ショップ",
-  "ranking" : "ランキング",
   "start" : "スタート",
   "back" : "戻る",
   "ok" : "OK",
   "cancel" : "キャンセル",
   "edit" : "変更",
-  "bypass" : "通過階",
-  "stop" : "停止階",
+  
   "basement" : "地下",
   "floor" : "{NUMBER}階です。　",
   "ground" : "地上階です。　",
@@ -29,15 +24,20 @@
   "notStop" : "ただいま押されたかいにはとまりません。　",
   "emergency" : "エレベーターの状態を確認するため、緊急停止します。 ",
   "return1st" : "確認が完了しました。一階に戻ります。 ",
+  "bypass" : "通過階",
+  "stop" : "停止階",
+  
   "changeNumber" : "行き先階数の変更",
   "changeBasementNumber" : "地下階数の変更",
   "changeImage" : "フロア画像の変更",
   "selectPhoto" : "アルバムから画像選択",
   "cropPhoto" : "写真の切り取り",
+  
   "eVMile" : "EVマイル",
   "eVMileRanking" : "EVマイル\nランキング",
   "earnMile" : "{NUMBER}\nEVマイル\nゲット!",
   "aboutEVMile" : "\nエレベーターの乗れば乗るほどたまるポイントです。\nEVマイルをためると、様々な機能が解放され、メニューの各種設定で変更できます。",
+  
   "rooftop" : "屋上階です。　",
   "vip" : "VIPルーム階です。　",
   "restaurant" : "レストラン階です。 ",
@@ -60,6 +60,7 @@
   "sweets" : "スイーツ売り場階です。　",
   "furniture" : "家具売り場階です。　",
   "cinema" : "映画館階です。　",
+  
   "nameRooftop" : "屋上階",
   "nameVip" : "VIPルーム",
   "nameRestaurant" : "レストラン",
@@ -82,11 +83,19 @@
   "nameSweets" : "スイーツ売り場",
   "nameFurniture" : "家具売り場",
   "nameCinema" : "映画館",
+  
   "movingElevator" : "エレベーターが動作中のため少々お待ちください",
   "photoAccessRequired" : "写真へのアクセス権の許可\n",
   "photoAccessPermission" : "アルバムから画像選択するため、設定画面で写真へのフルアクセスを許可してください。",
   "earnMilesAfterAdTitle" : "広告を見て\n{NUMBER}EVマイル\nゲット!\n",
   "earnMilesAfterAdDesc" : "広告を指定の時間ご覧いただくと、{NUMBER}EVマイルが獲得できます。",
   "notConnectedInternet" : "インターネット接続がありません",
-  "notSignedInGameCenter" : "{Platform}にサインインが必要です"
+  "notSignedInGameCenter" : "{Platform}にサインインが必要です",
+  
+  "aboutLetsElevator" : "レッツ・エレベーターとは",
+  "termsAndPrivacyPolicy" : "利用規約・プライバシーポリシー",
+  "terms" : "利用規約",
+  "officialPage" : "公式ページ",
+  "officialShop" : "公式ショップ",
+  "ranking" : "ランキング"
 }

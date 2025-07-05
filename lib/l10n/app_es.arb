@@ -1,23 +1,18 @@
 {
   "@@locale": "es",
+  
   "letsElevator": "LETS ELEVATOR NEO",
   "thisApp": "Esta aplicación es un simulador de ascensores muy realista.",
+  
   "menu": "Menú",
   "settings": "Configuración",
   "glass": "Panel de vidrio",
-  "aboutLetsElevator": "Acerca de LETS ELEVATOR",
-  "termsAndPrivacyPolicy": "Términos y política de privacidad",
-  "terms": "Términos",
-  "officialPage": "Página Oficial",
-  "officialShop": "Tienda Oficial",
-  "ranking": "Clasificación",
   "start": "INICIAR",
   "back": "ATRÁS",
   "ok": "OK",
   "cancel": "CANCELAR",
   "edit": "EDITAR",
-  "bypass": "Omitir",
-  "stop": "Detener",
+  
   "basement": "Sótano",
   "floor": "Piso {NUMBER}, ",
   "ground": "Planta baja, ",
@@ -29,15 +24,20 @@
   "notStop": "No se detiene en esta planta.",
   "emergency": "Parada de emergencia para verificación. ",
   "return1st": "Verificación completa. Regresando al primer piso.",
+  "bypass": "Omitir",
+  "stop": "Detener",
+  
   "changeNumber": "Cambiar número de piso",
   "changeBasementNumber": "Cambiar número de piso del sótano",
   "changeImage": "Cambiar imagen del piso",
   "selectPhoto": "Seleccionar imagen del álbum",
   "cropPhoto": "Recortar tu imagen",
+  
   "eVMile": "Millas EV",
   "eVMileRanking": "Millas EV\nClasificación",
   "earnMile": "¡Gana\n{NUMBER}\nMillas EV!",
   "aboutEVMile": "\nPuntos acumulados a través de frecuentes viajes en ascensor.\nLas millas EV acumuladas desbloquean varias funciones, que se pueden ajustar en la configuración del menú.",
+  
   "rooftop": "El piso superior, ",
   "vip": "Piso de sala VIP, ",
   "restaurant": "Piso de restaurante, ",
@@ -60,6 +60,7 @@
   "sweets": "Piso de tienda de postres, ",
   "furniture": "Piso de tienda de muebles, ",
   "cinema": "Piso de multicines, ",
+  
   "nameRooftop": "El Piso Superior",
   "nameVip": "Sala VIP",
   "nameRestaurant": "Restaurante",
@@ -82,11 +83,19 @@
   "nameSweets": "Tienda de postres",
   "nameFurniture": "Tienda de muebles",
   "nameCinema": "Multicines",
+  
   "movingElevator": "Ascensor en uso, por favor espere un momento.",
   "photoAccessRequired": "Se requiere permiso de acceso a fotos\n",
   "photoAccessPermission": "Para seleccionar tu foto, por favor permite el acceso completo a fotos desde la configuración.",
   "earnMilesAfterAdTitle": "Gana\n{NUMBER} millas EV\nviendo anuncios\n",
   "earnMilesAfterAdDesc": "Para ganar {NUMBER} millas EV, por favor vea anuncios durante la duración especificada.",
   "notConnectedInternet": "Sin conexión a Internet",
-  "notSignedInGameCenter": "Inicia sesión en {Platform}"
+  "notSignedInGameCenter": "Inicia sesión en {Platform}",
+  
+  "aboutLetsElevator": "Acerca de LETS ELEVATOR",
+  "termsAndPrivacyPolicy": "Términos y política de privacidad",
+  "terms": "Términos",
+  "officialPage": "Página Oficial",
+  "officialShop": "Tienda Oficial",
+  "ranking": "Clasificación"
 }

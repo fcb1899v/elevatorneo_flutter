@@ -1,3 +1,10 @@
+// =============================
+// GamesManager: Game services integration for elevator simulator
+//
+// Handles Game Center integration, leaderboards, and internet connectivity.
+// Key features: sign-in, score submission, leaderboards, connectivity checks
+// =============================
+
 import 'dart:async';
 import 'dart:io';
 import 'package:connectivity_plus/connectivity_plus.dart';
@@ -16,6 +23,9 @@ class GamesManager {
     required this.isConnectedInternet
   });
 
+  // --- Connectivity Management ---
+
+  /// Check internet connectivity with timeout and fallback
   Future<bool> checkInternetConnection() async {
     final Duration timeout = const Duration(seconds: 5);
     final connectivity = await Connectivity().checkConnectivity();
@@ -39,7 +49,9 @@ class GamesManager {
     }
   }
 
-  ///Signing in to Game Services
+  // --- Game Services Authentication ---
+
+  /// Sign in to Game Services if not already signed in
   Future<bool> gamesSignIn() async {
     if (!isConnectedInternet) {
       "Not connected Internet".debugPrint();
@@ -66,7 +78,9 @@ class GamesManager {
     }
   }
 
-  ///Submitting games score
+  // --- Score Management ---
+
+  /// Submit score to leaderboard and update local best score
   Future<void> gamesSubmitScore(int value) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     final savedBestScore = 'pointKey'.getSharedPrefInt(prefs, 0);
@@ -92,7 +106,9 @@ class GamesManager {
     }
   }
 
-  ///Showing games leaderboards
+  // --- Leaderboard Display ---
+
+  /// Show leaderboards if signed in
   Future<void> gamesShowLeaderboard() async {
     final isSignedIn = (isGamesSignIn && isConnectedInternet) ? true : await gamesSignIn();
     if (isSignedIn) {
@@ -109,7 +125,9 @@ class GamesManager {
     }
   }
 
-  ///Get best score games leaderboards
+  // --- Best Score Retrieval ---
+
+  /// Get best score from server or local storage
   Future<int> getBestScore() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     final savedBestScore = "pointKey".getSharedPrefInt(prefs, 0);

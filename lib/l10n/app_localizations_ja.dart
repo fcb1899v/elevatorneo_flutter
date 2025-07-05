@@ -24,24 +24,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get glass => 'ガラス窓';
 
   @override
-  String get aboutLetsElevator => 'レッツ・エレベーターとは';
-
-  @override
-  String get termsAndPrivacyPolicy => '利用規約・プライバシーポリシー';
-
-  @override
-  String get terms => '利用規約';
-
-  @override
-  String get officialPage => '公式ページ';
-
-  @override
-  String get officialShop => '公式ショップ';
-
-  @override
-  String get ranking => 'ランキング';
-
-  @override
   String get start => 'スタート';
 
   @override
@@ -55,12 +37,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get edit => '変更';
-
-  @override
-  String get bypass => '通過階';
-
-  @override
-  String get stop => '停止階';
 
   @override
   String get basement => '地下';
@@ -96,6 +72,12 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get return1st => '確認が完了しました。一階に戻ります。 ';
+
+  @override
+  String get bypass => '通過階';
+
+  @override
+  String get stop => '停止階';
 
   @override
   String get changeNumber => '行き先階数の変更';
@@ -286,4 +268,22 @@ class AppLocalizationsJa extends AppLocalizations {
   String notSignedInGameCenter(Object Platform) {
     return '$Platformにサインインが必要です';
   }
+
+  @override
+  String get aboutLetsElevator => 'レッツ・エレベーターとは';
+
+  @override
+  String get termsAndPrivacyPolicy => '利用規約・プライバシーポリシー';
+
+  @override
+  String get terms => '利用規約';
+
+  @override
+  String get officialPage => '公式ページ';
+
+  @override
+  String get officialShop => '公式ショップ';
+
+  @override
+  String get ranking => 'ランキング';
 }

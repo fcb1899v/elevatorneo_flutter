@@ -1,16 +1,33 @@
+// =============================
+// SettingsPage: Comprehensive settings interface for elevator simulator
+//
+// This file contains the complete settings system that allows users to customize
+// various aspects of the elevator simulator. It manages floor configurations,
+// visual styles, button layouts, and user preferences.
+// Key features:
+// - Floor image customization with photo selection
+// - Floor number and stop configuration
+// - Button style and shape selection
+// - Background and glass panel settings
+// - Point-based unlock system
+// - Scroll management and UI navigation
+// - Data persistence and state management
+// =============================
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:letselevatorneo/games_manager.dart';
-import 'package:letselevatorneo/homepage.dart';
 import 'package:vibration/vibration.dart';
-import 'admob_banner.dart';
-import 'common_widget.dart';
+import 'games_manager.dart';
+import 'photo_manager.dart';
 import 'image_manager.dart';
+import 'common_widget.dart';
 import 'extension.dart';
 import 'constant.dart';
+import 'admob_banner.dart';
 import 'main.dart';
+import 'homepage.dart';
 
 class SettingsPage extends HookConsumerWidget {
   const SettingsPage({super.key});
@@ -18,6 +35,8 @@ class SettingsPage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
 
+    // --- Provider State Management ---
+    // Riverpod providers for managing app settings and state
     final floorNumbers = ref.watch(floorNumbersProvider);
     final floorStops = ref.watch(floorStopsProvider);
     final roomImages = ref.watch(floorImagesProvider);
@@ -29,18 +48,21 @@ class SettingsPage extends HookConsumerWidget {
     final backgroundStyle = ref.watch(backgroundStyleProvider);
     final glassStyle = ref.watch(glassStyleProvider);
 
-    final scrollController = useScrollController();
-    final imageManager = useMemoized(() => ImageManager());
-    final photoManager = useMemoized(() => PhotoManager(context: context));
-    final isButtonOn = useState(List.generate(5, (_) => List.generate(2, (_) => false)));
-    final isImageOn  = useState(List.generate(5, (_) => List.generate(2, (_) => false)));
-    final selectedNumber = useState(0);
-    final showSettingNumber = useState(0);
-    final hasScrolledOnce = useState(false);
-    final isLoadingData = useState(false);
+    // --- Hooks State Management ---
+    // Local state management using Flutter Hooks for UI interactions
+    final scrollController = useScrollController();                    // Scroll view controller
+    final imageManager = useMemoized(() => ImageManager());           // Image management service
+    final photoManager = useMemoized(() => PhotoManager(context: context)); // Photo selection service
+    final isButtonOn = useState(List.generate(5, (_) => List.generate(2, (_) => false))); // Button selection states
+    final isImageOn  = useState(List.generate(5, (_) => List.generate(2, (_) => false))); // Image selection states
+    final selectedNumber = useState(0);                               // Currently selected floor number
+    final showSettingNumber = useState(0);                            // Active settings tab index
+    final hasScrolledOnce = useState(false);                          // Scroll state tracking
+    final isLoadingData = useState(false);                            // Data loading state
     final animationController = useAnimationController(duration:Duration(seconds: flashTime))..repeat(reverse: true);
 
-    //Class
+    // --- Widget and Manager Instances ---
+    // UI widget instances and service managers
     final common = CommonWidget(context);
     final settings = SettingsWidget(context,
       point: point,
@@ -57,6 +79,11 @@ class SettingsPage extends HookConsumerWidget {
       isConnectedInternet: isConnectedInternet
     ));
 
+    // --- Initialization Functions ---
+    // Functions for setting up initial app state and data
+
+    /// Initialize app state including connectivity checks and data loading
+    /// Sets up initial settings data and manages loading states
     initState() async {
       isLoadingData.value = true;
       try {
@@ -70,11 +97,13 @@ class SettingsPage extends HookConsumerWidget {
       }
     }
 
+    // --- Initialization Effect ---
+    // Automatic initialization and scroll management setup
     useEffect(() {
       WidgetsBinding.instance.addPostFrameCallback((_) async {
         await initState();
       });
-      // Control scroll position
+      // Control scroll position tracking
       void listener() {
         if (scrollController.offset > 10) hasScrolledOnce.value = true;
       }
@@ -84,6 +113,10 @@ class SettingsPage extends HookConsumerWidget {
       };
     }, []);
 
+    // --- Scroll Management Functions ---
+    // Functions for handling scroll behavior and navigation
+
+    /// Animate scroll view to top with smooth transition
     void scrollToTop() {
       scrollController.animateTo(0.0,
         duration: Duration(seconds: flashTime),
@@ -91,6 +124,8 @@ class SettingsPage extends HookConsumerWidget {
       );
     }
 
+    // --- Settings Tab Management Effect ---
+    // Handle settings tab changes and scroll behavior
     useEffect(() {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!isGamesSignIn) gamesManager.gamesSignIn();
@@ -102,14 +137,17 @@ class SettingsPage extends HookConsumerWidget {
       return null;
     }, [showSettingNumber.value]);
 
+    // --- Settings Configuration Functions ---
+    // Functions for handling various settings changes and user interactions
 
-    ///Change select button
+    /// Change active settings tab with vibration feedback
     void changeSelectButton(int i) {
       Vibration.vibrate(duration: vibTime, amplitude: vibAmp);
       showSettingNumber.value = i;
     }
 
-    ///Change floor image
+    /// Open floor image change dialog with selection options
+    /// Handles both preset images and user photo selection
     void openChangeImageDialog(int row, col) {
       Vibration.vibrate(duration: vibTime, amplitude: vibAmp);
       isImageOn.value[row][col] = true;
@@ -142,7 +180,8 @@ class SettingsPage extends HookConsumerWidget {
       );
     }
 
-    ///Change button number
+    /// Change floor button number with validation and selection dialog
+    /// Handles floor number selection for configurable buttons
     void changeButtonNumber(int row, col) {
       if (!isNotSelectFloor(row, col)) {
         Vibration.vibrate(duration: vibTime, amplitude: vibAmp);
@@ -170,7 +209,8 @@ class SettingsPage extends HookConsumerWidget {
       }
     }
 
-    ///Change stop floor
+    /// Change floor stop configuration with validation
+    /// Toggles whether elevator stops at specific floors
     Future<void> changeFloorStop(bool value, int row, col) async {
       if (!isNotSelectFloor(row, col)) {
         Vibration.vibrate(duration: vibTime, amplitude: vibAmp);
@@ -182,7 +222,8 @@ class SettingsPage extends HookConsumerWidget {
       }
     }
 
-    ///Change button style
+    /// Change button style with persistence
+    /// Updates button visual style and saves to storage
     Future<void> changeButtonStyle(int value) async {
       Vibration.vibrate(duration: vibTime, amplitude: vibAmp);
       ref.read(buttonStyleProvider.notifier).state = await imageManager.changeSettingsIntValue(
@@ -192,7 +233,8 @@ class SettingsPage extends HookConsumerWidget {
       );
     }
 
-    ///Change button shape
+    /// Change button shape with persistence
+    /// Updates button shape and saves to storage
     Future<void> changeButtonShape(String value) async {
       ref.read(buttonShapeProvider.notifier).state = await imageManager.changeSettingsStringValue(
         key: "buttonShapeKey",
@@ -201,7 +243,8 @@ class SettingsPage extends HookConsumerWidget {
       );
     }
 
-    ///Change glass style
+    /// Change glass panel style with persistence
+    /// Toggles glass panel visibility and saves to storage
     Future<void> changeGlassStyle(bool value) async {
       Vibration.vibrate(duration: vibTime, amplitude: vibAmp);
       ref.read(glassStyleProvider.notifier).state = await imageManager.changeSettingsStringValue(
@@ -211,7 +254,8 @@ class SettingsPage extends HookConsumerWidget {
       );
     }
 
-    ///Change background style
+    /// Change background style with persistence
+    /// Updates background image and saves to storage
     Future<void> changeBackground(String value) async {
       Vibration.vibrate(duration: vibTime, amplitude: vibAmp);
       ref.read(backgroundStyleProvider.notifier).state = await imageManager.changeSettingsStringValue(
@@ -221,6 +265,8 @@ class SettingsPage extends HookConsumerWidget {
       );
     }
 
+    /// Handle back button press with navigation
+    /// Returns to main menu and home page
     Future<void> pressedBack() async {
       await Vibration.vibrate(duration: vibTime, amplitude: vibAmp);
       ref.read(isMenuProvider.notifier).state = false;
@@ -228,16 +274,21 @@ class SettingsPage extends HookConsumerWidget {
       if (context.mounted) context.pushFadeReplacement(HomePage());
     }
 
-    ///Settings
+    // --- UI Rendering ---
+    // Main settings interface structure with conditional content
     return Scaffold(
+      /// App bar with animated back button and title
       appBar: settings.settingsAppBar(
         animation: animationController,
         onPressed: () => pressedBack(),
       ),
+      /// Main body with settings content
       body: Stack(children: [
+        /// Background image for settings
         common.commonBackground(menuBackGroundImage),
+        /// Settings content layout
         Column(children: [
-          ///Select button
+          /// Settings tab selection buttons
           Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: List.generate(settingsItemList.length, (i) =>
               settings.selectButtonWidget(
@@ -247,7 +298,7 @@ class SettingsPage extends HookConsumerWidget {
             ),
           ),
           settings.settingsDivider(),
-          ///Setting floor image
+          /// Floor image customization section
           (showSettingNumber.value == 0) ? Expanded(
             child: Stack(children: [
               SingleChildScrollView(
@@ -257,22 +308,24 @@ class SettingsPage extends HookConsumerWidget {
                   onTap: openChangeImageDialog
                 )
               ),
+              /// Scroll to top button when content is scrollable
               if (!hasScrolledOnce.value) settings.scroolUpButton(
                 animation: animationController,
                 onTap: scrollToTop
               ),
             ])
           ):
-          ///Setting floor number
+          /// Floor number configuration section
           (showSettingNumber.value == 1) ? settings.settingsFloorNumberWidget(
             isButtonOn: isButtonOn.value,
             changeButtonNumber: changeButtonNumber,
             changeFloorStopFlag: changeFloorStop,
           ):
-          ///Setting button style
+          /// Button style selection section with lock overlay
           (showSettingNumber.value == 2) ? Stack(alignment: Alignment.center,
             children: [
               settings.settingsButtonStyleWidget(onTap: changeButtonStyle),
+              /// Lock overlay for premium features
               if (point < buttonStyleLockPoint && !isTest) settings.settingsLockContainer(
                 margin: EdgeInsets.only(top: context.settingsButtonStyleLockMargin()),
                 width: context.settingsButtonStyleLockWidth(),
@@ -281,13 +334,14 @@ class SettingsPage extends HookConsumerWidget {
               ),
             ]
           ):
-          ///Setting vision panel
+          /// Glass panel toggle section
           settings.settingsGlassToggleWidget(onChanged: changeGlassStyle),
 
-          ///Setting button shape
+          /// Button shape selection section with lock overlay
           (showSettingNumber.value == 2) ? Stack(alignment: Alignment.topCenter,
             children: [
               settings.settingsButtonShapeWidget(onTap: changeButtonShape),
+              /// Lock overlay for premium features
               if (point < buttonShapeLockPoint && !isTest) settings.settingsLockContainer(
                 width: context.settingsButtonShapeLockWidth(),
                 height: context.settingsButtonShapeLockHeight(),
@@ -296,10 +350,11 @@ class SettingsPage extends HookConsumerWidget {
               ),
             ]
           ):
-          ///Setting background image
+          /// Background selection section with lock overlay
           (showSettingNumber.value == 3) ? Stack(alignment: Alignment.topCenter,
             children: [
               settings.settingsBackgroundSelectWidget(onTap: changeBackground),
+              /// Lock overlay for premium features
               if (point < backgroundLockPoint && !isTest) settings.settingsLockContainer(
                 width: context.settingsBackgroundLockWidth(),
                 height: context.settingsBackgroundLockHeight(),
@@ -308,20 +363,28 @@ class SettingsPage extends HookConsumerWidget {
               ),
             ]
           ): SizedBox(),
-          ///Admob banner space
+          /// AdMob banner space reservation
           Container(
             height: context.admobHeight(),
             color: blackColor,
           )
         ]),
-        ///Admob banner
+        /// AdMob banner at bottom of screen
         if (!isTest) const AdBannerWidget(),
-        ///Progress Indicator
+        /// Loading indicator during data initialization
         if (isLoadingData.value) common.commonCircularProgressIndicator(),
       ])
     );
   }
 }
+
+// =============================
+// SettingsWidget: UI components for settings interface
+//
+// This class provides all the UI components needed for the settings system,
+// including dialogs, selection widgets, lock overlays, and navigation elements.
+// It handles complex layouts and conditional rendering based on user points and settings.
+// =============================
 
 class SettingsWidget {
   final BuildContext context;
@@ -345,15 +408,18 @@ class SettingsWidget {
     required this.backgroundStyle,
   });
 
-  ///Common widget
-  //Divider
+  // --- Common UI Components ---
+  // Reusable UI elements used throughout the settings interface
+
+  /// Create divider with consistent styling
   Divider settingsDivider() => Divider(
     height: context.settingsDividerHeight(),
     thickness: context.settingsDividerThickness(),
     color: blackColor,
   );
 
-  //Lock container
+  /// Create lock overlay container for premium features
+  /// Displays lock icon and required points for locked features
   Widget settingsLockContainer({
     required double width,
     required double height,
@@ -394,7 +460,7 @@ class SettingsWidget {
     ),
   );
 
-  //Alert dialog
+  /// Create alert dialog title with close button
   Widget alertDialogTitle(String title) => Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly,
     children: [
       Text(title,
@@ -405,7 +471,7 @@ class SettingsWidget {
         ),
       ),
       SizedBox(width: context.settingsAlertCloseIconSpace()),
-      ///Close button
+      /// Close button for dialog dismissal
       GestureDetector(
         onTap: () => context.popPage(),
         child: Icon(Icons.close,
@@ -416,7 +482,10 @@ class SettingsWidget {
     ]
   );
 
-  ///AppBar
+  // --- App Bar Components ---
+  // Navigation and header elements
+
+  /// Create settings app bar with animated back button
   AppBar settingsAppBar({
     required AnimationController animation,
     required void Function() onPressed,
@@ -446,7 +515,10 @@ class SettingsWidget {
     ),
   );
 
-  ///Select button
+  // --- Settings Tab Components ---
+  // UI components for settings tab selection
+
+  /// Create settings tab selection button
   Widget selectButtonWidget({
     required String image,
     required void Function() onTap,
@@ -463,7 +535,11 @@ class SettingsWidget {
     ),
   );
 
-  ///Change floor image
+  // --- Floor Image Customization Components ---
+  // UI components for floor image selection and management
+
+  /// Create floor image selection grid with lock overlays
+  /// Displays room images with selection states and point-based locks
   Widget settingsFloorImageWidget({
     required List<List<bool>> isImageOn,
     required void Function(int, int) onTap,
@@ -480,7 +556,7 @@ class SettingsWidget {
           ),
           child: Stack(alignment: Alignment.center,
             children: [
-              /// Room Image
+              /// Room image with selection overlay
               GestureDetector(
                 onTap: () => onTap(row.key, col.key),
                 child: SizedBox(
@@ -492,7 +568,7 @@ class SettingsWidget {
                   ]),
                 ),
               ),
-              /// Lock Overlay
+              /// Lock overlay for premium features
               if (point < changePointList[row.key][col.key] && !isTest) settingsLockContainer(
                 width: context.settingsFloorImageLockWidth(),
                 height: context.settingsFloorImageLockHeight(),
@@ -506,7 +582,7 @@ class SettingsWidget {
     ),
   ]);
 
-  //Scroll up button
+  /// Create scroll to top button with animation
   Widget scroolUpButton({
     required AnimationController animation,
     required void Function() onTap,
@@ -522,7 +598,7 @@ class SettingsWidget {
     ),
   );
 
-  //Image picker dialog for changing floor Image
+  /// Open floor image picker dialog with dropdown and photo selection
   void floorImagePickerDialog(int row, col, {
     required void Function(String?, int, int) onChanged,
     required void Function(int, int) onChangedMyPhoto,
@@ -539,6 +615,7 @@ class SettingsWidget {
           const Spacer(flex: 1),
           Stack(children: [
             floorImageFromMyAlbumButton(onTap: () => onChangedMyPhoto(row, col)),
+            /// Lock overlay for photo selection feature
             if (point < albumImagePoint && !isTest) alertLockWidget(),
           ]),
           const Spacer(flex: 1),
@@ -547,7 +624,7 @@ class SettingsWidget {
     )
   ).then((_) => then(row, col));
 
-  //Change floor image by dropdown list
+  /// Create dropdown list for preset floor images
   Widget floorImageDropdownList(int row, col, {
     required void Function(String?, int, int) onChanged,
   }) => Container(
@@ -571,7 +648,7 @@ class SettingsWidget {
     ),
   );
 
-  //Change floor image from my album
+  /// Create button for selecting photos from user's album
   Widget floorImageFromMyAlbumButton({
     required void Function() onTap,
   }) => GestureDetector(
@@ -599,6 +676,7 @@ class SettingsWidget {
     ),
   );
 
+  /// Create lock overlay for photo selection feature
   Container alertLockWidget()  => Container(
     decoration: BoxDecoration(
       color: transpBlackColor,
@@ -635,9 +713,10 @@ class SettingsWidget {
     ]),
   );
 
+  // --- Button Style Components ---
+  // UI components for button style selection
 
-
-  ///Change button style
+  /// Create button style selection grid
   Widget settingsButtonStyleWidget({
     required void Function(int) onTap,
   }) => Column(children: [
@@ -661,7 +740,10 @@ class SettingsWidget {
     settingsDivider(),
   ]);
 
-  ///Change button shape
+  // --- Button Shape Components ---
+  // UI components for button shape selection
+
+  /// Create button shape selection grid with preview
   Widget settingsButtonShapeWidget({
     required void Function(String) onTap,
   }) => Column(children: [
@@ -678,7 +760,7 @@ class SettingsWidget {
             ),
             child: Stack(alignment: Alignment.center,
               children: [
-                /// Number Button
+                /// Button shape preview with number display
                 GestureDetector(
                   onTap: () => onTap(row.value[col.key]),
                   child: Stack(alignment: Alignment.center,
@@ -710,7 +792,10 @@ class SettingsWidget {
     ),
   ]);
 
-  ///Change floor number
+  // --- Floor Number Configuration Components ---
+  // UI components for floor number and stop configuration
+
+  /// Create floor number configuration grid with stop toggles
   Widget settingsFloorNumberWidget({
     required List<List<bool>> isButtonOn,
     required void Function(int, int) changeButtonNumber,
@@ -738,13 +823,14 @@ class SettingsWidget {
                   settingsFloorStopToggleWidget(row.key, col.key, changeFloorStopFlag: changeFloorStopFlag)
                 ]),
               ),
+              /// Hide overlay for non-selectable floors
               if (isNotSelectFloor(row.key, col.key)) Container(
                 width: context.settingsButtonNumberHideWidth(),
                 height: context.settingsButtonNumberHideHeight(),
                 margin: EdgeInsets.only(right: context.settingsButtonNumberHideMargin()),
                 color: transpBlackColor,
               ),
-              /// Lock Overlay
+              /// Lock overlay for premium features
               if (point < changePointList[row.key][col.key] && !isTest && col.value != max && col.value != min) settingsLockContainer(
                 width: context.settingsButtonNumberLockWidth(),
                 height: context.settingsButtonNumberLockHeight(),
@@ -757,7 +843,7 @@ class SettingsWidget {
     ),
   ]);
 
-  ///Floor Button Image
+  /// Create floor button image with number display
   Widget settingsFloorButtonImage({
     required String number,
     required String image,
@@ -780,8 +866,7 @@ class SettingsWidget {
     ),
   );
 
-
-  //Number picker dialog for changing floor number
+  /// Open floor number selection dialog with picker
   void floorNumberSelectDialog(int row, col, {
     required void Function(int) select,
     required void Function() ok,
@@ -817,7 +902,7 @@ class SettingsWidget {
     ),
   ).then((_) => then());
 
-  //Number picker content
+  /// Create floor number picker content with scrollable list
   Widget settingsFloorNumberContent(int row, col, {
     required void Function(int) onSelectedItemChanged,
   }) => Container(
@@ -845,7 +930,7 @@ class SettingsWidget {
     ),
   );
 
-  ///Change stop floor
+  /// Create floor stop toggle widget with switch control
   Widget settingsFloorStopToggleWidget(int row, col, {
     required void Function(bool, int, int) changeFloorStopFlag,
   }) => Container(
@@ -873,7 +958,10 @@ class SettingsWidget {
     ),
   );
 
-  ///Change background
+  // --- Background and Glass Components ---
+  // UI components for background and glass panel settings
+
+  /// Create background selection grid with preview
   Widget settingsBackgroundSelectWidget({
     required void Function(String) onTap
   }) => Column(mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -889,6 +977,7 @@ class SettingsWidget {
               onTap: () => onTap(row.value[col.key]),
               child: Image.asset(row.value[col.key].backGroundImage(glassStyle)),
             ),
+            /// Selection indicator for current background
             if (backgroundStyleList.toMatrix(2)[row.key][col.key] == backgroundStyle) Container(
               decoration: BoxDecoration(
                 border: Border.all(
@@ -903,7 +992,7 @@ class SettingsWidget {
     ]
   );
 
-  //Change vision panel
+  /// Create glass panel toggle with switch control
   Widget settingsGlassToggleWidget({
     required void Function(bool) onChanged,
   }) => Column(children: [

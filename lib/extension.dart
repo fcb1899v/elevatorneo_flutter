@@ -1,3 +1,16 @@
+// =============================
+// Extension Methods for LETS ELEVATOR NEO
+//
+// 1. StringExt      : String utilities, SharedPreferences helpers, image path helpers, style helpers
+// 2. ContextExt     : BuildContext utilities, localization, UI helpers
+// 3. IntExt         : Integer utilities for floor, button, and elevator logic
+// 4. ListIntExt     : List<int> helpers for floor and button matrix
+// 5. ListStringExt  : List<String> helpers for room images and names
+// 6. BoolExt        : Boolean helpers for UI and logic
+// 7. ListBoolExt    : List<bool> helpers for button images
+// 8. ListDynamicExt : Generic List<T> matrix helpers
+// =============================
+
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -7,14 +20,20 @@ import 'l10n/app_localizations.dart' show AppLocalizations;
 import 'constant.dart';
 import 'sound_manager.dart';
 
+// =============================
+// StringExt: String utilities, SharedPreferences helpers, image path helpers, style helpers
+// =============================
 extension StringExt on String {
 
-  ///Common
+  // --- Debug Utilities ---
+  // Provides debug printing functionality for development
   void debugPrint() {
     if (kDebugMode) print(this);
   }
 
-  //SharedPreferences this is key
+  // --- SharedPreferences Helpers ---
+  // Comprehensive set of methods for storing and retrieving data from SharedPreferences
+  // All methods include debug logging for development tracking
   void setSharedPrefString(SharedPreferences prefs, String value) {
     "${replaceAll("Key", "")}: $value".debugPrint();
     prefs.setString(this, value);
@@ -82,12 +101,14 @@ extension StringExt on String {
     return (values == []) ? defaultList: values;
   }
 
-  //this is imagePath
+  // --- Image Path Helpers ---
+  // Methods for creating and managing image assets and file-based images
   Image cropperImage() => Image.file(File(this), fit: BoxFit.cover);
   Image fittedAssetImage() => Image.asset(this, fit: BoxFit.cover);
   Image roomImage() => contains("image_cropper") ? cropperImage(): fittedAssetImage();
 
-  //this is style
+  // --- Elevator Style Helpers ---
+  // Methods for generating elevator component image paths based on style and configuration
   String elevatorFrame(bool isOutside) => "${assetsElevator}elevatorFrame_$this${isOutside ? "Outside": ""}.png";
   String doorFrame() => "${assetsElevator}doorFrame_$this.png";
   String leftDoor(String glassStyle) => "${assetsElevator}doorLeft_$this${glassStyle == "use" ? "WithGlass": ""}.png";
@@ -97,12 +118,18 @@ extension StringExt on String {
   List<String> insideElevatorImages(List<int> floorNumbers, int counter) =>
       List.generate(initialFloorImages.length, (i) => (counter == floorNumbers[i]) ? insideElevator(): imageDark);
 
-  //this is buttonShape
+  // --- Button Shape Helpers ---
+  // Methods for managing button shape configurations and indices
   int buttonShapeIndex() => buttonShapeList.contains(this) ? buttonShapeList.indexOf(this): 0;
 }
 
+// =============================
+// ContextExt: BuildContext utilities, localization, UI helpers
+// =============================
 extension ContextExt on BuildContext {
 
+  // --- Navigation & UI Basics ---
+  // Core navigation and UI utility methods for screen management and responsive design
   void pushFadeReplacement(Widget page) {
     AudioManager().playEffectSound(index: 0, asset: changeSound, volume: 1.0);
     Navigator.pushAndRemoveUntil(this, PageRouteBuilder(
@@ -115,44 +142,24 @@ extension ContextExt on BuildContext {
     ),
     (route) => false);
   }
-
-  ///Common
   double width() => MediaQuery.of(this).size.width;
   double height() => MediaQuery.of(this).size.height;
   double widthResponsible() => (width() < height() / 2) ? width(): height() / 2;
   Orientation orientation() => MediaQuery.of(this).orientation;
   void popPage() => Navigator.pop(this);
 
-  ///Language String
+  // --- Localization & Fonts ---
+  // Language detection and font selection based on current locale
   String lang() => Localizations.localeOf(this).languageCode;
   String normalFont() =>
       (lang() == "ja") ? "notoJP":
       (lang() == "zh") ? "notoSC":
       (lang() == "ko") ? "bmDohyeon":
       "roboto";
-  String ttsLocale() =>
-      (lang() == "ja") ? "ja-JP":
-      (lang() == "zh") ? "zh-CN":
-      (lang() == "ko") ? "ko-KR":
-      (lang() == "es") ? "es-ES":
-      "en-US";
-  String androidVoiceName() =>
-      (lang() == "ja") ? "ja-JP-language":
-      (lang() == "zh") ? "zh-CN-language":
-      (lang() == "ko") ? "ko-KR-language":
-      (lang() == "es") ? "es-ES-language":
-      "en-US-language";
-  String iOSVoiceName() =>
-      (lang() == "ja") ? "Kyoko":
-      (lang() == "zh") ? "婷婷":
-      (lang() == "ko") ? "유나":
-      (lang() == "es") ? "Mónica":
-      "Samantha";
-  String defaultVoiceName() =>
-      (Platform.isIOS || Platform.isMacOS) ? iOSVoiceName(): androidVoiceName();
 
-  ///Localized String
-  //Common
+  // --- Localized Strings ---
+  // Comprehensive collection of localized strings for all app features
+  // Common app strings
   String thisApp() => AppLocalizations.of(this)!.thisApp;
   String openDoor() => AppLocalizations.of(this)!.openDoor;
   String closeDoor() => AppLocalizations.of(this)!.closeDoor;
@@ -168,8 +175,7 @@ extension ContextExt on BuildContext {
   String eVMileRanking() => AppLocalizations.of(this)!.eVMileRanking;
   String earnMile(String number) => AppLocalizations.of(this)!.earnMile(number);
   String aboutEVMile() => AppLocalizations.of(this)!.aboutEVMile;
-
-  ///Room
+  // Room names
   String rooftop() => AppLocalizations.of(this)!.rooftop;
   String vip() => AppLocalizations.of(this)!.vip;
   String restaurant() => AppLocalizations.of(this)!.restaurant;
@@ -192,8 +198,7 @@ extension ContextExt on BuildContext {
   String sweets() => AppLocalizations.of(this)!.sweets;
   String furniture() => AppLocalizations.of(this)!.furniture;
   String cinema() => AppLocalizations.of(this)!.cinema;
-
-  ///Room Image Name
+  // Room image names
   String nameParking() => AppLocalizations.of(this)!.nameParking;
   String nameStation() => AppLocalizations.of(this)!.nameStation;
   String nameSupermarket() => AppLocalizations.of(this)!.nameSupermarket;
@@ -216,7 +221,7 @@ extension ContextExt on BuildContext {
   String nameSweets() => AppLocalizations.of(this)!.nameSweets;
   String nameFurniture() => AppLocalizations.of(this)!.nameFurniture;
   String nameCinema() => AppLocalizations.of(this)!.nameCinema;
-
+  // Sound and audio helpers
   String soundPlace(String room) =>
       (room == imageParking) ? parking():
       (room == imageStation) ? station():
@@ -241,7 +246,6 @@ extension ContextExt on BuildContext {
       (room == imageFurnit) ? furniture():
       (room == imageCinema) ? cinema():
       "";
-
   String soundFloor(int counter) =>
       (counter == max) ? "":
       (lang() == "en") ? floor("${counter.enRankNumber()}${basement(counter)}"):
@@ -249,7 +253,7 @@ extension ContextExt on BuildContext {
       floor("${basement(counter)}${counter.abs()}");
   String openingSound(int counter, String room) =>
       "${soundFloor(counter)}${soundPlace(room)}${openDoor()}";
-
+  // Room name lists
   List<String> initialRoomName() => [
     nameParking(), nameStation(), nameSupermarket(), nameArcade(), nameFoodCourt(),
     nameBook(), nameSpa(), nameRestaurant(), nameVip(), nameRooftop(),
@@ -260,8 +264,7 @@ extension ContextExt on BuildContext {
     nameFurniture(), nameCinema()
   ];
   List<String> roomNameList() => [...initialRoomName(), ...addRoomName()];
-
-  ///Menu
+  // Menu and settings
   String settings() => AppLocalizations.of(this)!.settings;
   String glass() => AppLocalizations.of(this)!.glass;
   String back() => AppLocalizations.of(this)!.back;
@@ -293,43 +296,37 @@ extension ContextExt on BuildContext {
   String notSignedInGameCenter() => AppLocalizations.of(this)!.notSignedInGameCenter(
     (Platform.isIOS || Platform.isMacOS) ? "Game Center": "Play Games"
   );
-
+  // Menu links and titles
   List<String> linkLogos() => [
-    // if (lang() == "ja") twitterLogo,
-    // if (lang() == "ja") instagramLogo,
     if (Platform.isAndroid) youtubeLogo,
     landingPageLogo,
     privacyPolicyLogo,
     if (lang() == "ja") shopPageLogo,
   ];
   List<String> linkLinks() => [
-    // if (lang() == "ja") elevatorTwitter,
-    // if (lang() == "ja") elevatorInstagram,
     if (Platform.isAndroid) youtubeLink(),
     landingPageLink(),
     privacyPolicyLink(),
     if (lang() == "ja") shopLink,
   ];
   List<String> linkTitles() => [
-    // if (lang() == "ja") "X",
-    // if (lang() == "ja") "Instagram",
     if (Platform.isAndroid) "Youtube",
     officialPage(),
     terms(),
     if (lang() == "ja") officialShop(),
   ];
-
   List<String> menuTitles() => [
     settings(),
     eVMileRanking(),
     earnMile(earnMiles),
   ];
 
-  ///Progress Indicator
+  // --- UI Layout & Sizing ---
+  // Comprehensive set of responsive UI sizing methods for all app components
+  // Progress indicator
   double circleSize() => widthResponsible() * 0.08;
   double circleStrokeWidth() => widthResponsible() * 0.01;
-
-  ///AppBar
+  // App bar
   double homeAppBarHeight() => height() * 0.07;
   double homeAppBarIconSize() => widthResponsible() * 0.09;
   double homeAppBarIconMarginLeft() => widthResponsible() * 0.02;
@@ -338,8 +335,7 @@ extension ContextExt on BuildContext {
   double homeAppBarPointMarginBottom() => widthResponsible() * 0.01;
   double homeAppBarMenuButtonSize() => widthResponsible() * 0.09;
   double homeAppBarMenuButtonMargin() => widthResponsible() * 0.045;
-
-  ///Tooltip
+  // Tooltip
   double tooltipIconSize() => widthResponsible() * 0.04;
   double tooltipHeight() => widthResponsible() * 0.09;
   double tooltipMarginLeft() => widthResponsible() * 0.01;
@@ -350,8 +346,7 @@ extension ContextExt on BuildContext {
   double tooltipMarginSize() => widthResponsible() * 0.02;
   double tooltipBorderRadius() => widthResponsible() * 0.04;
   double tooltipOffsetSize() => widthResponsible() * 0.02;
-
-  ///Elevator
+  // Elevator layout
   double elevatorWidth() => widthResponsible();
   double elevatorHeight() => widthResponsible() * 16/9;
   double doorWidth() => widthResponsible() * 0.355;
@@ -359,7 +354,6 @@ extension ContextExt on BuildContext {
   double doorMarginTop() => widthResponsible() * 0.193;
   double upDownDoorMarginTop() => widthResponsible() * 0.191;
   double elevatorMarginTop() => widthResponsible() * 0.045;
-
   double changeMarginTop() => widthResponsible() * 0.145;
   double roomWidth() => widthResponsible() * 0.73;
   double roomHeight() => roomWidth() * 16/9;
@@ -372,8 +366,7 @@ extension ContextExt on BuildContext {
       elevatorMarginTop() + changeMarginTop() - (max - counter - (counter < 0 ? 1: 0)) * floorHeight();
   double imageMarginTop(bool isOutside, int counter, int max) =>
       (isOutside) ? outsideMarginTop(counter, max): insideMarginTop(counter, max);
-
-  ///Display
+  // Display
   double displayHeight() => widthResponsible() * 0.24;
   double displayWidth()  => widthResponsible() * 0.18;
   double displayArrowHeight(int buttonStyle) => widthResponsible() * 0.06;
@@ -385,8 +378,7 @@ extension ContextExt on BuildContext {
   double displayMarginFontSize(int buttonStyle) => widthResponsible() * (buttonStyle == 0 ? 0: 0.03);
   double displayAlphabetFontSize(int buttonStyle) => widthResponsible() * (buttonStyle == 0 ? 0.065: 0.1);
   double displayAlphabetMargin(int buttonStyle) => widthResponsible() * (buttonStyle == 0 ? 0: 0.02);
-
-  ///Buttons
+  // Buttons
   double buttonPanelWidth() => widthResponsible() * 0.23;
   double buttonPanelHeight() => widthResponsible() * 1.05;
   double buttonPanelMarginTop() => widthResponsible() * 0.1;
@@ -406,12 +398,10 @@ extension ContextExt on BuildContext {
       floorButtonNumberMarginFactor[i] > 0 ? 0: -1 * widthResponsible() * floorButtonNumberMarginFactor[i];
   double changeViewMarginTop() => widthResponsible() * 0.028;
   double changeViewMarginLeft() => widthResponsible() * 0.32;
-
-  ///Admob
+  // AdMob
   double admobHeight() => (height() < 600) ? 50: (height() < 1000) ? (height() / 8 - 25): 100;
   double admobWidth() => widthResponsible() - 100;
-
-  ///Menu
+  // Menu
   double menuButtonSize() => widthResponsible() * 0.28;
   double menuButtonMargin() => widthResponsible() * 0.06;
   double menuMarginTop() => height() * 0.02;
@@ -422,38 +412,37 @@ extension ContextExt on BuildContext {
   double menuLinksLogoSize() => widthResponsible() * 0.16;
   double menuLinksTitleSize() => widthResponsible() * 0.025;
   double menuLinksMargin() => widthResponsible() * 0.01;
-  ///SnackBar
+  // SnackBar
   double snackBarFontSize() => widthResponsible() * 0.04;
   double snackBarBorderRadius() => widthResponsible()  * 0.05;
   double snackBarPadding() => widthResponsible()  * 0.02;
   double snackBarSideMargin(TextPainter textPainter) => (widthResponsible() * 0.9 - textPainter.size.width) / 2;
   double snackBarBottomMargin() => height() * 0.03;
-
-  ///Settings
-  //App Bar
+  // Settings
+  // App Bar
   double settingsAppBarHeight() => height() * 0.07;
   double settingsAppBarFontSize() => height() * 0.032;
   double settingsAppBarBackButtonSize() => height() * 0.05;
   double settingsAppBarBackButtonMargin() => height() * 0.01;
-  //Select top button
+  // Select top button
   double settingsSelectButtonSize() => height() * 0.06;
   double settingsSelectButtonMarginTop() => height() * 0.015;
   double settingsSelectButtonMarginBottom() => height() * 0.007;
   double settingsSelectBorderWidth() => height() * 0.002;
   double settingsSelectIconMargin() => height() * 0.004;
   double settingsSelectIconSize() => height() * 0.036;
-  //Common
+  // Common
   double settingsLockFontSize() => height() * 0.03;
   double settingsLockIconSize() => height() * 0.035;
   double settingsLockMargin() => height() * 0.01;
-  //Change floor image
+  // Change floor image
   double settingsFloorImageLockWidth() => height() * 0.18;
   double settingsFloorImageLockHeight() => height() * 0.20;
   double settingsFloorImageHeight() => height() * 0.19;
   double settingsFloorImageWidth() => settingsFloorImageHeight() * 9 / 16;
   double settingsFloorImageMargin() => height() * 0.01;
   double settingsArrowMarginTop() => height() * 0.03;
-  //Change button number
+  // Change button number
   double settingsButtonSize() => height() * 0.07;
   double settingsButtonNumberSize()   => height() * 0.075;
   double settingsButtonNumberHideWidth() => height() * 0.165;
@@ -463,17 +452,17 @@ extension ContextExt on BuildContext {
   double settingsButtonNumberMargin() => height() * 0.015;
   double settingsButtonNumberLockWidth() => height() * 0.20;
   double settingsButtonNumberLockHeight() => height() * 0.11;
-  //Change floor stop
+  // Change floor stop
   double settingsFloorStopFontSize() => height() * 0.015;
   double settingsFloorStopMargin() => height() * 0.005;
   double settingsFloorStopToggleScale() => height() * 0.001;
-  //Change button style
+  // Change button style
   double settingsButtonStyleSize() => height() * 0.07;
   double settingsButtonStyleMargin() => height() * 0.03;
   double settingsButtonStyleLockWidth() => width() * 0.90;
   double settingsButtonStyleLockHeight() => height() * 0.19;
   double settingsButtonStyleLockMargin() => height() * 0.08;
-  //Change button shape
+  // Change button shape
   double settingsButtonShapeSize() => height() * 0.07;
   double settingsButtonShapeFontSize() => height() * 0.02;
   double settingsButtonShapeMarginTop() => height() * 0.03;
@@ -481,7 +470,7 @@ extension ContextExt on BuildContext {
   double settingsButtonShapeLockHeight() => height() * 0.19;
   double settingsButtonShapeLockWidth() => width() * 0.9;
   double settingsButtonShapeLockMarginTop() => height() * 0.114;
-  //Change background image
+  // Change background image
   double settingsBackgroundHeight() => height() * 0.27;
   double settingsBackgroundWidth() => settingsBackgroundHeight() * 0.62;
   double settingsBackgroundMargin() => height() * 0.015;
@@ -491,7 +480,7 @@ extension ContextExt on BuildContext {
   double settingsBackgroundSelectBorderWidth() =>  height() * 0.007;
   double settingsGlassFontSize() => height() * 0.03;
   double settingsGlassShadowShift() => height() * 0.002;
-  //Settings Alert Dialog
+  // Settings Alert Dialog
   double settingsAlertTitleFontSize() => widthResponsible() * 0.05;
   double settingsAlertFontSize() => widthResponsible() * 0.05;
   double settingsAlertDescFontSize() => widthResponsible() * 0.04;
@@ -510,22 +499,23 @@ extension ContextExt on BuildContext {
   double settingsAlertLockSpaceSize() => widthResponsible() * 0.02;
   double settingsAlertLockBorderWidth() => widthResponsible() * 0.002;
   double settingsAlertLockBorderRadius() => widthResponsible() * 0.04;
-  //Divider
+  // Divider
   double settingsDividerHeight() => height() * 0.015;
   double settingsDividerThickness() => height() * 0.001;
 }
 
-
-
+// =============================
+// IntExt: Integer utilities for floor, button, and elevator logic
+// =============================
 extension IntExt on int {
 
-  ///Floor Sound
+  // --- Floor/Rank String Generation ---
+  // Methods for generating ordinal suffixes in English and Spanish for floor announcements
   String enRankNumber() =>
       (abs() % 10 == 1 && abs() ~/ 10 != 1) ? "${abs()}st ":
       (abs() % 10 == 2 && abs() ~/ 10 != 1) ? "${abs()}nd ":
       (abs() % 10 == 3 && abs() ~/ 10 != 1) ? "${abs()}rd ":
       "${abs()}th ";
-
   String esRankNumber() => //1~199
       (this == 0) ? '':
       (this == 1) ? 'primer ' :
@@ -550,7 +540,6 @@ extension IntExt on int {
       (this == 20) ? 'vigésimo ':
       (this < 100) ? esRankNumberOver20():
       esRankNumberOver100();
-
   String esRankNumberOver20() =>
       (this < 100) ? "${
         (this < 30) ? 'vigésimo ':
@@ -563,15 +552,13 @@ extension IntExt on int {
         'nonagésimo '
       } ${(this % 10).esRankNumber()} ":
       esRankNumberOver100();
-
   String esRankNumberOver100() =>
       'centésimo ${(this % 100).esRankNumberOver20()} ';
 
-  ///Settings
-  //this is selected number
+  // --- Settings & Button Helpers ---
+  // Methods for managing settings UI and button image paths based on style configurations
   String selected(int i) => (this == i) ? "Pressed": "";
   String settingsButton(int i) => "$assetsSettings${settingsItemList[i]}Settings${selected(i)}.png";
-  //this is operationButtonStyleNumber
   String openButton() => "${assetsButton}open${this + 1}.png";
   String closeButton() => "${assetsButton}close${this + 1}.png";
   String alertButton() => "${assetsButton}phone${this + 1}.png";
@@ -583,13 +570,13 @@ extension IntExt on int {
   String pressedUpButton() => "${assetsButton}up${this + 1}Pressed.png";
   String pressedDownButton() => "${assetsButton}down${this + 1}Pressed.png";
 
-  ///Elevator inside image
-  //This is currentFloor
+  // --- Elevator Inside Image Generation ---
+  // Methods for generating elevator interior images for all floor levels
   List<Image> insideImages(String elevatorStyle) =>
       [for (int i = -6; i <= 163; i++) if (i != 0) ((this == i) ? elevatorStyle.insideElevator(): imageDark).fittedAssetImage()];
 
-  ///Display
-  // this is counter
+  // --- Display Helpers ---
+  // Methods for formatting display text and symbols for elevator status
   String displayNumber() =>
       (this == max || this == 0) ? "":
       (this < 0) ? "${abs()}":
@@ -600,7 +587,8 @@ extension IntExt on int {
       (this < 0) ? "B":
       "";
 
-  ///Image Display
+  // --- Image Display ---
+  // Methods for managing arrow and movement indicator images
   String upArrow() => "${assetsElevator}up${this + 1}.png";
   String downArrow() => "${assetsElevator}down${this + 1}.png";
   String arrowImage(bool isMoving, int nextFloor, int buttonStyle) =>
@@ -608,8 +596,8 @@ extension IntExt on int {
       (isMoving && this > nextFloor) ? buttonStyle.downArrow():
       transpImage;
 
-  ///Speed
-  //this is i
+  // --- Speed Calculation ---
+  // Methods for calculating elevator movement speed based on distance and operation count
   int elevatorSpeed(int count, int nextFloor) {
     int l = (this - nextFloor).abs();
     return (count < 2 || l < 2) ? 2000:
@@ -618,35 +606,32 @@ extension IntExt on int {
     (count < 20 || l < 20) ? 250: 100;
   }
 
-  ///Button
-  //this is i
+  // --- Button Logic ---
+  // Comprehensive set of methods for managing floor button states and elevator navigation logic
+  /// Generate button display text (R for roof, G for ground, B+number for basement, number for floors)
   String buttonNumber() =>
       (this == max) ? "R":
       (this == 0) ? "G":
       (this < 0) ? "B${abs()}":
       "$this";
-
-  //this is i and counter.
+  /// Check if this floor is currently selected in the button lists
   bool isSelected(List<bool> isAboveSelectedList, isUnderSelectedList) =>
       (this > 0) ? isAboveSelectedList[this]: isUnderSelectedList[this * (-1)];
-
-  //this is counter.
+  /// Clear all floor selections above the current floor (used when elevator moves up)
   void clearUpperFloor(List<bool> isAboveSelectedList, isUnderSelectedList) {
     for (int j = max; j > this - 1; j--) {
       if (j > 0) isAboveSelectedList[j] = false;
       if (j < 0) isUnderSelectedList[j * (-1)] = false;
     }
   }
-
-  //this is counter.
+  /// Clear all floor selections below the current floor (used when elevator moves down)
   void clearLowerFloor(List<bool> isAboveSelectedList, isUnderSelectedList) {
     for (int j = min; j < this + 1; j++) {
       if (j > 0) isAboveSelectedList[j] = false;
       if (j < 0) isUnderSelectedList[j * (-1)] = false;
     }
   }
-
-  //this is counter.
+  /// Get list of floors from current floor to target floor when moving upward
   List<int> upFromToNumber(int nextFloor) {
     List<int> floorList = [];
     for (int i = this + 1; i < nextFloor + 1; i++) {
@@ -654,8 +639,7 @@ extension IntExt on int {
     }
     return floorList;
   }
-
-  //this is counter
+  /// Get list of floors from current floor to target floor when moving downward
   List<int> downFromToNumber(int nextFloor) {
     List<int> floorList = [];
     for (int i = this - 1; i > nextFloor - 1; i--) {
@@ -663,19 +647,22 @@ extension IntExt on int {
     }
     return floorList;
   }
-
-  // this is counter
+  /// Find the next floor to visit when elevator is moving upward
+  /// Prioritizes floors above current position, then wraps to lowest selected floor
   int upNextFloor(List<bool> isAboveSelectedList, isUnderSelectedList) {
     int nextFloor = max;
+    // First, look for selected floors above current position
     for (int k = this + 1; k < max + 1; k++) {
       bool isSelected = k.isSelected(isAboveSelectedList, isUnderSelectedList);
       if (k < nextFloor && isSelected) nextFloor = k;
     }
+    // If no floors found above, check if max floor is selected
     if (nextFloor == max) {
       bool isMaxSelected = max.isSelected(isAboveSelectedList, isUnderSelectedList);
       if (isMaxSelected) {
         nextFloor = max;
       } else {
+        // Wrap around to lowest selected floor
         nextFloor = min;
         bool isMinSelected = min.isSelected(isAboveSelectedList, isUnderSelectedList);
         for (int k = min; k < this; k++) {
@@ -685,6 +672,7 @@ extension IntExt on int {
         if (isMinSelected) nextFloor = min;
       }
     }
+    // Check if any floors are selected at all
     bool allFalse = true;
     for (int k = 0; k < isAboveSelectedList.length; k++) {
       if (isAboveSelectedList[k]) allFalse = false;
@@ -695,19 +683,22 @@ extension IntExt on int {
     if (allFalse) nextFloor = this;
     return nextFloor;
   }
-
-  // this is counter
+  /// Find the next floor to visit when elevator is moving downward
+  /// Prioritizes floors below current position, then wraps to highest selected floor
   int downNextFloor(List<bool> isAboveSelectedList, isUnderSelectedList) {
     int nextFloor = min;
+    // First, look for selected floors below current position
     for (int k = min; k < this; k++) {
       bool isSelected = k.isSelected(isAboveSelectedList, isUnderSelectedList);
       if (k > nextFloor && isSelected) nextFloor = k;
     }
+    // If no floors found below, check if min floor is selected
     if (nextFloor == min) {
       bool isMinSelected = min.isSelected(isAboveSelectedList, isUnderSelectedList);
       if (isMinSelected) {
         nextFloor = min;
       } else {
+        // Wrap around to highest selected floor
         nextFloor = max;
         bool isMaxSelected = max.isSelected(isAboveSelectedList, isUnderSelectedList);
         for (int k = max; k > this; k--) {
@@ -717,6 +708,7 @@ extension IntExt on int {
         if (isMaxSelected) nextFloor = max;
       }
     }
+    // Check if any floors are selected at all
     bool allFalse = true;
     for (int k = 0; k < isAboveSelectedList.length; k++) {
       if (isAboveSelectedList[k]) allFalse = false;
@@ -727,24 +719,22 @@ extension IntExt on int {
     if (allFalse) nextFloor = this;
     return nextFloor;
   }
-
-  //this is i.
+  /// Mark this floor as selected in the appropriate button list
   void trueSelected(List<bool> isAboveSelectedList, isUnderSelectedList) {
     if (this > 0) isAboveSelectedList[this] = true;
     if (this < 0) isUnderSelectedList[this * (-1)] = true;
   }
-
-  //this is i.
+  /// Mark this floor as not selected in the appropriate button list
   void falseSelected(List<bool> isAboveSelectedList, isUnderSelectedList) {
     if (this > 0) isAboveSelectedList[this] = false;
     if (this < 0) isUnderSelectedList[this * (-1)] = false;
   }
-
-  //this is i
+  /// Check if this floor is the only selected floor in all button lists
   bool onlyTrue(List<bool> isAboveSelectedList, isUnderSelectedList) {
     bool listFlag = false;
     if (isSelected(isAboveSelectedList, isUnderSelectedList)) listFlag = true;
     if (this > 0) {
+      // Check if any other floors are selected
       for (int k = 0; k < isAboveSelectedList.length; k++) {
         if (k != this && isAboveSelectedList[k]) listFlag = false;
       }
@@ -753,6 +743,7 @@ extension IntExt on int {
       }
     }
     if (this < 0) {
+      // Check if any other floors are selected
       for (int k = 0; k < isUnderSelectedList.length; k++) {
         if (k != this * (-1) && isUnderSelectedList[k]) listFlag = false;
       }
@@ -762,16 +753,23 @@ extension IntExt on int {
     }
     return listFlag;
   }
-
-  //this is i
+  
+  // --- Room Image Helpers ---
+  // Methods for managing room images and floor-to-room mappings
   bool isButtonContain(List<int> floorNumbers) => floorNumbers.contains(this);
   String roomImageFile(List<int> floorNumbers, List<String> rooms) => rooms[floorNumbers.indexOf(this)];
   Image roomImage(List<int> floorNumbers, List<String> rooms) =>
     (!isButtonContain(floorNumbers)) ? imageFloor.fittedAssetImage():
       roomImageFile(floorNumbers, rooms).roomImage();
 }
+
+// =============================
+// ListIntExt: List<int> helpers for floor and button matrix
+// =============================
 extension ListIntExt on List<int> {
 
+  // --- Floor Matrix Helpers ---
+  // Methods for converting flat floor number lists to 2D matrix format for UI display
   List<List<int>> floorNumbersList() => [
     [this[8], this[9]],
     [this[6], this[7]],
@@ -780,6 +778,8 @@ extension ListIntExt on List<int> {
     [this[1], this[0]],
   ];
 
+  // --- Floor Selection Helpers ---
+  // Methods for calculating floor ranges and selections based on button matrix positions
   int selectFirstFloor(int row, int col) =>
       (row == 3 && col == 3) ? min: this[reversedButtonIndex[row][col] - 1] + 1;
   int selectLastFloor(int row, int col) =>
@@ -790,8 +790,13 @@ extension ListIntExt on List<int> {
       index + selectFirstFloor(row, col);
 }
 
+// =============================
+// ListStringExt: List<String> helpers for room images and names
+// =============================
 extension ListStringExt on List<String> {
 
+  // --- Room Matrix Helpers ---
+  // Methods for converting flat room name lists to 2D matrix format for UI display
   List<List<String>> roomsList() => [
     [this[8], this[9]],
     [this[6], this[7]],
@@ -799,26 +804,27 @@ extension ListStringExt on List<String> {
     [this[2], this[3]],
     [this[1], this[0]],
   ];
-
+  // Methods for generating floor images and managing room image selections
   List<Image> floorImages(List<int> floorNumbers) =>
       [for (int i = -6; i <= 163; i++) if (i != 0) i.roomImage(floorNumbers, this)];
 
-  //this is roomImageList
+  // --- Room Image Selection ---
+  // Methods for managing room image availability and selection logic
   Iterable<String> remainIterable(List<String> roomImages, int buttonIndex) =>
       where((image) => !roomImages.contains(image) || roomImages[buttonIndex] == image);
-  //calc index
   int roomIndex(List<String> roomImages, int buttonIndex) =>
       indexOf(roomImages[buttonIndex]);
   int remainIndex(List<String> roomImages, int buttonIndex) =>
       indexOf(remainImage(roomImages, buttonIndex));
-  //room image
   String remainImage(List<String> roomImages, int buttonIndex) =>
       remainIterable(roomImages, buttonIndex).toList()[0];
   String selectedRoomImage(List<String> roomImages, int buttonIndex) =>
       (roomIndex(roomImages, buttonIndex) == -1) ?
       remainImage(roomImages, buttonIndex):
       roomImages[buttonIndex];
-  //room name
+  
+  // --- Room Name Helpers ---
+  // Methods for retrieving and managing room names based on image mappings
   String roomName(BuildContext context, String image) =>
       context.roomNameList()[floorImageList.indexOf(image)];
   String remainName(BuildContext context, List<String> roomImages, int buttonIndex) =>
@@ -829,9 +835,13 @@ extension ListStringExt on List<String> {
         context.roomNameList()[roomIndex(roomImages, buttonIndex)];
 }
 
+// =============================
+// BoolExt: Boolean helpers for UI and logic
+// =============================
 extension BoolExt on bool {
 
-  ///This is isPressed
+  // --- Button State Helpers ---
+  // Methods for managing button pressed states and generating appropriate image paths
   String pressed() => this ? 'Pressed': '';
   String numberBackground(int buttonStyle, String buttonShape) => "$assetsButton$buttonShape${buttonStyle + 1}${pressed()}.png";
   String openBackGround(int buttonStyle) => this ? buttonStyle.pressedOpenButton(): buttonStyle.openButton();
@@ -842,7 +852,8 @@ extension BoolExt on bool {
   Color numberColor(int i) => this ? numberColorList[i]: whiteColor;
   Color floorButtonNumberColor(String buttonShape) => numberColor(buttonShape.buttonShapeIndex());
 
-  ///This is isBasement
+  // --- Basement Floor Helpers ---
+  // Methods for handling basement floor logic and floor number calculations
   int floorSymbol() => this ? -1: 1;
   int selectedFloorNumber(int index) => floorSymbol() * (index + 1);
   int selectFirstFloor(List<int> floorNumbers, int buttonIndex) =>
@@ -854,14 +865,16 @@ extension BoolExt on bool {
   int selectInitialIndex(List<int> floorNumbers, int buttonIndex) =>
       this ? -1 * (floorNumbers[buttonIndex] + 1): (floorNumbers[buttonIndex] - selectFirstFloor(floorNumbers, buttonIndex));
 
-  ///This is buttonShape
+  // --- Button Shape Factors ---
+  // Methods for calculating UI scaling factors based on button shape configurations
   double floorButtonShapeFactor() => this ? 1.2: 1;
   double buttonMarginShapeFactor() => this ? 0.5: 1;
   double operationTopMarginShapeFactor() => this ? 3: 1.6;
   double operationSideMarginShapeFactor() => this ? 1.8: 0.8;
   double emergencyBottomMarginShapeFactor() => this ? 1.8: 0.8;
 
-  //This is isMenu
+  // --- Menu Interaction ---
+  // Methods for handling menu interactions with sound and vibration feedback
   Future<bool> pressedMenu() async {
     await AudioManager().playEffectSound(index: 0, asset: selectSound, volume: 1.0);
     await Vibration.vibrate(duration: vibTime, amplitude: vibAmp);
@@ -869,8 +882,13 @@ extension BoolExt on bool {
   }
 }
 
+// =============================
+// ListBoolExt: List<bool> helpers for button images
+// =============================
 extension ListBoolExt on List<bool> {
 
+  // --- Operation Button Images ---
+  // Methods for generating operation button image lists based on button states and styles
   List<String> operationButtonImage(int buttonStyle) => [
     this[0].openBackGround(buttonStyle),
     this[1].closeBackGround(buttonStyle),
@@ -878,10 +896,15 @@ extension ListBoolExt on List<bool> {
   ];
 }
 
+// =============================
+// ListDynamicExt: Generic List<T> matrix helpers
+// =============================
 extension ListDynamicExt<T> on List<T> {
+
+  // --- Matrix Conversion ---
+  // Generic methods for converting lists to matrix formats with various configurations
   List<List<T>> toMatrix(int n) =>
       [for (var i = 0; i < length; i += n) sublist(i, (i + n <= length) ? i + n : length)];
-
   List<List<T>> toReversedMatrix(int n) {
     final chunks = <List<T>>[];
     for (int i = 0; i < length; i += n) {
@@ -889,8 +912,6 @@ extension ListDynamicExt<T> on List<T> {
       final chunk = (i == 0) ? sublist(i, end).reversed.toList(): sublist(i, end);
       chunks.add(chunk);
     }
-    // "chunks: ${chunks.reversed.toList()}".debugPrint();
     return chunks.reversed.toList();
   }
-
 }

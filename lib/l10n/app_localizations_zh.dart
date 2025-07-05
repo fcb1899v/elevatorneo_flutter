@@ -24,24 +24,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get glass => '观察窗';
 
   @override
-  String get aboutLetsElevator => '关于操作乐趣电梯';
-
-  @override
-  String get termsAndPrivacyPolicy => '使用条款和隐私政策';
-
-  @override
-  String get terms => '使用条款';
-
-  @override
-  String get officialPage => '官方页面';
-
-  @override
-  String get officialShop => '官方商店';
-
-  @override
-  String get ranking => '排名';
-
-  @override
   String get start => '开始';
 
   @override
@@ -55,12 +37,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get edit => '编辑';
-
-  @override
-  String get bypass => '通過层';
-
-  @override
-  String get stop => '停靠层';
 
   @override
   String get basement => '地下';
@@ -96,6 +72,12 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get return1st => '检查完成。返回一层。';
+
+  @override
+  String get bypass => '通過层';
+
+  @override
+  String get stop => '停靠层';
 
   @override
   String get changeNumber => '更改楼层';
@@ -285,4 +267,22 @@ class AppLocalizationsZh extends AppLocalizations {
   String notSignedInGameCenter(Object Platform) {
     return '请登录 $Platform';
   }
+
+  @override
+  String get aboutLetsElevator => '关于操作乐趣电梯';
+
+  @override
+  String get termsAndPrivacyPolicy => '使用条款和隐私政策';
+
+  @override
+  String get terms => '使用条款';
+
+  @override
+  String get officialPage => '官方页面';
+
+  @override
+  String get officialShop => '官方商店';
+
+  @override
+  String get ranking => '排名';
 }

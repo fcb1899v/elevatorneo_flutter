@@ -134,42 +134,6 @@ abstract class AppLocalizations {
   /// **'Vision Panel'**
   String get glass;
 
-  /// No description provided for @aboutLetsElevator.
-  ///
-  /// In en, this message translates to:
-  /// **'About LETS ELEVATOR'**
-  String get aboutLetsElevator;
-
-  /// No description provided for @termsAndPrivacyPolicy.
-  ///
-  /// In en, this message translates to:
-  /// **'Terms and Privacy Policy'**
-  String get termsAndPrivacyPolicy;
-
-  /// No description provided for @terms.
-  ///
-  /// In en, this message translates to:
-  /// **'Terms'**
-  String get terms;
-
-  /// No description provided for @officialPage.
-  ///
-  /// In en, this message translates to:
-  /// **'Official Page'**
-  String get officialPage;
-
-  /// No description provided for @officialShop.
-  ///
-  /// In en, this message translates to:
-  /// **'Official Shop'**
-  String get officialShop;
-
-  /// No description provided for @ranking.
-  ///
-  /// In en, this message translates to:
-  /// **'Ranking'**
-  String get ranking;
-
   /// No description provided for @start.
   ///
   /// In en, this message translates to:
@@ -199,18 +163,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'EDIT'**
   String get edit;
-
-  /// No description provided for @bypass.
-  ///
-  /// In en, this message translates to:
-  /// **'Bypass'**
-  String get bypass;
-
-  /// No description provided for @stop.
-  ///
-  /// In en, this message translates to:
-  /// **'Stop'**
-  String get stop;
 
   /// No description provided for @basement.
   ///
@@ -277,6 +229,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Check complete. Returning to first floor.'**
   String get return1st;
+
+  /// No description provided for @bypass.
+  ///
+  /// In en, this message translates to:
+  /// **'Bypass'**
+  String get bypass;
+
+  /// No description provided for @stop.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop'**
+  String get stop;
 
   /// No description provided for @changeNumber.
   ///
@@ -637,6 +601,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Sign in to {Platform}'**
   String notSignedInGameCenter(Object Platform);
+
+  /// No description provided for @aboutLetsElevator.
+  ///
+  /// In en, this message translates to:
+  /// **'About LETS ELEVATOR'**
+  String get aboutLetsElevator;
+
+  /// No description provided for @termsAndPrivacyPolicy.
+  ///
+  /// In en, this message translates to:
+  /// **'Terms and Privacy Policy'**
+  String get termsAndPrivacyPolicy;
+
+  /// No description provided for @terms.
+  ///
+  /// In en, this message translates to:
+  /// **'Terms'**
+  String get terms;
+
+  /// No description provided for @officialPage.
+  ///
+  /// In en, this message translates to:
+  /// **'Official Page'**
+  String get officialPage;
+
+  /// No description provided for @officialShop.
+  ///
+  /// In en, this message translates to:
+  /// **'Official Shop'**
+  String get officialShop;
+
+  /// No description provided for @ranking.
+  ///
+  /// In en, this message translates to:
+  /// **'Ranking'**
+  String get ranking;
 }
 
 class _AppLocalizationsDelegate

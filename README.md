@@ -145,8 +145,8 @@ assets/
 
 ## 📱 Supported Platforms
 
-- **Android**: API 21+
-- **iOS**: iOS 11.0+
+- **Android**: API 23+
+- **iOS**: iOS 14.0+
 - **Web**: Coming soon
 
 ## 🔧 Development

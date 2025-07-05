@@ -1,130 +1,22 @@
+// =============================
+// ImageManager: Image and settings management for elevator simulator
+//
+// Handles image list management, settings persistence, and floor configuration.
+// Key features: image storage, settings persistence, floor configuration
+// =============================
+
 import 'dart:io';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 import 'package:path/path.dart' as path;
-import 'package:image_cropper/image_cropper.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'constant.dart';
 import 'extension.dart';
 
-/// For Photo
-class PhotoManager {
-
-  final BuildContext context;
-
-  PhotoManager({required this.context});
-
-  Future<String?> pickAndCropImage(int row, int col) async {
-    final XFile? pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
-    if (pickedFile != null) {
-      final croppedFile = await ImageCropper().cropImage(
-        sourcePath: pickedFile.path,
-        compressFormat: ImageCompressFormat.jpg,
-        compressQuality: 100,
-        aspectRatio: const CropAspectRatio(ratioX: 9, ratioY: 16),
-        uiSettings: [
-          AndroidUiSettings(
-            toolbarTitle: (context.mounted) ? context.cropPhoto() : "",
-            toolbarColor: whiteColor,
-            initAspectRatio: CropAspectRatioPreset.ratio16x9,
-            lockAspectRatio: true,
-          ),
-          IOSUiSettings(
-            title: (context.mounted) ? context.cropPhoto() : "",
-          ),
-          if (context.mounted) WebUiSettings(context: context),
-        ],
-      );
-      if (croppedFile != null) {
-        final directory = await getApplicationDocumentsDirectory();
-        final fileName = path.basename(croppedFile.path);
-        final File croppedImage = await File(croppedFile.path).copy('${directory.path}/$fileName');
-        final String croppedImagePath = croppedImage.path;
-        if (croppedImagePath.contains('assets/images/room/')) {
-          "croppedImage: $croppedImagePath".debugPrint();
-          return croppedImagePath;
-        } else {
-          "croppedImage: ${path.basename(croppedImagePath)}".debugPrint();
-          return path.basename(croppedImagePath);
-        }
-      } else {
-        return null;
-      }
-    }
-    return null;
-  }
-
-  void photoPermissionAlert() => showDialog(
-    context: context,
-    builder: (context) => CupertinoAlertDialog(
-      title: Text(context.photoAccessRequired(),
-        style: TextStyle(
-          color: blackColor,
-          fontSize: context.settingsAlertTitleFontSize(),
-          fontFamily: context.normalFont(),
-        ),
-      ),
-      content: Text(context.photoAccessPermission(),
-        style: TextStyle(
-          color: blackColor,
-          fontSize: context.settingsAlertFontSize(),
-          fontFamily: context.normalFont(),
-        ),
-      ),
-      actions: [
-        TextButton(
-          child: Text(context.ok(),
-            style: TextStyle(
-              color: blackColor,
-              fontSize: context.settingsAlertSelectFontSize(),
-              fontFamily: context.normalFont(),
-            ),
-          ),
-          onPressed: () => openAppSettings(),
-        ),
-        TextButton(
-          child: Text(context.cancel(),
-            style: TextStyle(
-              color: blackColor,
-              fontSize: context.settingsAlertSelectFontSize(),
-              fontFamily: context.normalFont(),
-            ),
-          ),
-          onPressed: () => context.popPage(),
-        ),
-      ],
-    ),
-  );
-
-  Future<List<String>> selectMyPhoto({
-    required int row,
-    required int col,
-    required List<String> currentList
-  }) async {
-    final photoPermission = await Permission.photos.status;
-    "photoPermission: $photoPermission";
-    if (Platform.isAndroid || photoPermission.isGranted) {
-      final String? savedImagePath = await pickAndCropImage(row, col);
-      return ImageManager().saveImagePath(
-        currentList: currentList,
-        newValue: savedImagePath,
-        newIndex: buttonIndex(row, col),
-      );
-    } else if (photoPermission.isDenied) {
-      await Permission.photos.request();
-      return currentList;
-    } else {
-      photoPermissionAlert();
-      return currentList;
-    }
-  }
-}
-
 class ImageManager {
 
+  // --- Image List Management ---
+
+  /// Load and validate floor image list from storage
   Future<List<String>> getImagesList() async {
     final prefs = await SharedPreferences.getInstance();
     final directory = await getApplicationDocumentsDirectory();
@@ -141,6 +33,9 @@ class ImageManager {
     return images;
   }
 
+  // --- Floor Configuration Management ---
+
+  /// Save floor number with validation (no duplicates, range check)
   Future<List<int>> saveFloorNumber({
     required List<int> currentList,
     required int newValue,
@@ -158,6 +53,7 @@ class ImageManager {
     }
   }
 
+  /// Save floor stop configuration
   Future<List<bool>> saveFloorStops({
     required List<bool> currentList,
     required bool newValue,
@@ -171,6 +67,7 @@ class ImageManager {
     return newList;
   }
 
+  /// Save image path with persistence
   Future<List<String>> saveImagePath({
     required List<String> currentList,
     required String? newValue,
@@ -189,6 +86,9 @@ class ImageManager {
     }
   }
 
+  // --- Settings Persistence ---
+
+  /// Save string setting if value changed
   Future<String> changeSettingsStringValue({
     required String key,
     required String current,
@@ -203,6 +103,7 @@ class ImageManager {
     }
   }
 
+  /// Save integer setting if value changed
   Future<int> changeSettingsIntValue({
     required String key,
     required int current,

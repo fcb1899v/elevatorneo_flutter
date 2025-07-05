@@ -25,24 +25,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get glass => 'Vision Panel';
 
   @override
-  String get aboutLetsElevator => 'About LETS ELEVATOR';
-
-  @override
-  String get termsAndPrivacyPolicy => 'Terms and Privacy Policy';
-
-  @override
-  String get terms => 'Terms';
-
-  @override
-  String get officialPage => 'Official Page';
-
-  @override
-  String get officialShop => 'Official Shop';
-
-  @override
-  String get ranking => 'Ranking';
-
-  @override
   String get start => 'START';
 
   @override
@@ -56,12 +38,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get edit => 'EDIT';
-
-  @override
-  String get bypass => 'Bypass';
-
-  @override
-  String get stop => 'Stop';
 
   @override
   String get basement => 'basement ';
@@ -97,6 +73,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get return1st => 'Check complete. Returning to first floor.';
+
+  @override
+  String get bypass => 'Bypass';
+
+  @override
+  String get stop => 'Stop';
 
   @override
   String get changeNumber => 'Change floor number';
@@ -287,4 +269,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String notSignedInGameCenter(Object Platform) {
     return 'Sign in to $Platform';
   }
+
+  @override
+  String get aboutLetsElevator => 'About LETS ELEVATOR';
+
+  @override
+  String get termsAndPrivacyPolicy => 'Terms and Privacy Policy';
+
+  @override
+  String get terms => 'Terms';
+
+  @override
+  String get officialPage => 'Official Page';
+
+  @override
+  String get officialShop => 'Official Shop';
+
+  @override
+  String get ranking => 'Ranking';
 }

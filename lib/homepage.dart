@@ -1,3 +1,18 @@
+// =============================
+// HomePage: Main elevator simulation interface
+//
+// This file contains the main UI and logic for the elevator simulator.
+// It manages elevator movement, door states, button interactions, and user interface.
+// Key features:
+// - Elevator movement simulation with realistic timing
+// - Door state management (opening, closing, opened, closed)
+// - Floor button selection and deselection
+// - Operation button controls (open, close, emergency)
+// - View switching between inside and outside elevator
+// - TTS announcements and sound effects
+// - Score tracking and game integration
+// =============================
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -20,7 +35,8 @@ class HomePage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
 
-    //Provider
+    // --- Provider State Management ---
+    // Riverpod providers for managing app state across the application
     final isMenu = ref.watch(isMenuProvider);
     final floorNumbers = ref.watch(floorNumbersProvider);
     final floorStops = ref.watch(floorStopsProvider);
@@ -33,29 +49,31 @@ class HomePage extends HookConsumerWidget {
     final isConnectedInternet = ref.watch(internetProvider);
     final point = ref.watch(pointProvider);
 
-    //Hooks
-    final counter = useState(initialFloor);
-    final currentFloor = useState(1);
-    final nextFloor = useState(initialFloor);
-    final isOutside = useState(true);
-    final isMoving = useState(false);
-    final isEmergency = useState(false);
-    final isDoorState = useState(closedState); //[opened, closed, opening, closing]
-    final isPressedOperationButtons = useState([false, false, false]); //[open, close, alert]
-    final isAboveSelectedList = useState(List.generate(max + 1, (_) => false));
-    final isUnderSelectedList = useState(List.generate(min * (-1) + 1, (_) => false));
-    final isLoadingData = useState(false);
-    final imageTopMargin = useState(0.0);
-    final imageDurationTime = useState(0);
-    final isWaitingUp = useState(false);
-    final isWaitingDown = useState(false);
-    final waitTime = useState(initialWaitTime);
-    final openTime = useState(initialOpenTime);
+    // --- Hooks State Management ---
+    // Local state management using Flutter Hooks for reactive UI updates
+    final counter = useState(initialFloor);                    // Current elevator position
+    final currentFloor = useState(1);                          // Target floor for outside view
+    final nextFloor = useState(initialFloor);                  // Next destination floor
+    final isOutside = useState(true);                          // View mode (inside/outside elevator)
+    final isMoving = useState(false);                          // Elevator movement state
+    final isEmergency = useState(false);                       // Emergency mode state
+    final isDoorState = useState(closedState);                 // Door state: [opened, closed, opening, closing]
+    final isPressedOperationButtons = useState([false, false, false]); // Operation button states: [open, close, alert]
+    final isAboveSelectedList = useState(List.generate(max + 1, (_) => false)); // Floor button selections (above ground)
+    final isUnderSelectedList = useState(List.generate(min * (-1) + 1, (_) => false)); // Floor button selections (basement)
+    final isLoadingData = useState(false);                     // Data loading state
+    final imageTopMargin = useState(0.0);                      // Image positioning for elevator movement
+    final imageDurationTime = useState(0);                     // Animation duration for movement
+    final isWaitingUp = useState(false);                       // Up button waiting state
+    final isWaitingDown = useState(false);                     // Down button waiting state
+    final waitTime = useState(initialWaitTime);                // Wait time between actions
+    final openTime = useState(initialOpenTime);                // Door open duration
     final animationController = useAnimationController(duration: Duration(seconds: flashTime))..repeat(reverse: true);
-    final lifecycle = useAppLifecycleState();
-    final orientation = context.orientation();
+    final lifecycle = useAppLifecycleState();                  // App lifecycle state
+    final orientation = context.orientation();                 // Screen orientation
 
-    //Manager
+    // --- Manager Instances ---
+    // Service managers for handling various app functionalities
     final imageManager = useMemoized(() => ImageManager());
     final ttsManager = useMemoized(() => TtsManager(context: context));
     final audioManager = useMemoized(() => AudioManager());
@@ -64,7 +82,8 @@ class HomePage extends HookConsumerWidget {
       isConnectedInternet: isConnectedInternet,
     ));
 
-    //Class
+    // --- Widget Instances ---
+    // UI widget instances for rendering the interface
     final common = CommonWidget(context);
     final home = HomeWidget(context,
       floorNumbers: floorNumbers,
@@ -79,6 +98,8 @@ class HomePage extends HookConsumerWidget {
       point: point
     );
 
+    // --- Initial Data Loading Effect ---
+    // Load initial data when the widget is first created
     useEffect(() {
       Future<void> loadInitialData() async {
         try {
@@ -92,8 +113,8 @@ class HomePage extends HookConsumerWidget {
             ref.read(internetProvider.notifier).state = hasInternet;
             ref.read(gamesSignInProvider.notifier).state = signedIn;
             ref.read(pointProvider.notifier).state = bestScore;
-            await ttsManager.initTts();
           }
+          await ttsManager.initTts();
         } catch (e) {
           "Error: $e".debugPrint();
         } finally {
@@ -109,6 +130,8 @@ class HomePage extends HookConsumerWidget {
       return null;
     }, []);
 
+    // --- Orientation Change Effect ---
+    // Handle screen orientation changes and update UI accordingly
     useEffect(() {
       debugPrint('orientation changed: $orientation');
       isLoadingData.value = true;
@@ -121,6 +144,8 @@ class HomePage extends HookConsumerWidget {
       return null;
     }, [orientation]);
 
+    // --- App Lifecycle Effect ---
+    // Handle app lifecycle changes (pause, resume) to stop audio and TTS
     useEffect(() {
       if (lifecycle == AppLifecycleState.inactive || lifecycle == AppLifecycleState.paused) {
         if (context.mounted) {
@@ -131,7 +156,11 @@ class HomePage extends HookConsumerWidget {
       return null;
     }, [lifecycle]);
 
-    ///Going up floor
+    // --- Elevator Movement Functions ---
+    // Functions for controlling elevator movement and navigation logic
+
+    /// Move elevator upward to the next selected floor
+    /// Handles floor-by-floor movement with realistic timing and animations
     counterUp() async {
       ttsManager.speakText(context.upFloor(), !isOutside.value || currentFloor.value == counter.value);
       int count = 0;
@@ -178,7 +207,8 @@ class HomePage extends HookConsumerWidget {
       });
     }
 
-    ///Going down floor
+    /// Move elevator downward to the next selected floor
+    /// Handles floor-by-floor movement with realistic timing and animations
     counterDown() async {
       ttsManager.speakText(context.downFloor(), !isOutside.value || currentFloor.value == counter.value);
       int count = 0;
@@ -225,7 +255,11 @@ class HomePage extends HookConsumerWidget {
       });
     }
 
-    ///Select floor button
+    // --- Button Interaction Functions ---
+    // Functions for handling user interactions with floor and operation buttons
+
+    /// Handle floor button selection and deselection
+    /// Manages floor button states and triggers elevator movement
     floorSelected(int i, bool selectFlag) async {
       isPressedOperationButtons.value = [false, false, false];
       await audioManager.playEffectSound(index: 0, asset: selectSound, volume: 0.8);
@@ -252,7 +286,8 @@ class HomePage extends HookConsumerWidget {
       }
     }
 
-    ///Deselect floor button
+    /// Handle floor button deselection
+    /// Removes floor from selection and recalculates next destination
     floorCanceled(int i) async {
       isPressedOperationButtons.value = [false, false, false];
       if (i.isSelected(isAboveSelectedList.value, isUnderSelectedList.value) && i != nextFloor.value) {
@@ -268,7 +303,11 @@ class HomePage extends HookConsumerWidget {
       }
     }
 
-    ///Close door
+    // --- Door Control Functions ---
+    // Functions for managing elevator door states and operations
+
+    /// Close elevator doors and trigger movement if needed
+    /// Handles door closing animation and subsequent elevator movement
     doorsClosing() async {
       if (isWaitingUp.value || isWaitingDown.value) floorSelected(currentFloor.value, true);
       if (!isMoving.value && !isEmergency.value && isDoorState.value != closedState && isDoorState.value != closingState) {
@@ -288,7 +327,10 @@ class HomePage extends HookConsumerWidget {
       }
     }
 
-    ///Pressed open button action
+    // --- Operation Button Functions ---
+    // Functions for handling operation button interactions (open, close, emergency)
+
+    /// Handle open button press with delayed action and TTS feedback
     pressedOpenAction(bool isOn) async {
       await Vibration.vibrate(duration: vibTime, amplitude: vibAmp);
       await audioManager.playEffectSound(index: 0, asset: selectSound, volume: 0.8);
@@ -316,7 +358,7 @@ class HomePage extends HookConsumerWidget {
       }
     }
 
-    ///Pressed close button action
+    /// Handle close button press with delayed door closing action
     pressedCloseAction(bool isOn) async {
       await Vibration.vibrate(duration: vibTime, amplitude: vibAmp);
       await audioManager.playEffectSound(index: 0, asset: selectSound, volume: 0.8);
@@ -332,7 +374,8 @@ class HomePage extends HookConsumerWidget {
       }
     }
 
-    ///Long pressed alert button action
+    /// Handle emergency button press with long press detection for emergency mode
+    /// Triggers emergency procedures when elevator is far from current floor
     pressedAlertAction(bool isOn, isLongPressed) async {
       await Vibration.vibrate(duration: vibTime, amplitude: vibAmp);
       await audioManager.playEffectSound(index: 0, asset: selectSound, volume: 0.8);
@@ -369,6 +412,11 @@ class HomePage extends HookConsumerWidget {
       }
     }
 
+    // --- View Control Functions ---
+    // Functions for managing view switching and waiting button interactions
+
+    /// Switch between inside and outside elevator views
+    /// Adjusts image positioning and view state
     changeView() async {
       await Vibration.vibrate(duration: vibTime, amplitude: vibAmp);
       isPressedOperationButtons.value = [false, false, false];
@@ -379,6 +427,8 @@ class HomePage extends HookConsumerWidget {
       }
     }
 
+    /// Handle up waiting button press for outside view
+    /// Manages elevator call logic and door states
     pressedWaitUp() {
       "pressedWaitUp: ${isWaitingDown.value}".debugPrint();
       isPressedOperationButtons.value = [false, false, false];
@@ -394,6 +444,8 @@ class HomePage extends HookConsumerWidget {
       }
     }
 
+    /// Handle down waiting button press for outside view
+    /// Manages elevator call logic and door states
     pressedWaitDown() {
       "pressedWaitDown: ${isWaitingDown.value}".debugPrint();
       isPressedOperationButtons.value = [false, false, false];
@@ -409,14 +461,19 @@ class HomePage extends HookConsumerWidget {
       }
     }
 
-    ///Button action list
+    // --- Button Action Management ---
+    // Helper functions for managing button interactions and effects
+
+    /// Generate button action list for operation buttons
+    /// Returns appropriate action handlers based on button state and press type
     List<dynamic> pressedButtonAction(bool isOn, isLongPressed) => [
       (isOn && isLongPressed) ? () => pressedOpenAction(isOn): (_) => pressedOpenAction(isOn),
       (isOn && isLongPressed) ? () => pressedCloseAction(isOn): (_) => pressedCloseAction(isOn),
       (isOn && isLongPressed) ? () => pressedAlertAction(isOn, isLongPressed): (_) => pressedAlertAction(isOn, isLongPressed),
     ];
 
-    ///Action after changing door state
+    // --- Door State Management Effect ---
+    // Automatic door state management and timing adjustments
     useEffect(() {
       waitTime.value = (isOutside.value && counter.value != currentFloor.value) ? 0: initialWaitTime;
       openTime.value = (isOutside.value && counter.value != currentFloor.value) ? 3: initialOpenTime;
@@ -436,16 +493,19 @@ class HomePage extends HookConsumerWidget {
       return null;
     }, [isDoorState.value]);
 
+    /// Handle menu button press with vibration feedback
     Future<void> pressedMenu() async {
       await Vibration.vibrate(duration: vibTime, amplitude: vibAmp);
       ref.read(isMenuProvider.notifier).state = await isMenu.pressedMenu();
     }
 
+    // --- UI Rendering ---
+    // Main UI structure with all elevator components and interactions
     return Scaffold(
       backgroundColor: blackColor,
-      ///My AppBar
+      /// App bar with menu button and point display
       appBar: home.homeAppBar(onPressed: () => pressedMenu()),
-      ///Body
+      /// Main body with elevator interface
       body: SafeArea(
         top: true,
         bottom: true,
@@ -454,32 +514,32 @@ class HomePage extends HookConsumerWidget {
             minScale: 1.0,
             maxScale: 1.5,
             child: Stack(children: [
-              ///Room Image
+              /// Background room images with elevator movement animation
               home.floorImagesWidget(
                 currentFloorNumber: currentFloor.value,
                 isOutside: isOutside.value,
                 margin: imageTopMargin.value,
                 duration: imageDurationTime.value,
               ),
-              ///Black container for hiding
+              /// Black overlay for hiding elevator during emergency
               home.blackHideWidget(isEmergency.value),
-              ///Elevator design
+              /// Main elevator structure with doors and buttons
               Row(children: [
                 SizedBox(width: context.sideSpacerWidth()),
                 Stack(children: [
-                  ///Door Frame Image
+                  /// Door frame images for visual structure
                   home.upAndDownDoorFrame(),
-                  ///Left Door Frame Image
+                  /// Left door frame with conditional visibility
                   home.leftDoorFrame(isDoorState.value == closedState || (isDoorState.value != closedState && isOutside.value && currentFloor.value != counter.value)),
-                  ///Right Door Frame Image
+                  /// Right door frame with conditional visibility
                   home.rightDoorFrame(isDoorState.value == closedState || (isDoorState.value != closedState && isOutside.value && currentFloor.value != counter.value)),
-                  ///Left Door Image
+                  /// Left door image with animation states
                   home.leftDoorImage(isDoorState.value == closedState || (isDoorState.value != closedState && isOutside.value && currentFloor.value != counter.value)),
-                  ///Right Door Image
+                  /// Right door image with animation states
                   home.rightDoorImage(isDoorState.value == closedState || (isDoorState.value != closedState && isOutside.value && currentFloor.value != counter.value)),
-                  ///Elevator Frame Image
+                  /// Main elevator frame image
                   home.elevatorFrameImage(isOutside.value),
-                  ///Elevator Button Image
+                  /// Button panel with display and controls
                   Container(
                     width: context.buttonPanelWidth(),
                     height: context.buttonPanelHeight(),
@@ -490,14 +550,14 @@ class HomePage extends HookConsumerWidget {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
-                        ///Display Image
+                        /// Floor display with movement indicators
                         home.displayNumberWidget(
                           number: counter.value,
                           isMoving: isMoving.value,
                           next: nextFloor.value
                         ),
                         Spacer(),
-                        ///Operation Buttons (Alert: 2)
+                        /// Emergency button (style 2 configuration)
                         if (!isOutside.value && buttonStyle != 2) GestureDetector(
                           onTapDown: pressedButtonAction(true, false)[2],
                           onTapUp: pressedButtonAction(false, false)[2],
@@ -510,7 +570,7 @@ class HomePage extends HookConsumerWidget {
                           onLongPressCancel: () => pressedButtonAction(false, true)[2],
                           child: home.operationButton(isPressedOperationButtons.value, 2)
                         ),
-                        ///Floor Buttons
+                        /// Floor button matrix with selection handling
                         if (!isOutside.value) Column(children: floorNumbers.floorNumbersList().asMap().entries.map((row) => Column(children: [
                           SizedBox(height: (row.key != 0) ? context.floorButtonMargin(): context.operationButtonMargin()),
                           Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -524,7 +584,7 @@ class HomePage extends HookConsumerWidget {
                             ])).toList(),
                           ),
                         ])).toList()),
-                        ///Operation Buttons (Close: 0, Open: 1)
+                        /// Operation buttons (close and open)
                         if (!isOutside.value) Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [0, 1].expand((i) => [
                             GestureDetector(
@@ -542,7 +602,7 @@ class HomePage extends HookConsumerWidget {
                             ),
                           ]).toList()
                         ),
-                        ///Operation Buttons (Alert: 2)
+                        /// Emergency button (style 2 configuration - alternative position)
                         if (!isOutside.value && buttonStyle == 2) GestureDetector(
                           onTapDown: pressedButtonAction(true, false)[2],
                           onTapUp: pressedButtonAction(false, false)[2],
@@ -555,7 +615,7 @@ class HomePage extends HookConsumerWidget {
                           onLongPressCancel: () => pressedButtonAction(false, true)[2],
                           child: home.operationButton(isPressedOperationButtons.value, 2)
                         ),
-                        ///Up and down buttons
+                        /// Up and down buttons for outside view
                         if (isOutside.value) home.upDownButtons(
                           currentFloor: currentFloor.value,
                           onTapUp: () => pressedWaitUp(),
@@ -566,7 +626,7 @@ class HomePage extends HookConsumerWidget {
                       ]
                     ),
                   ),
-                  ///Change View Button
+                  /// View change button (flashing indicator)
                   if (isDoorState.value == openedState) //&& currentFloor.value == counter.value)
                   GestureDetector(
                     onTap: changeView,
@@ -583,15 +643,15 @@ class HomePage extends HookConsumerWidget {
                   )
                 ])
               ]),
-              ///Door Cover
+              /// Door cover for visual effects
               home.doorCover()
             ]),
           ),
-          ///Menu
+          /// Menu overlay when menu is active
           if (isMenu) const MenuPage(),
-          ///Admob Banner
+          /// AdMob banner at bottom of screen
           if (!isTest) const AdBannerWidget(),
-          ///Progress Indicator
+          /// Loading indicator during data initialization
           if (isLoadingData.value) common.commonCircularProgressIndicator(),
         ]),
       ),

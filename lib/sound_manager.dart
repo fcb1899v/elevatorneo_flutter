@@ -12,17 +12,41 @@ class TtsManager {
 
   final FlutterTts flutterTts = FlutterTts();
 
+  String ttsLocale() =>
+      (context.lang() == "ja") ? "ja-JP":
+      (context.lang() == "zh") ? "zh-CN":
+      (context.lang() == "ko") ? "ko-KR":
+      (context.lang() == "es") ? "es-ES":
+      "en-US";
+
+  String androidVoiceName() =>
+      (context.lang() == "ja") ? "ja-JP-language":
+      (context.lang() == "zh") ? "zh-CN-language":
+      (context.lang() == "ko") ? "ko-KR-language":
+      (context.lang() == "es") ? "es-ES-language":
+      "en-US-language";
+
+  String iOSVoiceName() =>
+      (context.lang() == "ja") ? "Kyoko":
+      (context.lang() == "zh") ? "婷婷":
+      (context.lang() == "ko") ? "유나":
+      (context.lang() == "es") ? "Mónica":
+      "Samantha";
+
+  String defaultVoiceName() =>
+      (Platform.isIOS || Platform.isMacOS) ? iOSVoiceName(): androidVoiceName();
+
   Future<void> setTtsVoice() async {
     final voices = await flutterTts.getVoices;
     List<dynamic> localFemaleVoices = (Platform.isIOS || Platform.isMacOS) ? voices.where((voice) {
-      final isLocalMatch = voice['locale'].toString().contains(context.ttsLocale());
+      final isLocalMatch = voice['locale'].toString().contains(ttsLocale());
       final isFemale = voice['gender'].toString().contains('female');
       return isLocalMatch && isFemale;
     }).toList(): [];
     "localFemaleVoices: $localFemaleVoices".debugPrint();
     if (context.mounted) {
-      final voiceName = (localFemaleVoices.isNotEmpty) ? localFemaleVoices[0]['name']: context.defaultVoiceName();
-      final voiceLocale = (localFemaleVoices.isNotEmpty) ? localFemaleVoices[0]['locale']: context.ttsLocale();
+      final voiceName = (localFemaleVoices.isNotEmpty) ? localFemaleVoices[0]['name']: defaultVoiceName();
+      final voiceLocale = (localFemaleVoices.isNotEmpty) ? localFemaleVoices[0]['locale']: ttsLocale();
       final result = await flutterTts.setVoice({'name': voiceName, 'locale': voiceLocale,});
       "setVoice: $voiceName, result: $result".debugPrint();
     }
@@ -43,15 +67,17 @@ class TtsManager {
 
   Future<void> initTts() async {
     await flutterTts.setSharedInstance(true);
-    await flutterTts.setIosAudioCategory(
-      IosTextToSpeechAudioCategory.playback,
-      [
-        IosTextToSpeechAudioCategoryOptions.allowBluetooth,
-        IosTextToSpeechAudioCategoryOptions.allowBluetoothA2DP,
-        IosTextToSpeechAudioCategoryOptions.mixWithOthers,
-        IosTextToSpeechAudioCategoryOptions.defaultToSpeaker
-      ]
-    );
+    if (Platform.isIOS || Platform.isMacOS) {
+      await flutterTts.setIosAudioCategory(
+        IosTextToSpeechAudioCategory.playback,
+        [
+          IosTextToSpeechAudioCategoryOptions.allowBluetooth,
+          IosTextToSpeechAudioCategoryOptions.allowBluetoothA2DP,
+          IosTextToSpeechAudioCategoryOptions.mixWithOthers,
+          IosTextToSpeechAudioCategoryOptions.defaultToSpeaker
+        ]
+      );
+    }
     await flutterTts.awaitSpeakCompletion(true);
     await flutterTts.awaitSynthCompletion(true);
     if (context.mounted) await flutterTts.setLanguage(context.lang());
@@ -71,7 +97,7 @@ class AudioManager {
   static const audioPlayerNumber = 1;
   AudioManager() : audioPlayers = List.generate(audioPlayerNumber, (_) => AudioPlayer());
   PlayerState playerState(int index) => audioPlayers[index].state;
-  String playerTitle(int index) => "${["warning", "left train", "right train", "emergency", "effectSound"][index]}Player";
+  String playerTitle(int index) => "${["effectSound"][index]}Player";
 
   Future<void> playLoopSound({
     required int index,
@@ -94,7 +120,7 @@ class AudioManager {
     await player.setVolume(volume);
     await player.setReleaseMode(ReleaseMode.release);
     await player.play(AssetSource(asset));
-    "Play effect sound: ${audioPlayers[index].state}".debugPrint();
+    "Play ${playerTitle(index)}: ${audioPlayers[index].state}".debugPrint();
   }
 
   Future<void> stopSound(int index) async {
@@ -113,3 +139,4 @@ class AudioManager {
     }
   }
 }
+

@@ -1,23 +1,18 @@
 {
   "@@locale": "zh",
+  
   "letsElevator": "操作乐趣电梯新锐",
   "thisApp": "这款应用程序是一个非常逼真的电梯模拟器。",
+  
   "menu": "菜单",
   "settings": "设置",
   "glass": "观察窗",
-  "aboutLetsElevator": "关于操作乐趣电梯",
-  "termsAndPrivacyPolicy" : "使用条款和隐私政策",
-  "terms": "使用条款",
-  "officialShop": "官方商店",
-  "officialPage" : "官方页面",
-  "ranking" : "排名",
   "start": "开始",
   "back": "返回",
   "ok": "确定",
   "cancel": "取消",
-  "bypass" : "通過层",
-  "stop" : "停靠层",
   "edit": "编辑",
+  
   "basement": "地下",
   "floor": "{NUMBER}层。",
   "ground": "地面层。",
@@ -29,15 +24,20 @@
   "notStop": "本层不停。",
   "emergency": "为了检查电梯状态，将进行紧急停车。",
   "return1st": "检查完成。返回一层。",
+  "bypass" : "通過层",
+  "stop" : "停靠层",
+  
   "changeNumber": "更改楼层",
   "changeBasementNumber": "更改地下楼层",
   "changeImage": "更改楼层图片",
   "selectPhoto": "从相册选择图片",
   "cropPhoto": "裁剪图片",
+  
   "eVMile": "电梯里程",
   "eVMileRanking": "电梯里程\n排行",
   "earnMile" : "获得\n{NUMBER}\n电梯里程!",
   "aboutEVMile": "\n这是乘坐电梯越多越能积累的积分。\n积累电梯里程后，可解锁各种功能，并可在菜单的设置中进行更改。",
+  
   "rooftop": "屋顶层。",
   "vip": "VIP室层。",
   "restaurant": "餐厅层。",
@@ -60,6 +60,7 @@
   "sweets" : "甜品店层。",
   "furniture" : "家具店层。",
   "cinema" : "电影院层。",
+  
   "nameRooftop": "屋顶",
   "nameVip": "VIP室",
   "nameRestaurant": "餐厅",
@@ -82,11 +83,19 @@
   "nameSweets" : "甜品店",
   "nameFurniture" : "家具店",
   "nameCinema" : "电影院",
+  
   "movingElevator": "电梯运行中，请稍候",
   "photoAccessRequired": "需要照片访问权限\n",
   "photoAccessPermission": "请在设置中允许完全访问照片。",
   "earnMilesAfterAdTitle" : "看广告赚取{NUMBER}电梯里程!\n",
   "earnMilesAfterAdDesc" : "如果您在指定的时间内观看广告，您可以获得{NUMBER}电梯里程。",
   "notConnectedInternet" : "当前没有网络连接",
-  "notSignedInGameCenter" : "请登录 {Platform}"
+  "notSignedInGameCenter" : "请登录 {Platform}",
+  
+  "aboutLetsElevator": "关于操作乐趣电梯",
+  "termsAndPrivacyPolicy" : "使用条款和隐私政策",
+  "terms": "使用条款",
+  "officialPage" : "官方页面",
+  "officialShop": "官方商店",
+  "ranking" : "排名"
 }

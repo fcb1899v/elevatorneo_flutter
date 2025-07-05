@@ -1,3 +1,10 @@
+// =============================
+// Main: Entry point for elevator simulator application
+//
+// Handles app initialization, state management, and global configuration.
+// Key features: Firebase setup, state providers, UI configuration, tracking
+// =============================
+
 import 'dart:async';
 import 'dart:io';
 import 'package:app_tracking_transparency/app_tracking_transparency.dart';
@@ -9,17 +16,24 @@ import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:letselevatorneo/extension.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'firebase_options.dart';
 import 'l10n/app_localizations.dart' show AppLocalizations;
+import 'firebase_options.dart';
+import 'extension.dart';
 import 'constant.dart';
 import 'homepage.dart';
 import 'menu.dart';
 import 'settings.dart';
 
+// --- Global Configuration ---
+// Application-wide settings and flags for development and testing
 final isTest = false;
 // final isTest = true;
+
+// --- State Providers ---
+// Riverpod providers for global state management across the application
+// Includes UI state (menu visibility, view modes), elevator configuration (floors, buttons, styles),
+// user preferences, and system state (connectivity, game center, points)
 final isMenuProvider = StateProvider<bool>((ref) => false);
 final floorNumbersProvider = StateProvider<List<int>>((ref) => initialFloorNumbers);
 final floorStopsProvider = StateProvider<List<bool>>((ref) => initialFloorStops);
@@ -33,8 +47,14 @@ final gamesSignInProvider = StateProvider<bool>((ref) => false);
 final internetProvider = StateProvider<bool>((ref) => false);
 final pointProvider = StateProvider<int>((ref) => 0);
 
+// --- Application Initialization ---
+// Main entry point that handles all app setup and initialization
+// Sets up UI configuration, loads user preferences, initializes Firebase,
+// and launches the app with proper state management
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // --- UI Configuration ---
+  // Configure system UI, orientation, and platform-specific styling  
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
   if (Platform.isAndroid) {
@@ -42,17 +62,16 @@ Future<void> main() async {
       statusBarIconBrightness: Brightness.light,
       systemNavigationBarIconBrightness: Brightness.light,
     ));
-    print('Android system UI overlay style configured');
   } else {
-    // iOS用の設定
     SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
       statusBarIconBrightness: Brightness.light,
       systemNavigationBarColor: Colors.transparent,
       systemNavigationBarIconBrightness: Brightness.light,
     ));
-    print('iOS system UI overlay style configured');
-  }// Status bar style
+  }
+  // --- Environment and Data Loading ---
+  // Load environment variables and restore user preferences from SharedPreferences
   await dotenv.load(fileName: "assets/.env");
   final prefs = await SharedPreferences.getInstance();
   final savedFloorNumbers = "numbersKey".getSharedPrefListInt(prefs, initialFloorNumbers);
@@ -61,7 +80,11 @@ Future<void> main() async {
   final savedButtonStyle = "buttonStyleKey".getSharedPrefInt(prefs, initialButtonStyle);
   final savedBackgroundStyle = "backgroundStyleKey".getSharedPrefString(prefs, initialBackgroundStyle);
   final savedGlassStyle = "glassStyleKey".getSharedPrefString(prefs, initialGlassStyle);
+  // --- Firebase Initialization ---
+  // Initialize Firebase services with platform-specific configuration
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  // --- App Launch ---
+  // Launch the app with saved preferences and initial state overrides
   runApp(ProviderScope(
     overrides: [
       floorNumbersProvider.overrideWith((ref) => savedFloorNumbers),
@@ -76,6 +99,8 @@ Future<void> main() async {
     ],
     child: const MyApp())
   );
+  // --- Post-Launch Services ---
+  // Initialize additional services after app launch (Firebase App Check, ads, tracking)
   await FirebaseAppCheck.instance.activate(
     androidProvider: androidProvider,
     appleProvider: appleProvider,
@@ -84,6 +109,9 @@ Future<void> main() async {
   await initATTPlugin();
 }
 
+// --- Main Application Widget ---
+// Root MaterialApp widget that configures the entire application
+// Sets up localization, routing, theme, and navigation tracking
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
   @override
@@ -92,17 +120,25 @@ class MyApp extends StatelessWidget {
       data: MediaQuery.of(context).copyWith(textScaler: const TextScaler.linear(1)),
       child: child!,
     ),
+    // --- Localization ---
+    // Multi-language support configuration
     localizationsDelegates: AppLocalizations.localizationsDelegates,
     supportedLocales: AppLocalizations.supportedLocales,
+    // --- App Configuration ---
+    // Basic app settings and theme
     title: appTitle,
     theme: ThemeData(primarySwatch: Colors.grey),
     debugShowCheckedModeBanner: false,
+    // --- Routing ---
+    // Navigation routes to different app screens
     initialRoute: "/h",
     routes: {
-      "/h": (context) => const HomePage(),
-      "/m": (context) => const MenuPage(),
-      "/s": (context) => const SettingsPage(),
+      "/h": (context) => const HomePage(),    // Elevator simulator
+      "/m": (context) => const MenuPage(),    // Menu
+      "/s": (context) => const SettingsPage(), // Settings
     },
+    // --- Navigation Observers ---
+    // Track navigation for analytics and debugging
     navigatorObservers: <NavigatorObserver>[
       FirebaseAnalyticsObserver(analytics: FirebaseAnalytics.instance),
       RouteObserver<ModalRoute>()
@@ -110,7 +146,9 @@ class MyApp extends StatelessWidget {
   );
 }
 
-///App Tracking Transparency
+// --- Privacy and Tracking ---
+// App Tracking Transparency implementation for iOS/macOS
+// Requests user permission for app tracking on supported platforms
 Future<void> initATTPlugin() async {
   if (Platform.isIOS || Platform.isMacOS) {
     final status = await AppTrackingTransparency.trackingAuthorizationStatus;

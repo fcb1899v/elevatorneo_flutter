@@ -1,3 +1,16 @@
+// =============================
+// CommonWidget: Reusable UI components for elevator simulator
+//
+// This file contains common UI widgets that are used throughout the application.
+// These components provide consistent styling and behavior across different screens.
+// Key features:
+// - Responsive background image handling
+// - Animated flash buttons with directional indicators
+// - Loading indicators with consistent styling
+// - Cross-platform UI elements
+// - Responsive design adaptations
+// =============================
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'constant.dart';
@@ -9,7 +22,8 @@ class CommonWidget {
 
   CommonWidget(this.context);
 
-  ///Background
+  // --- Background Components ---
+  // Responsive background image handling for different screen orientations
   Widget commonBackground(String image) =>
     (context.width() > context.height()) ? ClipRect(
       child: OverflowBox(
@@ -32,7 +46,8 @@ class CommonWidget {
       ),
     );
 
-  ///Flash button
+  // --- Interactive Button Components ---
+  // Animated buttons with visual feedback and directional indicators
   FadeTransition flashButton({
     required AnimationController animationController,
     required bool isUp
@@ -44,8 +59,8 @@ class CommonWidget {
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         color: blackColor,
-        border: Border.all(color: whiteColor,                  // 縁の色
-          width: context.settingsSelectBorderWidth(),                             // 縁の太さ
+        border: Border.all(color: whiteColor, 
+          width: context.settingsSelectBorderWidth(), 
         ),
       ),
       child: Container(
@@ -59,7 +74,8 @@ class CommonWidget {
     ),
   );
 
-  ///Circular Progress Indicator
+  // --- Loading and Feedback Components ---
+  // Loading indicators and user feedback elements
   Widget commonCircularProgressIndicator() => Container(
     alignment: Alignment.center,
     width: context.width(),

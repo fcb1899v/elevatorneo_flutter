@@ -24,24 +24,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get glass => '관찰창';
 
   @override
-  String get aboutLetsElevator => '렛츠 엘리베이터 란';
-
-  @override
-  String get termsAndPrivacyPolicy => '이용약관 및 개인정보처리방침';
-
-  @override
-  String get terms => '이용약관';
-
-  @override
-  String get officialPage => '공식 페이지';
-
-  @override
-  String get officialShop => '공식 샵';
-
-  @override
-  String get ranking => '랭킹';
-
-  @override
   String get start => '시작';
 
   @override
@@ -55,12 +37,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get edit => '변경';
-
-  @override
-  String get bypass => '통과 층';
-
-  @override
-  String get stop => '정차 층';
 
   @override
   String get basement => '지하';
@@ -96,6 +72,12 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get return1st => '확인이 완료되었습니다. 1층으로 돌아갑니다.  ';
+
+  @override
+  String get bypass => '통과 층';
+
+  @override
+  String get stop => '정차 층';
 
   @override
   String get changeNumber => '목적지 층수 변경';
@@ -285,4 +267,22 @@ class AppLocalizationsKo extends AppLocalizations {
   String notSignedInGameCenter(Object Platform) {
     return '$Platform에 로그인해주세요';
   }
+
+  @override
+  String get aboutLetsElevator => '렛츠 엘리베이터 란';
+
+  @override
+  String get termsAndPrivacyPolicy => '이용약관 및 개인정보처리방침';
+
+  @override
+  String get terms => '이용약관';
+
+  @override
+  String get officialPage => '공식 페이지';
+
+  @override
+  String get officialShop => '공식 샵';
+
+  @override
+  String get ranking => '랭킹';
 }

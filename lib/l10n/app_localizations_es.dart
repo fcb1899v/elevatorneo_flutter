@@ -25,24 +25,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String get glass => 'Panel de vidrio';
 
   @override
-  String get aboutLetsElevator => 'Acerca de LETS ELEVATOR';
-
-  @override
-  String get termsAndPrivacyPolicy => 'Términos y política de privacidad';
-
-  @override
-  String get terms => 'Términos';
-
-  @override
-  String get officialPage => 'Página Oficial';
-
-  @override
-  String get officialShop => 'Tienda Oficial';
-
-  @override
-  String get ranking => 'Clasificación';
-
-  @override
   String get start => 'INICIAR';
 
   @override
@@ -56,12 +38,6 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get edit => 'EDITAR';
-
-  @override
-  String get bypass => 'Omitir';
-
-  @override
-  String get stop => 'Detener';
 
   @override
   String get basement => 'Sótano';
@@ -97,6 +73,12 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get return1st => 'Verificación completa. Regresando al primer piso.';
+
+  @override
+  String get bypass => 'Omitir';
+
+  @override
+  String get stop => 'Detener';
 
   @override
   String get changeNumber => 'Cambiar número de piso';
@@ -287,4 +269,22 @@ class AppLocalizationsEs extends AppLocalizations {
   String notSignedInGameCenter(Object Platform) {
     return 'Inicia sesión en $Platform';
   }
+
+  @override
+  String get aboutLetsElevator => 'Acerca de LETS ELEVATOR';
+
+  @override
+  String get termsAndPrivacyPolicy => 'Términos y política de privacidad';
+
+  @override
+  String get terms => 'Términos';
+
+  @override
+  String get officialPage => 'Página Oficial';
+
+  @override
+  String get officialShop => 'Tienda Oficial';
+
+  @override
+  String get ranking => 'Clasificación';
 }
