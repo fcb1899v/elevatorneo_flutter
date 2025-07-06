@@ -1,17 +1,19 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'extension.dart';
 
-/// For TTS
+// =============================
+// TtsManager: Text-to-Speech management
+// Handles multi-language TTS for the app
+// =============================
 class TtsManager {
-
   final BuildContext context;
   TtsManager({required this.context});
 
   final FlutterTts flutterTts = FlutterTts();
 
+  /// Get TTS locale based on current language
   String ttsLocale() =>
       (context.lang() == "ja") ? "ja-JP":
       (context.lang() == "zh") ? "zh-CN":
@@ -19,6 +21,7 @@ class TtsManager {
       (context.lang() == "es") ? "es-ES":
       "en-US";
 
+  /// Get Android voice name
   String androidVoiceName() =>
       (context.lang() == "ja") ? "ja-JP-language":
       (context.lang() == "zh") ? "zh-CN-language":
@@ -26,6 +29,7 @@ class TtsManager {
       (context.lang() == "es") ? "es-ES-language":
       "en-US-language";
 
+  /// Get iOS voice name
   String iOSVoiceName() =>
       (context.lang() == "ja") ? "Kyoko":
       (context.lang() == "zh") ? "婷婷":
@@ -33,9 +37,11 @@ class TtsManager {
       (context.lang() == "es") ? "Mónica":
       "Samantha";
 
+  /// Get default voice name by platform
   String defaultVoiceName() =>
       (Platform.isIOS || Platform.isMacOS) ? iOSVoiceName(): androidVoiceName();
 
+  /// Set TTS voice
   Future<void> setTtsVoice() async {
     final voices = await flutterTts.getVoices;
     List<dynamic> localFemaleVoices = (Platform.isIOS || Platform.isMacOS) ? voices.where((voice) {
@@ -52,6 +58,7 @@ class TtsManager {
     }
   }
 
+  /// Speak text if sound is on
   Future<void> speakText(String text, bool isSoundOn) async {
     if (isSoundOn) {
       await flutterTts.stop();
@@ -60,11 +67,13 @@ class TtsManager {
     }
   }
 
+  /// Stop TTS
   Future<void> stopTts() async {
     await flutterTts.stop();
     "Stop TTS".debugPrint();
   }
 
+  /// Initialize TTS
   Future<void> initTts() async {
     await flutterTts.setSharedInstance(true);
     if (Platform.isIOS || Platform.isMacOS) {
@@ -87,56 +96,4 @@ class TtsManager {
     await flutterTts.setSpeechRate(0.5);
     if (context.mounted) speakText(context.pushNumber(), true);
   }
-}
-
-/// For Audio
-class AudioManager {
-
-  final List<AudioPlayer> audioPlayers;
-
-  static const audioPlayerNumber = 1;
-  AudioManager() : audioPlayers = List.generate(audioPlayerNumber, (_) => AudioPlayer());
-  PlayerState playerState(int index) => audioPlayers[index].state;
-  String playerTitle(int index) => "${["effectSound"][index]}Player";
-
-  Future<void> playLoopSound({
-    required int index,
-    required String asset,
-    required double volume,
-  }) async {
-    final player = audioPlayers[index];
-    await player.setVolume(volume);
-    await player.setReleaseMode(ReleaseMode.loop);
-    await player.play(AssetSource(asset));
-    "Loop ${playerTitle(index)}: ${audioPlayers[index].state}".debugPrint();
-  }
-
-  Future<void> playEffectSound({
-    required int index,
-    required String asset,
-    required double volume,
-  }) async {
-    final player = audioPlayers[index];
-    await player.setVolume(volume);
-    await player.setReleaseMode(ReleaseMode.release);
-    await player.play(AssetSource(asset));
-    "Play ${playerTitle(index)}: ${audioPlayers[index].state}".debugPrint();
-  }
-
-  Future<void> stopSound(int index) async {
-    await audioPlayers[index].stop();
-    "Stop ${playerTitle(index)}: ${audioPlayers[index].state}".debugPrint();
-  }
-
-  Future<void> stopAll() async {
-    for (final player in audioPlayers) {
-      try {
-        if (player.state == PlayerState.playing) {
-          await player.stop();
-          "Stop all players".debugPrint();
-        }
-      } catch (_) {}
-    }
-  }
-}
-
+} 

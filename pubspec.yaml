@@ -1,7 +1,7 @@
 name: letselevatorneo
 description: elevatorsimulatorneo
 publish_to: 'none'
-version: 1.5.12+57
+version: 1.5.13+58
 
 environment:
   sdk: '>=2.18.0 <4.0.0'
@@ -12,9 +12,9 @@ dependencies:
   webview_flutter_android: ^4.7.0
   webview_flutter: ^4.13.0
   # Firebase Analytics
-  firebase_core: ^3.14.0
-  firebase_analytics: ^11.5.0
-  firebase_app_check: ^0.3.2+7
+  firebase_core: ^3.15.1
+  firebase_analytics: ^11.5.2
+  firebase_app_check: ^0.3.2+9
   # App Icon
   cupertino_icons: ^1.0.8
   flutter_launcher_icons: ^0.14.4
@@ -45,7 +45,7 @@ dependencies:
   image_cropper: ^9.1.0
   path_provider: ^2.1.5
   # Permission
-  permission_handler: ^12.0.0+1
+  permission_handler: ^12.0.1
 
   # Localize
   flutter_localizations:

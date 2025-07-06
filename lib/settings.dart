@@ -59,7 +59,7 @@ class SettingsPage extends HookConsumerWidget {
     final showSettingNumber = useState(0);                            // Active settings tab index
     final hasScrolledOnce = useState(false);                          // Scroll state tracking
     final isLoadingData = useState(false);                            // Data loading state
-    final animationController = useAnimationController(duration:Duration(seconds: flashTime))..repeat(reverse: true);
+    final animationController = useAnimationController(duration:Duration(milliseconds: flashTime))..repeat(reverse: true);
 
     // --- Widget and Manager Instances ---
     // UI widget instances and service managers
@@ -119,7 +119,7 @@ class SettingsPage extends HookConsumerWidget {
     /// Animate scroll view to top with smooth transition
     void scrollToTop() {
       scrollController.animateTo(0.0,
-        duration: Duration(seconds: flashTime),
+        duration: Duration(milliseconds: flashTime),
         curve: Curves.easeOut,
       );
     }

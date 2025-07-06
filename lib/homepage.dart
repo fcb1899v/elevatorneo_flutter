@@ -15,6 +15,8 @@
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:letselevatorneo/audio_manager.dart';
+import 'package:letselevatorneo/tts_manager.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vibration/vibration.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -27,7 +29,6 @@ import 'constant.dart';
 import 'image_manager.dart';
 import 'main.dart';
 import 'menu.dart';
-import 'sound_manager.dart';
 
 class HomePage extends HookConsumerWidget {
   const HomePage({super.key});
@@ -68,7 +69,7 @@ class HomePage extends HookConsumerWidget {
     final isWaitingDown = useState(false);                     // Down button waiting state
     final waitTime = useState(initialWaitTime);                // Wait time between actions
     final openTime = useState(initialOpenTime);                // Door open duration
-    final animationController = useAnimationController(duration: Duration(seconds: flashTime))..repeat(reverse: true);
+    final animationController = useAnimationController(duration: Duration(milliseconds: flashTime))..repeat(reverse: true);
     final lifecycle = useAppLifecycleState();                  // App lifecycle state
     final orientation = context.orientation();                 // Screen orientation
 
@@ -181,7 +182,7 @@ class HomePage extends HookConsumerWidget {
             if (isMoving.value && (counter.value == nextFloor.value || counter.value == max)) {
               if (context.mounted) imageTopMargin.value = context.imageMarginTop(isOutside.value, counter.value, max);
               await Future.delayed(Duration(seconds: waitTime.value)).then((_) async {
-                await audioManager.playEffectSound(index: 0, asset: openSound, volume: 0.6);
+                if (currentFloor.value == counter.value) await audioManager.playEffectSound(index: 0, asset: openSound, volume: 0.6);
                 counter.value.clearLowerFloor(isAboveSelectedList.value, isUnderSelectedList.value);
                 nextFloor.value = counter.value.upNextFloor(isAboveSelectedList.value, isUnderSelectedList.value);
                 if (!isOutside.value) currentFloor.value = counter.value;
@@ -229,7 +230,7 @@ class HomePage extends HookConsumerWidget {
             if (isMoving.value && (counter.value == nextFloor.value || counter.value == min)) {
               if (context.mounted) imageTopMargin.value = context.imageMarginTop(isOutside.value, counter.value, max);
               await Future.delayed(Duration(seconds: waitTime.value)).then((_) async {
-                await audioManager.playEffectSound(index: 0, asset: openSound, volume: 0.6);
+                if (!isOutside.value || currentFloor.value == counter.value) await audioManager.playEffectSound(index: 0, asset: openSound, volume: 0.6);
                 counter.value.clearUpperFloor(isAboveSelectedList.value, isUnderSelectedList.value);
                 nextFloor.value = counter.value.downNextFloor(isAboveSelectedList.value, isUnderSelectedList.value);
                 if (!isOutside.value) currentFloor.value = counter.value;
@@ -306,12 +307,28 @@ class HomePage extends HookConsumerWidget {
     // --- Door Control Functions ---
     // Functions for managing elevator door states and operations
 
+    /// Open elevator doors and trigger movement if needed
+    /// Handles door opening animation and subsequent elevator movement
+    doorsOpening() async {
+      if (!isMoving.value && !isEmergency.value && isDoorState.value != openedState && isDoorState.value != openingState) {
+        if (context.mounted && currentFloor.value == counter.value) ttsManager.speakText(context.openDoor(), !isOutside.value || currentFloor.value == counter.value);
+        isDoorState.value = openingState;
+        "isDoorState: ${isDoorState.value}".debugPrint();
+        await Future.delayed(Duration(seconds: waitTime.value)).then((_) {
+          if (!isMoving.value && !isEmergency.value && isDoorState.value == openingState) {
+            isDoorState.value = openedState;
+            "isDoorState: ${isDoorState.value}".debugPrint();
+          }
+        });
+      }
+    }
+
     /// Close elevator doors and trigger movement if needed
     /// Handles door closing animation and subsequent elevator movement
     doorsClosing() async {
       if (isWaitingUp.value || isWaitingDown.value) floorSelected(currentFloor.value, true);
       if (!isMoving.value && !isEmergency.value && isDoorState.value != closedState && isDoorState.value != closingState) {
-        await audioManager.playEffectSound(index: 0, asset: closeSound, volume: 0.6);
+        if (!isOutside.value || currentFloor.value == counter.value) await audioManager.playEffectSound(index: 0, asset: closeSound, volume: 0.6);
         isDoorState.value = closingState;
         "isDoorState: ${isDoorState.value}".debugPrint();
         if (context.mounted) await ttsManager.speakText(context.closeDoor(), !isOutside.value || currentFloor.value == counter.value);
@@ -329,7 +346,6 @@ class HomePage extends HookConsumerWidget {
 
     // --- Operation Button Functions ---
     // Functions for handling operation button interactions (open, close, emergency)
-
     /// Handle open button press with delayed action and TTS feedback
     pressedOpenAction(bool isOn) async {
       await Vibration.vibrate(duration: vibTime, amplitude: vibAmp);
@@ -338,18 +354,8 @@ class HomePage extends HookConsumerWidget {
         isPressedOperationButtons.value = [isOn, false, false];
         if (isOn) {
           if (!isMoving.value && !isEmergency.value && isDoorState.value != openedState && isDoorState.value != openingState) {
-            Future.delayed(const Duration(seconds: flashTime)).then((_) async {
-              if (!isMoving.value && !isEmergency.value  && isDoorState.value != openedState && isDoorState.value != openingState) {
-                if (context.mounted) ttsManager.speakText(context.openDoor(), !isOutside.value || currentFloor.value == counter.value);
-                isDoorState.value = openingState;
-                "isDoorState: ${isDoorState.value}".debugPrint();
-                await Future.delayed(Duration(seconds: waitTime.value)).then((_) {
-                  if (!isMoving.value && !isEmergency.value && isDoorState.value == openingState) {
-                    isDoorState.value = openedState;
-                    "isDoorState: ${isDoorState.value}".debugPrint();
-                  }
-                });
-              }
+            Future.delayed(const Duration(milliseconds: flashTime)).then((_) async {
+              doorsOpening();
             });
           }
         }
@@ -366,7 +372,7 @@ class HomePage extends HookConsumerWidget {
         isPressedOperationButtons.value = [false, isOn, false];
         if (isOn) {
           if (!isMoving.value && !isEmergency.value && isDoorState.value != closedState && isDoorState.value != closingState) {
-            Future.delayed(const Duration(seconds: flashTime)).then((_) => doorsClosing());
+            Future.delayed(const Duration(milliseconds: flashTime)).then((_) => doorsClosing());
           }
         }
       } else {
@@ -402,7 +408,7 @@ class HomePage extends HookConsumerWidget {
                 "currentFloor: ${currentFloor.value}, nextFloor: ${nextFloor.value}".debugPrint();
                 (counter.value < nextFloor.value) ? counterUp() : counterDown();
               } else {
-                if (context.mounted) ttsManager.speakText(context.openDoor(), !isOutside.value || currentFloor.value == counter.value);
+                if (context.mounted && currentFloor.value == counter.value) ttsManager.speakText(context.openDoor(), !isOutside.value || currentFloor.value == counter.value);
                 isDoorState.value = openingState;
                 "isDoorState: ${isDoorState.value}".debugPrint();
               }
@@ -414,7 +420,6 @@ class HomePage extends HookConsumerWidget {
 
     // --- View Control Functions ---
     // Functions for managing view switching and waiting button interactions
-
     /// Switch between inside and outside elevator views
     /// Adjusts image positioning and view state
     changeView() async {
@@ -430,40 +435,37 @@ class HomePage extends HookConsumerWidget {
     /// Handle up waiting button press for outside view
     /// Manages elevator call logic and door states
     pressedWaitUp() {
-      "pressedWaitUp: ${isWaitingDown.value}".debugPrint();
-      isPressedOperationButtons.value = [false, false, false];
       if (counter.value != currentFloor.value) {
         isWaitingUp.value = true;
-        if (isDoorState.value == openingState) {
+        "pressedWaitUp: ${isWaitingDown.value}".debugPrint();
+        if (isDoorState.value == openingState || isDoorState.value == openedState) {
           pressedCloseAction(true);
         } else {
           doorsClosing();
         }
       } else {
-        pressedOpenAction(true);
+        doorsOpening();
       }
     }
 
     /// Handle down waiting button press for outside view
     /// Manages elevator call logic and door states
     pressedWaitDown() {
-      "pressedWaitDown: ${isWaitingDown.value}".debugPrint();
-      isPressedOperationButtons.value = [false, false, false];
       if (counter.value != currentFloor.value) {
         isWaitingDown.value = true;
-        if (isDoorState.value == openingState) {
+        "pressedWaitDown: ${isWaitingDown.value}".debugPrint();
+        if (isDoorState.value == openingState || isDoorState.value == openedState) {
           pressedCloseAction(true);
         } else {
           doorsClosing();
         }
       } else {
-        pressedOpenAction(true);
+        doorsOpening();
       }
     }
 
     // --- Button Action Management ---
     // Helper functions for managing button interactions and effects
-
     /// Generate button action list for operation buttons
     /// Returns appropriate action handlers based on button state and press type
     List<dynamic> pressedButtonAction(bool isOn, isLongPressed) => [
@@ -551,10 +553,19 @@ class HomePage extends HookConsumerWidget {
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
                         /// Floor display with movement indicators
-                        home.displayNumberWidget(
+                        (!isOutside.value) ? home.displayNumberWidget(
                           number: counter.value,
+                          next: nextFloor.value,
                           isMoving: isMoving.value,
-                          next: nextFloor.value
+                        /// Hall lamp indicating elevator direction
+                        ): (counter.value != currentFloor.value) ? home.hallLampLightingWidget(
+                          number: counter.value,
+                          current: currentFloor.value,
+                          isWaitingUp: isWaitingUp.value,
+                          isWaitingDown: isWaitingDown.value,
+                        ): home.hallLampFlashingWidget(
+                          animationController: animationController,
+                          isDoorState: isDoorState.value,
                         ),
                         Spacer(),
                         /// Emergency button (style 2 configuration)
@@ -627,8 +638,7 @@ class HomePage extends HookConsumerWidget {
                     ),
                   ),
                   /// View change button (flashing indicator)
-                  if (isDoorState.value == openedState) //&& currentFloor.value == counter.value)
-                  GestureDetector(
+                  if (isDoorState.value == openedState && currentFloor.value == counter.value) GestureDetector(
                     onTap: changeView,
                     child: Container(
                       margin: EdgeInsets.only(
@@ -659,6 +669,12 @@ class HomePage extends HookConsumerWidget {
   }
 }
 
+// =============================
+// HomeWidget: Main elevator UI components
+//
+// Contains all UI widgets for the elevator simulator interface.
+// Key features: app bar, floor images, doors, hall lamps, displays, buttons
+// =============================
 class HomeWidget {
   final BuildContext context;
   final List<int> floorNumbers;
@@ -685,7 +701,8 @@ class HomeWidget {
     required this.point,
   });
 
-  ///AppBar
+  // --- App Bar Components ---
+  /// App bar with score display and menu button
   AppBar homeAppBar({
     required void Function() onPressed,
   }) => AppBar(
@@ -736,8 +753,7 @@ class HomeWidget {
       ),
     ],
   );
-
-  //Tooltip for EV Mileage
+  /// Tooltip explaining EV mileage system
   Container evMileTooltip() => Container(
     height: context.tooltipHeight(),
     alignment: Alignment.topCenter,
@@ -794,7 +810,8 @@ class HomeWidget {
     ),
   );
 
-  ///floor image
+  // --- Floor and Room Images ---
+  /// Animated floor images for inside/outside elevator views
   AnimatedPositioned floorImagesWidget({
     required int currentFloorNumber,
     required bool isOutside,
@@ -848,7 +865,7 @@ class HomeWidget {
     )
   );
 
-  ///Black container for hiding
+  /// Black overlay for emergency mode and hiding elements
   Column blackHideWidget(bool isEmergency) => Column(children: [
     if (isEmergency) SizedBox(
       width: context.roomWidth(),
@@ -868,8 +885,8 @@ class HomeWidget {
       child: Container(color: blackColor),
     )
   ]);
-
-  //UpAndDownDoorFrame
+  // --- Door Components ---
+  /// Door frame for up/down buttons
   Container upAndDownDoorFrame() => Container(
     alignment: Alignment.centerLeft,
     height: context.roomHeight(),
@@ -879,8 +896,7 @@ class HomeWidget {
     ),
     child: Image.asset(backgroundStyle.doorFrame()),
   );
-
-  //LeftDoorFrame
+  /// Animated left door frame
   AnimatedContainer leftDoorFrame(bool isClosed) => AnimatedContainer(
     duration: const Duration(seconds: 2),
     transform: Matrix4.translationValues(isClosed ? 0: - context.doorWidth(), 0, 0),
@@ -893,8 +909,7 @@ class HomeWidget {
     height: context.roomHeight(),
     child: Image.asset(leftSideFrame),
   );
-
-  //RightDoorFrame
+  /// Animated right door frame
   AnimatedContainer rightDoorFrame(bool isClosed) => AnimatedContainer(
     duration: const Duration(seconds: 2),
     transform: Matrix4.translationValues(isClosed ? 0: context.doorWidth(), 0, 0),
@@ -908,7 +923,7 @@ class HomeWidget {
     child: Image.asset(rightSideFrame),
   );
 
-  //LeftDoor
+  /// Animated left door with glass style
   AnimatedContainer leftDoorImage(bool isClosedState) => AnimatedContainer(
     duration: const Duration(seconds: 2),
     transform: Matrix4.translationValues(isClosedState ? 0: - context.doorWidth(), 0, 0),
@@ -922,8 +937,7 @@ class HomeWidget {
     height: context.roomHeight(),
     child: Image.asset(backgroundStyle.leftDoor(glassStyle)),
   );
-
-  //RightDoor
+  /// Animated right door with glass style
   AnimatedContainer rightDoorImage(bool isClosedState) => AnimatedContainer(
     duration: const Duration(seconds: 2),
     transform: Matrix4.translationValues(isClosedState ? 0: context.doorWidth(), 0, 0),
@@ -937,16 +951,14 @@ class HomeWidget {
     height: context.roomHeight(),
     child: Image.asset(backgroundStyle.rightDoor(glassStyle)),
   );
-
-  //Elevator Frame
+  /// Elevator frame for inside/outside views
   Container elevatorFrameImage(bool isOutside) => Container(
     alignment: Alignment.topCenter,
     width: context.elevatorWidth() ,
     height: context.elevatorHeight(),
     child: Image.asset(backgroundStyle.elevatorFrame(isOutside))
   );
-
-  //DoorCover
+  /// Door cover panels for hiding elevator sides
   Row doorCover() => Row(children: [
     Container(
       color: blackColor,
@@ -961,11 +973,37 @@ class HomeWidget {
     ),
   ]);
 
-  ///Display
+  // --- Hall Lamp Components ---
+  /// Static hall lamp showing elevator direction
+  SizedBox hallLampLightingWidget({
+    required int number,
+    required int current,
+    required bool isWaitingUp,
+    required bool isWaitingDown,
+  }) => SizedBox(
+    height: context.hallLampHeight(),
+    child: Image.asset(number.hallLampImage(current, isWaitingUp, isWaitingDown))
+  );
+  /// Flashing hall lamp with animation control
+  SizedBox hallLampFlashingWidget({
+    required AnimationController animationController,
+    required List<bool> isDoorState
+  }) => SizedBox(
+    height: context.hallLampHeight(),
+    child: AnimatedBuilder(
+      animation: animationController,
+      builder: (context, child) => Image.asset(
+        (animationController.value > 0.5 && isDoorState != closedState) ? hallLampOn : hallLampOff
+      ),
+    ),
+  );
+
+  // --- Display Components ---
+  /// Floor display with arrow and number
   Container displayNumberWidget({
     required int number,
-    required bool isMoving,
     required int next,
+    required bool isMoving,
   }) => Container(
     width: context.displayWidth(),
     height: context.displayHeight(),
@@ -973,30 +1011,18 @@ class HomeWidget {
     child: Column(mainAxisAlignment: MainAxisAlignment.start,
       children: [
         ///Arrow
-        displayArrow(
-          number: number,
-          isMoving: isMoving,
-          next: next,
+        Container(
+          height: context.displayArrowHeight(buttonStyle),
+          alignment: Alignment.topCenter,
+          margin: EdgeInsets.only(top: context.displayArrowMarginTop(buttonStyle)),
+          child: Image.asset(number.arrowImage(isMoving, next, buttonStyle)),
         ),
         ///Floor number
         displayNumber(number),
       ]
     )
   );
-
-  //Display Arrow
-  Widget displayArrow({
-    required int number,
-    required bool isMoving,
-    required int next,
-  }) => Container(
-    height: context.displayArrowHeight(buttonStyle),
-    alignment: Alignment.topCenter,
-    margin: EdgeInsets.only(top: context.displayArrowMarginTop(buttonStyle)),
-    child: Image.asset(number.arrowImage(isMoving, next, buttonStyle)),
-  );
-
-  //Display Number
+  /// Floor number display with custom fonts
   Widget displayNumber(int number) => Container(
     alignment: Alignment.topRight,
     height: context.displayNumberHeight(),
@@ -1038,16 +1064,15 @@ class HomeWidget {
     ), [number])
   );
 
-  ///Button
-  //Open or Close Button (Close: 0, Open: 1, Alert:2)
+  // --- Button Components ---
+  /// Operation buttons (open, close, emergency)
   Widget operationButton(List<bool> isPressedList, int number) => Container(
     width: context.operationButtonSize(),
     height: context.operationButtonSize(),
     margin: EdgeInsets.only(top: context.operationButtonMargin()),
     child: Image.asset(isPressedList.operationButtonImage(buttonStyle)[number]),
   );
-
-  //Floor Button
+  /// Floor selection buttons with number display
   Widget floorButtonImage(int floorNumber, bool isSelected) => SizedBox(
     width: context.buttonSize(),
     height: context.buttonSize(),
@@ -1070,7 +1095,7 @@ class HomeWidget {
       ],
     ),
   );
-
+  /// Up/down call buttons for elevator
   Widget upDownButtons({
     required int currentFloor,
     required void Function() onTapUp,

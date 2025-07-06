@@ -14,11 +14,11 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:letselevatorneo/audio_manager.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vibration/vibration.dart';
 import 'l10n/app_localizations.dart' show AppLocalizations;
 import 'constant.dart';
-import 'sound_manager.dart';
 
 // =============================
 // StringExt: String utilities, SharedPreferences helpers, image path helpers, style helpers
@@ -378,6 +378,8 @@ extension ContextExt on BuildContext {
   double displayMarginFontSize(int buttonStyle) => widthResponsible() * (buttonStyle == 0 ? 0: 0.03);
   double displayAlphabetFontSize(int buttonStyle) => widthResponsible() * (buttonStyle == 0 ? 0.065: 0.1);
   double displayAlphabetMargin(int buttonStyle) => widthResponsible() * (buttonStyle == 0 ? 0: 0.02);
+  // Hall Lamp
+  double hallLampHeight() => widthResponsible() * 0.32;
   // Buttons
   double buttonPanelWidth() => widthResponsible() * 0.23;
   double buttonPanelHeight() => widthResponsible() * 1.05;
@@ -595,6 +597,15 @@ extension IntExt on int {
       (isMoving && this < nextFloor) ? buttonStyle.upArrow():
       (isMoving && this > nextFloor) ? buttonStyle.downArrow():
       transpImage;
+
+  // --- Hall Lamp ---
+  // Methods for managing hall lamp images
+  String hallLampImage(int currentFloor, bool isWaitingUp, bool isWaitingDown) =>
+      (this > currentFloor && isWaitingDown) ? hallLampDown:
+      (this < currentFloor && isWaitingUp) ? hallLampUp:
+      (this < currentFloor && !isWaitingUp && isWaitingDown) ? hallLampDown:
+      (this > currentFloor && isWaitingUp && !isWaitingDown) ? hallLampUp:
+      hallLampOff;
 
   // --- Speed Calculation ---
   // Methods for calculating elevator movement speed based on distance and operation count

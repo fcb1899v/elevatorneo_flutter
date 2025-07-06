@@ -93,7 +93,7 @@ const int toolTipTime = 10000; //[msec]
 /// Various timing settings for door operations and UI elements
 const int initialOpenTime = 10; //[sec]
 const int initialWaitTime =  2; //[sec]
-const int flashTime = 1;        //[sec]
+const int flashTime = 700;      //[msec]
 
 // =============================================================================
 // ELEVATOR STATE MANAGEMENT
@@ -188,6 +188,12 @@ const List<double> floorButtonNumberMarginFactor = [
 const String leftSideFrame = "${assetsElevator}sideFrameLeft.png";
 const String rightSideFrame = "${assetsElevator}sideFrameRight.png";
 const String pointImage = "${assetsElevator}elevatorPoint.png";
+
+/// Hall lamp images
+const String hallLampUp = "${assetsElevator}hallLamp_up.jpg";
+const String hallLampDown = "${assetsElevator}hallLamp_down.jpg";
+const String hallLampOn = "${assetsElevator}hallLamp_on.jpg";
+const String hallLampOff = "${assetsElevator}hallLamp_off.jpg";
 
 // =============================================================================
 // ROOM BACKGROUND IMAGES
@@ -306,8 +312,12 @@ const Color transpWhiteColor = Color.fromRGBO(255, 255, 255, 0.95);
 
 /// Display color schemes
 /// Background and text colors for different display themes
-const List<Color> displayBackgroundColor = [darkBlackColor, darkBlackColor, lightBlueColor];
-const List<Color> displayNumberColor = [lampColor, whiteColor, whiteColor];
+const List<Color> displayBackgroundColor = [
+  darkBlackColor, darkBlackColor, lightBlueColor
+];
+const List<Color> displayNumberColor = [
+  lampColor, whiteColor, whiteColor
+];
 const List<Color> numberColorList = [
   lampColor, lampColor, blueLightColor,
   redLightColor, purpleLightColor, greenLightColor,
@@ -315,13 +325,14 @@ const List<Color> numberColorList = [
 ];
 
 /// Color calculation notes
-//＜電球色lampColor＞
-// 電球色 → F7B249
+
+//＜Shimada's lamp　color＞
+// [F7B249]
 // Red = F7 = 247
 // Green = B2 = 178
 // Blue = 49 = 73
 
-//＜色温度から算出する電球色lampColor＞
+//＜Lamp color from temperature＞
 // Temperature = 3000 K → FFB16E
 // Red = 255 = FF
 // Green = 99.47080 * Ln(30) - 161.11957 = 177 = B1
