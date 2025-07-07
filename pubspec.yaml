@@ -1,7 +1,7 @@
 name: letselevatorneo
 description: elevatorsimulatorneo
 publish_to: 'none'
-version: 1.5.13+58
+version: 1.5.14+59
 
 environment:
   sdk: '>=2.18.0 <4.0.0'
@@ -85,7 +85,7 @@ flutter:
     - family: cornerstone
       fonts:
         - asset: assets/fonts/cornerstone.ttf
-    #For English font
+    #For English, Spanish, French font
     - family: roboto
       fonts:
         - asset: assets/fonts/Roboto-Bold.ttf

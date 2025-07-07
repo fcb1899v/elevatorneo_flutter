@@ -40,7 +40,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get edit => 'EDITAR';
 
   @override
-  String get basement => 'Sótano';
+  String get basement => 'Sótano ';
 
   @override
   String floor(Object NUMBER) {
@@ -57,7 +57,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get closeDoor => 'Cerrando puertas.';
 
   @override
-  String get pushNumber => 'Seleccione planta.';
+  String get pushNumber => 'Seleccione piso.';
 
   @override
   String get upFloor => 'Subiendo.';
@@ -66,13 +66,13 @@ class AppLocalizationsEs extends AppLocalizations {
   String get downFloor => 'Bajando.';
 
   @override
-  String get notStop => 'No se detiene en esta planta.';
+  String get notStop => 'No se detiene en esta piso.';
 
   @override
-  String get emergency => 'Parada de emergencia para verificación. ';
+  String get emergency => 'Parada de emergencia para revisión.';
 
   @override
-  String get return1st => 'Verificación completa. Regresando al primer piso.';
+  String get return1st => 'Verificación completada. Regresando al primer piso.';
 
   @override
   String get bypass => 'Omitir';
@@ -81,10 +81,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get stop => 'Detener';
 
   @override
-  String get changeNumber => 'Cambiar número de piso';
+  String get changeNumber => 'Cambiar piso';
 
   @override
-  String get changeBasementNumber => 'Cambiar número de piso del sótano';
+  String get changeBasementNumber => 'Cambiar piso del sótano';
 
   @override
   String get changeImage => 'Cambiar imagen del piso';
@@ -114,7 +114,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get rooftop => 'El piso superior, ';
 
   @override
-  String get vip => 'Piso de sala VIP, ';
+  String get vip => 'Piso VIP, ';
 
   @override
   String get restaurant => 'Piso de restaurante, ';

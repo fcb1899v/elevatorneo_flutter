@@ -115,8 +115,6 @@ extension StringExt on String {
   String rightDoor(String glassStyle) => "${assetsElevator}doorRight_$this${glassStyle == "use" ? "WithGlass": ""}.png";
   String backGroundImage(String glassStyle) => "$assetsSettings${this}Background${glassStyle == "use" ? "WithGlass": ""}.png";
   String insideElevator() => "${assetsElevator}inside_$this.png";
-  List<String> insideElevatorImages(List<int> floorNumbers, int counter) =>
-      List.generate(initialFloorImages.length, (i) => (counter == floorNumbers[i]) ? insideElevator(): imageDark);
 
   // --- Button Shape Helpers ---
   // Methods for managing button shape configurations and indices
@@ -151,7 +149,7 @@ extension ContextExt on BuildContext {
   // --- Localization & Fonts ---
   // Language detection and font selection based on current locale
   String lang() => Localizations.localeOf(this).languageCode;
-  String normalFont() =>
+  String font() =>
       (lang() == "ja") ? "notoJP":
       (lang() == "zh") ? "notoSC":
       (lang() == "ko") ? "bmDohyeon":
@@ -250,6 +248,7 @@ extension ContextExt on BuildContext {
       (counter == max) ? "":
       (lang() == "en") ? floor("${counter.enRankNumber()}${basement(counter)}"):
       (lang() == "es") ? "${counter.esRankNumber()}${basement(counter)}":
+      (lang() == "fr") ? "${counter.frRankNumber()}${basement(counter)}":
       floor("${basement(counter)}${counter.abs()}");
   String openingSound(int counter, String room) =>
       "${soundFloor(counter)}${soundPlace(room)}${openDoor()}";
@@ -374,7 +373,7 @@ extension ContextExt on BuildContext {
   double displayNumberHeight() => widthResponsible() * 0.10;
   double displayNumberMarginTop(int buttonStyle) => widthResponsible() * 0.035;
   double displayNumberMarginRight(int buttonStyle) => widthResponsible() * (buttonStyle == 0 ? 0.012: 0.015);
-  double displayNumberFontSize(int buttonStyle) => widthResponsible() * (buttonStyle == 0 ? 0.063: 0.063);
+  double displayNumberFontSize(int buttonStyle) => widthResponsible() * (buttonStyle == 0 ? 0.06: 0.06);
   double displayMarginFontSize(int buttonStyle) => widthResponsible() * (buttonStyle == 0 ? 0: 0.03);
   double displayAlphabetFontSize(int buttonStyle) => widthResponsible() * (buttonStyle == 0 ? 0.065: 0.1);
   double displayAlphabetMargin(int buttonStyle) => widthResponsible() * (buttonStyle == 0 ? 0: 0.02);
@@ -518,44 +517,84 @@ extension IntExt on int {
       (abs() % 10 == 2 && abs() ~/ 10 != 1) ? "${abs()}nd ":
       (abs() % 10 == 3 && abs() ~/ 10 != 1) ? "${abs()}rd ":
       "${abs()}th ";
+  // Spanish ordinal number generation for floor announcements
   String esRankNumber() => //1~199
-      (this == 0) ? '':
-      (this == 1) ? 'primer ' :
-      (this == 2) ? 'segundo ' :
-      (this == 3) ? 'tercer ' :
-      (this == 4) ? 'cuarto ' :
-      (this == 5) ? 'quinto ' :
-      (this == 6) ? 'sexto ' :
-      (this == 7) ? 'séptimo ' :
-      (this == 8) ? 'octavo ' :
-      (this == 9) ? 'noveno ' :
-      (this == 10) ? 'décimo ' :
-      (this == 11) ? 'undécimo ' :
-      (this == 12) ? 'duodécimo ' :
-      (this == 13) ? 'decimotercero ' :
-      (this == 14) ? 'decimocuarto ' :
-      (this == 15) ? 'decimoquinto ' :
-      (this == 16) ? 'decimosexto ' :
-      (this == 17) ? 'decimoséptimo ' :
-      (this == 18) ? 'decimoctavo ' :
-      (this == 19) ? 'decimonoveno ' :
-      (this == 20) ? 'vigésimo ':
-      (this < 100) ? esRankNumberOver20():
-      esRankNumberOver100();
+  (this == 0) ? '':
+  (this == 1) ? 'primer ' :
+  (this == 2) ? 'segundo ' :
+  (this == 3) ? 'tercer ' :
+  (this == 4) ? 'cuarto ' :
+  (this == 5) ? 'quinto ' :
+  (this == 6) ? 'sexto ' :
+  (this == 7) ? 'séptimo ' :
+  (this == 8) ? 'octavo ' :
+  (this == 9) ? 'noveno ' :
+  (this == 10) ? 'décimo ' :
+  (this == 11) ? 'undécimo ' :
+  (this == 12) ? 'duodécimo ' :
+  (this == 13) ? 'decimotercero ' :
+  (this == 14) ? 'decimocuarto ' :
+  (this == 15) ? 'decimoquinto ' :
+  (this == 16) ? 'decimosexto ' :
+  (this == 17) ? 'decimoséptimo ' :
+  (this == 18) ? 'decimoctavo ' :
+  (this == 19) ? 'decimonoveno ' :
+  (this == 20) ? 'vigésimo ':
+  (this < 100) ? esRankNumberOver20():
+  esRankNumberOver100();
   String esRankNumberOver20() =>
       (this < 100) ? "${
-        (this < 30) ? 'vigésimo ':
-        (this < 40) ? 'trigésimo ':
-        (this < 50) ? 'cuadragésimo ':
-        (this < 60) ? 'quincuagésimo ':
-        (this < 70) ? 'sexagésimo ':
-        (this < 80) ? 'septuagésimo ':
-        (this < 90) ? 'octogésimo ':
-        'nonagésimo '
+          (this < 30) ? 'vigésimo ':
+          (this < 40) ? 'trigésimo ':
+          (this < 50) ? 'cuadragésimo ':
+          (this < 60) ? 'quincuagésimo ':
+          (this < 70) ? 'sexagésimo ':
+          (this < 80) ? 'septuagésimo ':
+          (this < 90) ? 'octogésimo ':
+          'nonagésimo '
       } ${(this % 10).esRankNumber()} ":
       esRankNumberOver100();
   String esRankNumberOver100() =>
       'centésimo ${(this % 100).esRankNumberOver20()} ';
+  // French ordinal number generation for floor announcements
+  String frRankNumber() => //1~199
+    (this == 0) ? '':
+    (this == 1) ? 'premier ' :
+    (this == 2) ? 'deuxième ' :
+    (this == 3) ? 'troisième ' :
+    (this == 4) ? 'quatrième ' :
+    (this == 5) ? 'cinquième ' :
+    (this == 6) ? 'sixième ' :
+    (this == 7) ? 'septième ' :
+    (this == 8) ? 'huitième ' :
+    (this == 9) ? 'neuvième ' :
+    (this == 10) ? 'dixième ' :
+    (this == 11) ? 'onzième ' :
+    (this == 12) ? 'douzième ' :
+    (this == 13) ? 'treizième ' :
+    (this == 14) ? 'quatorzième ' :
+    (this == 15) ? 'quinzième ' :
+    (this == 16) ? 'seizième ' :
+    (this == 17) ? 'dix-septième ' :
+    (this == 18) ? 'dix-huitième ' :
+    (this == 19) ? 'dix-neuvième ' :
+    (this == 20) ? 'vingtième ':
+    (this < 100) ? frRankNumberOver20():
+    frRankNumberOver100();
+  String frRankNumberOver20() =>
+    (this < 100) ? "${
+      (this < 30) ? 'vingtième ':
+      (this < 40) ? 'trentième ':
+      (this < 50) ? 'quarantième ':
+      (this < 60) ? 'cinquantième ':
+      (this < 70) ? 'soixantième ':
+      (this < 80) ? 'soixante-dixième ':
+      (this < 90) ? 'quatre-vingtième ':
+      'quatre-vingt-dixième '
+    } ${(this % 10).frRankNumber()} ":
+    frRankNumberOver100();
+  String frRankNumberOver100() =>
+    'centième ${(this % 100).frRankNumberOver20()} ';
 
   // --- Settings & Button Helpers ---
   // Methods for managing settings UI and button image paths based on style configurations
@@ -838,12 +877,6 @@ extension ListStringExt on List<String> {
   // Methods for retrieving and managing room names based on image mappings
   String roomName(BuildContext context, String image) =>
       context.roomNameList()[floorImageList.indexOf(image)];
-  String remainName(BuildContext context, List<String> roomImages, int buttonIndex) =>
-      context.roomNameList()[remainIndex(roomImages, buttonIndex)];
-  String selectedRoomName(BuildContext context, List<String> roomImages, int buttonIndex) =>
-      (roomIndex(roomImages, buttonIndex) == -1) ?
-        remainName(context, roomImages, buttonIndex) :
-        context.roomNameList()[roomIndex(roomImages, buttonIndex)];
 }
 
 // =============================

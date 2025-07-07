@@ -303,14 +303,14 @@ class MenuWidget {
         style: TextStyle(
           color: blackColor,
           fontSize: context.menuAlertTitleFontSize(),
-          fontFamily: context.normalFont(),
+          fontFamily: context.font(),
         ),
       ),
       content: Text(context.earnMilesAfterAdDesc(earnMiles),
         style: TextStyle(
           color: blackColor,
           fontSize: context.menuAlertDescFontSize(),
-          fontFamily: context.normalFont(),
+          fontFamily: context.font(),
         ),
       ),
       actions: [
@@ -320,7 +320,7 @@ class MenuWidget {
             style: TextStyle(
               color: blackColor,
               fontSize: context.menuAlertSelectFontSize(),
-              fontFamily: context.normalFont(),
+              fontFamily: context.font(),
             ),
           ),
         ),
@@ -330,7 +330,7 @@ class MenuWidget {
             style: TextStyle(
               color: blackColor,
               fontSize: context.menuAlertSelectFontSize(),
-              fontFamily: context.normalFont(),
+              fontFamily: context.font(),
             ),
           ),
         ),

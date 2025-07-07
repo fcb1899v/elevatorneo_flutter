@@ -68,10 +68,10 @@ class AppLocalizationsKo extends AppLocalizations {
   String get notStop => '정차하지 않습니다.';
 
   @override
-  String get emergency => '엘리베이터의 상태를 확인하기 위해 긴급 정지합니다. ';
+  String get emergency => '엘리베이터 점검을 위해 비상 정지합니다. ';
 
   @override
-  String get return1st => '확인이 완료되었습니다. 1층으로 돌아갑니다.  ';
+  String get return1st => '점검이 완료되었습니다. 1층으로 돌아갑니다. ';
 
   @override
   String get bypass => '통과 층';
@@ -113,7 +113,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get rooftop => '옥상 층에 도착하셨습니다. ';
 
   @override
-  String get vip => 'VIP 룸 층에 도착하셨습니다. ';
+  String get vip => 'VIP 층에 도착하셨습니다. ';
 
   @override
   String get restaurant => '레스토랑 층에 도착하셨습니다. ';
@@ -167,13 +167,13 @@ class AppLocalizationsKo extends AppLocalizations {
   String get gym => '피트니스 짐 층에 도착하셨습니다. ';
 
   @override
-  String get sweets => '디저트 매장 층에 도착하셨습니다.';
+  String get sweets => '디저트 매장 층에 도착하셨습니다. ';
 
   @override
-  String get furniture => '가구 매장 층에 도착하셨습니다.';
+  String get furniture => '가구 매장 층에 도착하셨습니다. ';
 
   @override
-  String get cinema => '영화관 층에 도착하셨습니다.';
+  String get cinema => '영화관 층에 도착하셨습니다. ';
 
   @override
   String get nameRooftop => '옥상';

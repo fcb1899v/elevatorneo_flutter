@@ -436,8 +436,10 @@ class HomePage extends HookConsumerWidget {
     /// Manages elevator call logic and door states
     pressedWaitUp() {
       if (counter.value != currentFloor.value) {
-        isWaitingUp.value = true;
-        "pressedWaitUp: ${isWaitingDown.value}".debugPrint();
+        if (!isWaitingDown.value) {
+          isWaitingUp.value = true;
+          "pressedWaitUp: ${isWaitingDown.value}".debugPrint();
+        }
         if (isDoorState.value == openingState || isDoorState.value == openedState) {
           pressedCloseAction(true);
         } else {
@@ -452,8 +454,10 @@ class HomePage extends HookConsumerWidget {
     /// Manages elevator call logic and door states
     pressedWaitDown() {
       if (counter.value != currentFloor.value) {
-        isWaitingDown.value = true;
-        "pressedWaitDown: ${isWaitingDown.value}".debugPrint();
+        if (!isWaitingDown.value) {
+          isWaitingUp.value = true;
+          "pressedWaitDown: ${isWaitingDown.value}".debugPrint();
+        }
         if (isDoorState.value == openingState || isDoorState.value == openedState) {
           pressedCloseAction(true);
         } else {
@@ -770,7 +774,7 @@ class HomeWidget {
             text: " ${context.eVMile()}",
             style: TextStyle(
               color: lampColor,
-              fontFamily: context.normalFont(),
+              fontFamily: context.font(),
               decorationColor: whiteColor,
               fontSize: context.tooltipTitleFontSize(),
             ),
@@ -785,7 +789,7 @@ class HomeWidget {
             text: context.aboutEVMile(),
             style: TextStyle(
               color: whiteColor,
-              fontFamily: context.normalFont(),
+              fontFamily: context.font(),
               decoration: TextDecoration.none,
               fontSize: context.tooltipDescFontSize(),
             ),

@@ -47,7 +47,7 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get ground => '地面层。';
+  String get ground => '首层。';
 
   @override
   String get openDoor => '开门。';
@@ -68,13 +68,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get notStop => '本层不停。';
 
   @override
-  String get emergency => '为了检查电梯状态，将进行紧急停车。';
+  String get emergency => '检查电梯状态，紧急停车。';
 
   @override
-  String get return1st => '检查完成。返回一层。';
+  String get return1st => '检查已完成。返回一楼。';
 
   @override
-  String get bypass => '通過层';
+  String get bypass => '跳过层';
 
   @override
   String get stop => '停靠层';

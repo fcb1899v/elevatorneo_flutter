@@ -57,7 +57,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get closeDoor => 'Doors closing. ';
 
   @override
-  String get pushNumber => 'Please press destination floor';
+  String get pushNumber => 'Please press destination floor. ';
 
   @override
   String get upFloor => 'Going up. ';
@@ -69,10 +69,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get notStop => 'Sorry, this floor is restricted. ';
 
   @override
-  String get emergency => 'Emergency stop for check. ';
+  String get emergency => 'Emergency stop for inspection. ';
 
   @override
-  String get return1st => 'Check complete. Returning to first floor.';
+  String get return1st =>
+      'Elevator status check complete. Returning to the first floor. ';
 
   @override
   String get bypass => 'Bypass';

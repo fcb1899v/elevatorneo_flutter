@@ -466,7 +466,7 @@ class SettingsWidget {
       Text(title,
         style: TextStyle(
           fontSize: context.settingsAlertTitleFontSize(),
-          fontFamily: context.normalFont(),
+          fontFamily: context.font(),
           color: whiteColor,
         ),
       ),
@@ -499,7 +499,7 @@ class SettingsWidget {
       style: TextStyle(
         color: whiteColor,
         fontSize: context.settingsAppBarFontSize(),
-        fontFamily: context.normalFont(),
+        fontFamily: context.font(),
       ),
     ),
     leading: FadeTransition(
@@ -638,7 +638,7 @@ class SettingsWidget {
           child: Text(floorImageList.roomName(context, image),
             style: TextStyle(
               fontSize: context.settingsAlertFontSize(),
-              fontFamily: context.normalFont(),
+              fontFamily: context.font(),
               color: whiteColor,
             ),
           ),
@@ -668,7 +668,7 @@ class SettingsWidget {
             style: TextStyle(
               color: whiteColor,
               fontSize: context.settingsAlertFontSize(),
-              fontFamily: context.normalFont(),
+              fontFamily: context.font(),
             ),
           ),
         ]
@@ -858,7 +858,7 @@ class SettingsWidget {
             style: TextStyle(
               color: blackColor,
               fontSize: context.settingsButtonNumberFontSize(),
-              fontFamily: context.normalFont(),
+              fontFamily: context.font(),
             ),
           ),
         ),
@@ -884,7 +884,7 @@ class SettingsWidget {
             style: TextStyle(
               color: whiteColor,
               fontSize: context.settingsAlertDescFontSize(),
-              fontFamily: context.normalFont(),
+              fontFamily: context.font(),
             ),
           ),
         ),
@@ -894,7 +894,7 @@ class SettingsWidget {
             style: TextStyle(
               color: lampColor,
               fontSize: context.settingsAlertSelectFontSize(),
-              fontFamily: context.normalFont(),
+              fontFamily: context.font(),
             ),
           ),
         )
@@ -941,7 +941,7 @@ class SettingsWidget {
           style: TextStyle(
             color: whiteColor,
             fontSize: context.settingsFloorStopFontSize(),
-            fontFamily: context.normalFont(),
+            fontFamily: context.font(),
           ),
         ),
         Transform.scale(
@@ -1003,7 +1003,7 @@ class SettingsWidget {
           style: TextStyle(
             color: whiteColor,
             fontSize: context.settingsGlassFontSize(),
-            fontFamily: context.normalFont(),
+            fontFamily: context.font(),
             shadows: [
               Shadow(
                 color: blackColor,

@@ -7,6 +7,7 @@ import 'package:intl/intl.dart' as intl;
 
 import 'app_localizations_en.dart';
 import 'app_localizations_es.dart';
+import 'app_localizations_fr.dart';
 import 'app_localizations_ja.dart';
 import 'app_localizations_ko.dart';
 import 'app_localizations_zh.dart';
@@ -99,6 +100,7 @@ abstract class AppLocalizations {
   static const List<Locale> supportedLocales = <Locale>[
     Locale('en'),
     Locale('es'),
+    Locale('fr'),
     Locale('ja'),
     Locale('ko'),
     Locale('zh')
@@ -197,7 +199,7 @@ abstract class AppLocalizations {
   /// No description provided for @pushNumber.
   ///
   /// In en, this message translates to:
-  /// **'Please press destination floor'**
+  /// **'Please press destination floor. '**
   String get pushNumber;
 
   /// No description provided for @upFloor.
@@ -221,13 +223,13 @@ abstract class AppLocalizations {
   /// No description provided for @emergency.
   ///
   /// In en, this message translates to:
-  /// **'Emergency stop for check. '**
+  /// **'Emergency stop for inspection. '**
   String get emergency;
 
   /// No description provided for @return1st.
   ///
   /// In en, this message translates to:
-  /// **'Check complete. Returning to first floor.'**
+  /// **'Elevator status check complete. Returning to the first floor. '**
   String get return1st;
 
   /// No description provided for @bypass.
@@ -649,8 +651,14 @@ class _AppLocalizationsDelegate
   }
 
   @override
-  bool isSupported(Locale locale) =>
-      <String>['en', 'es', 'ja', 'ko', 'zh'].contains(locale.languageCode);
+  bool isSupported(Locale locale) => <String>[
+        'en',
+        'es',
+        'fr',
+        'ja',
+        'ko',
+        'zh'
+      ].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
@@ -663,6 +671,8 @@ AppLocalizations lookupAppLocalizations(Locale locale) {
       return AppLocalizationsEn();
     case 'es':
       return AppLocalizationsEs();
+    case 'fr':
+      return AppLocalizationsFr();
     case 'ja':
       return AppLocalizationsJa();
     case 'ko':
