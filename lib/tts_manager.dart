@@ -19,6 +19,7 @@ class TtsManager {
       (context.lang() == "zh") ? "zh-CN":
       (context.lang() == "ko") ? "ko-KR":
       (context.lang() == "es") ? "es-ES":
+      (context.lang() == "fr") ? "fr-FR":
       "en-US";
 
   /// Get Android voice name
@@ -27,6 +28,7 @@ class TtsManager {
       (context.lang() == "zh") ? "zh-CN-language":
       (context.lang() == "ko") ? "ko-KR-language":
       (context.lang() == "es") ? "es-ES-language":
+      (context.lang() == "fr") ? "fr-FR-language":
       "en-US-language";
 
   /// Get iOS voice name
@@ -35,6 +37,7 @@ class TtsManager {
       (context.lang() == "zh") ? "婷婷":
       (context.lang() == "ko") ? "유나":
       (context.lang() == "es") ? "Mónica":
+      (context.lang() == "fr") ? "Audrey":
       "Samantha";
 
   /// Get default voice name by platform
@@ -45,16 +48,17 @@ class TtsManager {
   Future<void> setTtsVoice() async {
     final voices = await flutterTts.getVoices;
     List<dynamic> localFemaleVoices = (Platform.isIOS || Platform.isMacOS) ? voices.where((voice) {
-      final isLocalMatch = voice['locale'].toString().contains(ttsLocale());
+      final isLocalMatch = voice['locale'].toString().contains(context.lang());
       final isFemale = voice['gender'].toString().contains('female');
       return isLocalMatch && isFemale;
     }).toList(): [];
     "localFemaleVoices: $localFemaleVoices".debugPrint();
     if (context.mounted) {
-      final voiceName = (localFemaleVoices.isNotEmpty) ? localFemaleVoices[0]['name']: defaultVoiceName();
-      final voiceLocale = (localFemaleVoices.isNotEmpty) ? localFemaleVoices[0]['locale']: ttsLocale();
+      final isExistDefaultVoice = localFemaleVoices.any((voice) => voice['name'] == defaultVoiceName()) || localFemaleVoices.isEmpty;
+      final voiceName = isExistDefaultVoice ? defaultVoiceName(): localFemaleVoices[0]['name'];
+      final voiceLocale = isExistDefaultVoice ? ttsLocale(): localFemaleVoices[0]['locale'];
       final result = await flutterTts.setVoice({'name': voiceName, 'locale': voiceLocale,});
-      "setVoice: $voiceName, result: $result".debugPrint();
+      "setVoice: $voiceName, setLocale: $voiceLocale, result: $result".debugPrint();
     }
   }
 

@@ -637,15 +637,6 @@ extension IntExt on int {
       (isMoving && this > nextFloor) ? buttonStyle.downArrow():
       transpImage;
 
-  // --- Hall Lamp ---
-  // Methods for managing hall lamp images
-  String hallLampImage(int currentFloor, bool isWaitingUp, bool isWaitingDown) =>
-      (this > currentFloor && isWaitingDown) ? hallLampDown:
-      (this < currentFloor && isWaitingUp) ? hallLampUp:
-      (this < currentFloor && !isWaitingUp && isWaitingDown) ? hallLampDown:
-      (this > currentFloor && isWaitingUp && !isWaitingDown) ? hallLampUp:
-      hallLampOff;
-
   // --- Speed Calculation ---
   // Methods for calculating elevator movement speed based on distance and operation count
   int elevatorSpeed(int count, int nextFloor) {

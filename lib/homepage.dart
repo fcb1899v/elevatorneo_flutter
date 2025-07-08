@@ -67,6 +67,7 @@ class HomePage extends HookConsumerWidget {
     final imageDurationTime = useState(0);                     // Animation duration for movement
     final isWaitingUp = useState(false);                       // Up button waiting state
     final isWaitingDown = useState(false);                     // Down button waiting state
+    final nextDirection = useState("none");                    // Next direction of elevator movement (none, up, down)
     final waitTime = useState(initialWaitTime);                // Wait time between actions
     final openTime = useState(initialOpenTime);                // Door open duration
     final animationController = useAnimationController(duration: Duration(milliseconds: flashTime))..repeat(reverse: true);
@@ -274,7 +275,10 @@ class HomePage extends HookConsumerWidget {
           i.trueSelected(isAboveSelectedList.value, isUnderSelectedList.value);
           if (counter.value < i && i < nextFloor.value) nextFloor.value = i;
           if (counter.value > i && i > nextFloor.value) nextFloor.value = i;
-          if (i.onlyTrue(isAboveSelectedList.value, isUnderSelectedList.value)) nextFloor.value = i;
+          if (i.onlyTrue(isAboveSelectedList.value, isUnderSelectedList.value)) {
+            nextFloor.value = i;
+            if (!isOutside.value) nextDirection.value = (counter.value < nextFloor.value) ? "up": "down";
+          }
           "currentFloor: ${currentFloor.value}, nextFloor: ${nextFloor.value}".debugPrint();
           await Future.delayed(Duration(seconds: waitTime.value)).then((_) async {
             if (!isMoving.value && !isEmergency.value && isDoorState.value == closedState) {
@@ -339,6 +343,7 @@ class HomePage extends HookConsumerWidget {
             (counter.value < nextFloor.value) ? counterUp():
             (counter.value > nextFloor.value) ? counterDown():
             (context.mounted) ? ttsManager.speakText(context.pushNumber(), !isOutside.value || currentFloor.value == counter.value): null;
+            if (counter.value == currentFloor.value) nextDirection.value = "none";
           }
         });
       }
@@ -427,6 +432,7 @@ class HomePage extends HookConsumerWidget {
       isPressedOperationButtons.value = [false, false, false];
       isOutside.value = !isOutside.value;
       "isOutside: ${isOutside.value}".debugPrint();
+      if (isOutside.value) nextDirection.value = (counter.value < nextFloor.value) ? "up": (counter.value > nextFloor.value) ? "down": "none";
       if (context.mounted) {
         imageTopMargin.value += (isOutside.value) ? - context.changeMarginTop() : context.changeMarginTop();
       }
@@ -436,10 +442,9 @@ class HomePage extends HookConsumerWidget {
     /// Manages elevator call logic and door states
     pressedWaitUp() {
       if (counter.value != currentFloor.value) {
-        if (!isWaitingDown.value) {
-          isWaitingUp.value = true;
-          "pressedWaitUp: ${isWaitingDown.value}".debugPrint();
-        }
+        isWaitingUp.value = true;
+        if (nextDirection.value == "none") nextDirection.value = "up";
+        "pressedWaitUp: ${isWaitingDown.value}".debugPrint();
         if (isDoorState.value == openingState || isDoorState.value == openedState) {
           pressedCloseAction(true);
         } else {
@@ -454,10 +459,9 @@ class HomePage extends HookConsumerWidget {
     /// Manages elevator call logic and door states
     pressedWaitDown() {
       if (counter.value != currentFloor.value) {
-        if (!isWaitingDown.value) {
-          isWaitingUp.value = true;
-          "pressedWaitDown: ${isWaitingDown.value}".debugPrint();
-        }
+        isWaitingDown.value = true;
+        if (nextDirection.value == "none") nextDirection.value = "down";
+        "pressedWaitDown: ${isWaitingDown.value}".debugPrint();
         if (isDoorState.value == openingState || isDoorState.value == openedState) {
           pressedCloseAction(true);
         } else {
@@ -565,11 +569,11 @@ class HomePage extends HookConsumerWidget {
                         ): (counter.value != currentFloor.value) ? home.hallLampLightingWidget(
                           number: counter.value,
                           current: currentFloor.value,
-                          isWaitingUp: isWaitingUp.value,
-                          isWaitingDown: isWaitingDown.value,
+                          nextDirection: nextDirection.value,
                         ): home.hallLampFlashingWidget(
                           animationController: animationController,
                           isDoorState: isDoorState.value,
+                          nextDirection: nextDirection.value,
                         ),
                         Spacer(),
                         /// Emergency button (style 2 configuration)
@@ -982,22 +986,27 @@ class HomeWidget {
   SizedBox hallLampLightingWidget({
     required int number,
     required int current,
-    required bool isWaitingUp,
-    required bool isWaitingDown,
+    required String nextDirection,
   }) => SizedBox(
     height: context.hallLampHeight(),
-    child: Image.asset(number.hallLampImage(current, isWaitingUp, isWaitingDown))
+    child: Image.asset( 
+      (nextDirection == "up") ? hallLampUp:
+      (nextDirection == "down") ? hallLampDown:
+      hallLampOff
+    )
   );
   /// Flashing hall lamp with animation control
   SizedBox hallLampFlashingWidget({
     required AnimationController animationController,
-    required List<bool> isDoorState
+    required List<bool> isDoorState,
+    required String nextDirection,
   }) => SizedBox(
     height: context.hallLampHeight(),
     child: AnimatedBuilder(
       animation: animationController,
       builder: (context, child) => Image.asset(
-        (animationController.value > 0.5 && isDoorState != closedState) ? hallLampOn : hallLampOff
+        (animationController.value < 0.5 || isDoorState == closedState) ? hallLampOff:
+        (nextDirection == "up") ? hallLampUp: hallLampDown,
       ),
     ),
   );

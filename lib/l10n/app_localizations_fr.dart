@@ -57,7 +57,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get closeDoor => 'Fermeture.';
 
   @override
-  String get pushNumber => '';
+  String get pushNumber => 'Sélectionnez votre étage.';
 
   @override
   String get upFloor => 'Montée.';
