@@ -41,7 +41,6 @@ class SettingsPage extends HookConsumerWidget {
     final floorStops = ref.watch(floorStopsProvider);
     final roomImages = ref.watch(floorImagesProvider);
     final isGamesSignIn = ref.watch(gamesSignInProvider);
-    final isConnectedInternet = ref.watch(internetProvider);
     final point = ref.watch(pointProvider);
     final buttonShape = ref.watch(buttonShapeProvider);
     final buttonStyle = ref.watch(buttonStyleProvider);
@@ -74,35 +73,49 @@ class SettingsPage extends HookConsumerWidget {
       backgroundStyle: backgroundStyle,
       glassStyle: glassStyle,
     );
-    final gamesManager = useMemoized(() => GamesManager(
-      isGamesSignIn: isGamesSignIn,
-      isConnectedInternet: isConnectedInternet
-    ));
 
-    // --- Initialization Functions ---
-    // Functions for setting up initial app state and data
-
-    /// Initialize app state including connectivity checks and data loading
-    /// Sets up initial settings data and manages loading states
-    initState() async {
-      isLoadingData.value = true;
-      try {
-        ref.read(internetProvider.notifier).state = await gamesManager.checkInternetConnection();
-        ref.read(gamesSignInProvider.notifier).state = await gamesManager.gamesSignIn();
-        ref.read(pointProvider.notifier).state = await gamesManager.getBestScore();
-        isLoadingData.value = false;
-      } catch (e) {
-        "Error: $e".debugPrint();
-        isLoadingData.value = false;
-      }
-    }
-
-    // --- Initialization Effect ---
-    // Automatic initialization and scroll management setup
+    /// --- Initialization Effect ---
+    // Initialize app state including connectivity checks and data loading
+    // Sets up initial settings data and manages loading states
     useEffect(() {
+
+      Future<void> gamesInit() async {
+        final gamesManager = GamesManager(
+          isGamesSignIn: false,
+          isConnectedInternet: false,
+        );
+        final hasInternet = await gamesManager.checkInternetConnection();
+        final updatedGamesManager = GamesManager(
+            isGamesSignIn: false,
+            isConnectedInternet: hasInternet
+        );
+        final signedIn = await updatedGamesManager.gamesSignIn();
+        final reUpdatedGamesManager = GamesManager(
+            isGamesSignIn: isGamesSignIn,
+            isConnectedInternet: hasInternet
+        );
+        final bestScore = await reUpdatedGamesManager.getBestScore();
+        ref.read(internetProvider.notifier).state = hasInternet;
+        ref.read(gamesSignInProvider.notifier).state = signedIn;
+        ref.read(pointProvider.notifier).state = bestScore;
+      }
+
+      initState() async {
+        isLoadingData.value = true;
+        try {
+          if (!isGamesSignIn) gamesInit();
+        } catch (e) {
+          "Error: $e".debugPrint();
+        } finally {
+          isLoadingData.value = false;
+        }
+      }
       WidgetsBinding.instance.addPostFrameCallback((_) async {
         await initState();
+        if (scrollController.hasClients) scrollController.jumpTo(scrollController.position.maxScrollExtent);
+        hasScrolledOnce.value = false;
       });
+
       // Control scroll position tracking
       void listener() {
         if (scrollController.offset > 10) hasScrolledOnce.value = true;
@@ -113,10 +126,9 @@ class SettingsPage extends HookConsumerWidget {
       };
     }, []);
 
-    // --- Scroll Management Functions ---
+    /// --- Scroll Management Functions ---
     // Functions for handling scroll behavior and navigation
-
-    /// Animate scroll view to top with smooth transition
+    // Animate scroll view to top with smooth transition
     void scrollToTop() {
       scrollController.animateTo(0.0,
         duration: Duration(milliseconds: flashTime),
@@ -124,30 +136,26 @@ class SettingsPage extends HookConsumerWidget {
       );
     }
 
-    // --- Settings Tab Management Effect ---
+    /// --- Settings Tab Management Effect ---
     // Handle settings tab changes and scroll behavior
     useEffect(() {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!isGamesSignIn) gamesManager.gamesSignIn();
-        if (scrollController.hasClients) {
-          scrollController.jumpTo(scrollController.position.maxScrollExtent);
-        }
+        if (scrollController.hasClients) scrollController.jumpTo(scrollController.position.maxScrollExtent);
         hasScrolledOnce.value = false;
       });
       return null;
     }, [showSettingNumber.value]);
 
-    // --- Settings Configuration Functions ---
+    /// --- Settings Configuration Functions ---
     // Functions for handling various settings changes and user interactions
-
-    /// Change active settings tab with vibration feedback
+    // Change active settings tab with vibration feedback
     void changeSelectButton(int i) {
       Vibration.vibrate(duration: vibTime, amplitude: vibAmp);
       showSettingNumber.value = i;
     }
 
-    /// Open floor image change dialog with selection options
-    /// Handles both preset images and user photo selection
+    // Open floor image change dialog with selection options
+    // Handles both preset images and user photo selection
     void openChangeImageDialog(int row, col) {
       Vibration.vibrate(duration: vibTime, amplitude: vibAmp);
       isImageOn.value[row][col] = true;
@@ -180,8 +188,8 @@ class SettingsPage extends HookConsumerWidget {
       );
     }
 
-    /// Change floor button number with validation and selection dialog
-    /// Handles floor number selection for configurable buttons
+    // Change floor button number with validation and selection dialog
+    // Handles floor number selection for configurable buttons
     void changeButtonNumber(int row, col) {
       if (!isNotSelectFloor(row, col)) {
         Vibration.vibrate(duration: vibTime, amplitude: vibAmp);
@@ -209,8 +217,8 @@ class SettingsPage extends HookConsumerWidget {
       }
     }
 
-    /// Change floor stop configuration with validation
-    /// Toggles whether elevator stops at specific floors
+    // Change floor stop configuration with validation
+    // Toggles whether elevator stops at specific floors
     Future<void> changeFloorStop(bool value, int row, col) async {
       if (!isNotSelectFloor(row, col)) {
         Vibration.vibrate(duration: vibTime, amplitude: vibAmp);
@@ -222,8 +230,8 @@ class SettingsPage extends HookConsumerWidget {
       }
     }
 
-    /// Change button style with persistence
-    /// Updates button visual style and saves to storage
+    // Change button style with persistence
+    // Updates button visual style and saves to storage
     Future<void> changeButtonStyle(int value) async {
       Vibration.vibrate(duration: vibTime, amplitude: vibAmp);
       ref.read(buttonStyleProvider.notifier).state = await imageManager.changeSettingsIntValue(
@@ -233,8 +241,8 @@ class SettingsPage extends HookConsumerWidget {
       );
     }
 
-    /// Change button shape with persistence
-    /// Updates button shape and saves to storage
+    // Change button shape with persistence
+    // Updates button shape and saves to storage
     Future<void> changeButtonShape(String value) async {
       ref.read(buttonShapeProvider.notifier).state = await imageManager.changeSettingsStringValue(
         key: "buttonShapeKey",
@@ -243,8 +251,8 @@ class SettingsPage extends HookConsumerWidget {
       );
     }
 
-    /// Change glass panel style with persistence
-    /// Toggles glass panel visibility and saves to storage
+    // Change glass panel style with persistence
+    // Toggles glass panel visibility and saves to storage
     Future<void> changeGlassStyle(bool value) async {
       Vibration.vibrate(duration: vibTime, amplitude: vibAmp);
       ref.read(glassStyleProvider.notifier).state = await imageManager.changeSettingsStringValue(
@@ -254,8 +262,8 @@ class SettingsPage extends HookConsumerWidget {
       );
     }
 
-    /// Change background style with persistence
-    /// Updates background image and saves to storage
+    // Change background style with persistence
+    // Updates background image and saves to storage
     Future<void> changeBackground(String value) async {
       Vibration.vibrate(duration: vibTime, amplitude: vibAmp);
       ref.read(backgroundStyleProvider.notifier).state = await imageManager.changeSettingsStringValue(
@@ -265,8 +273,8 @@ class SettingsPage extends HookConsumerWidget {
       );
     }
 
-    /// Handle back button press with navigation
-    /// Returns to main menu and home page
+    // Handle back button press with navigation
+    // Returns to main menu and home page
     Future<void> pressedBack() async {
       await Vibration.vibrate(duration: vibTime, amplitude: vibAmp);
       ref.read(isMenuProvider.notifier).state = false;
@@ -274,7 +282,7 @@ class SettingsPage extends HookConsumerWidget {
       if (context.mounted) context.pushFadeReplacement(HomePage());
     }
 
-    // --- UI Rendering ---
+    /// --- UI Rendering ---
     // Main settings interface structure with conditional content
     return Scaffold(
       /// App bar with animated back button and title
@@ -408,18 +416,17 @@ class SettingsWidget {
     required this.backgroundStyle,
   });
 
-  // --- Common UI Components ---
+  /// --- Common UI Components ---
   // Reusable UI elements used throughout the settings interface
-
-  /// Create divider with consistent styling
+  // Create divider with consistent styling
   Divider settingsDivider() => Divider(
     height: context.settingsDividerHeight(),
     thickness: context.settingsDividerThickness(),
     color: blackColor,
   );
 
-  /// Create lock overlay container for premium features
-  /// Displays lock icon and required points for locked features
+  // Create lock overlay container for premium features
+  // Displays lock icon and required points for locked features
   Widget settingsLockContainer({
     required double width,
     required double height,
@@ -593,7 +600,7 @@ class SettingsWidget {
       onTap: onTap,
       child: CommonWidget(context).flashButton(
         animationController: animation,
-        isUp: false,
+        isUp: true,
       )
     ),
   );
@@ -792,10 +799,9 @@ class SettingsWidget {
     ),
   ]);
 
-  // --- Floor Number Configuration Components ---
+  /// --- Floor Number Configuration Components ---
   // UI components for floor number and stop configuration
-
-  /// Create floor number configuration grid with stop toggles
+  // Create floor number configuration grid with stop toggles
   Widget settingsFloorNumberWidget({
     required List<List<bool>> isButtonOn,
     required void Function(int, int) changeButtonNumber,
@@ -843,7 +849,7 @@ class SettingsWidget {
     ),
   ]);
 
-  /// Create floor button image with number display
+  // Create floor button image with number display
   Widget settingsFloorButtonImage({
     required String number,
     required String image,
@@ -866,7 +872,7 @@ class SettingsWidget {
     ),
   );
 
-  /// Open floor number selection dialog with picker
+  // Open floor number selection dialog with picker
   void floorNumberSelectDialog(int row, col, {
     required void Function(int) select,
     required void Function() ok,
@@ -902,7 +908,7 @@ class SettingsWidget {
     ),
   ).then((_) => then());
 
-  /// Create floor number picker content with scrollable list
+  // Create floor number picker content with scrollable list
   Widget settingsFloorNumberContent(int row, col, {
     required void Function(int) onSelectedItemChanged,
   }) => Container(
@@ -930,7 +936,7 @@ class SettingsWidget {
     ),
   );
 
-  /// Create floor stop toggle widget with switch control
+  // Create floor stop toggle widget with switch control
   Widget settingsFloorStopToggleWidget(int row, col, {
     required void Function(bool, int, int) changeFloorStopFlag,
   }) => Container(
@@ -958,10 +964,9 @@ class SettingsWidget {
     ),
   );
 
-  // --- Background and Glass Components ---
+  /// --- Background and Glass Components ---
   // UI components for background and glass panel settings
-
-  /// Create background selection grid with preview
+  // Create background selection grid with preview
   Widget settingsBackgroundSelectWidget({
     required void Function(String) onTap
   }) => Column(mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -992,7 +997,7 @@ class SettingsWidget {
     ]
   );
 
-  /// Create glass panel toggle with switch control
+  // Create glass panel toggle with switch control
   Widget settingsGlassToggleWidget({
     required void Function(bool) onChanged,
   }) => Column(children: [

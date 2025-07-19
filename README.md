@@ -18,7 +18,7 @@ It provides a practical and enjoyable experience through Game Center and Google 
 - **Realistic Elevator Operation**: Authentic elevator-like operation experience
 - **Cross-platform Support**: Android & iOS compatibility
 - **Game Center Integration**: Leaderboards & achievements
-- **Multi-language Support**: Japanese, English, Korean, Chinese, Spanish
+- **Multi-language Support**: Japanese, English, Korean, Chinese, Spanish, French
 - **Google Mobile Ads**: Banner ads & rewarded ads
 - **Firebase Integration**: Analytics, App Check
 - **Audio & Vibration Feedback**: Realistic operation feel
@@ -33,7 +33,7 @@ It provides a practical and enjoyable experience through Game Center and Google 
 - **Google Mobile Ads**: Advertisement display
 
 ### Core Features
-- **Audio**: audioplayers
+- **Audio**: just_audio
 - **Text-to-Speech**: flutter_tts
 - **Vibration**: vibration
 - **Localization**: flutter_localizations
@@ -94,36 +94,39 @@ flutter run
 
 ```
 lib/
-├── main.dart              # Application entry point
-├── homepage.dart          # Main page
-├── menu.dart              # Menu page
-├── settings.dart          # Settings page
-├── games_manager.dart     # Game services management
-├── sound_manager.dart     # Audio management
-├── image_manager.dart     # Image management
-├── admob_interstitial.dart # Interstitial advertisement management
-├── admob_banner.dart      # Banner advertisement management
-├── common_widget.dart     # Common widgets
-├── constant.dart          # Constant definitions
-├── extension.dart         # Extension functions
-├── firebase_options.dart  # Firebase configuration
-└── l10n/                  # Localization
+├── main.dart                    # Application entry point
+├── homepage.dart                # Main page
+├── menu.dart                    # Menu page
+├── settings.dart                # Settings page
+├── games_manager.dart           # Game services management
+├── audio_manager.dart           # Audio management
+├── tts_manager.dart             # Text-to-speech management
+├── image_manager.dart           # Image management
+├── photo_manager.dart           # Photo management
+├── admob_interstitial.dart      # Interstitial advertisement management
+├── admob_banner.dart            # Banner advertisement management
+├── common_widget.dart           # Common widgets
+├── constant.dart                # Constant definitions
+├── extension.dart               # Extension functions
+├── firebase_options.dart        # Firebase configuration
+└── l10n/                        # Localization
     ├── app_en.arb
     ├── app_ja.arb
     ├── app_ko.arb
     ├── app_zh.arb
-    └── app_es.arb
+    ├── app_es.arb
+    └── app_fr.arb
 
 assets/
-├── images/                # Image resources
-│   ├── menu/             # Menu images
-│   ├── button/           # Button images
-│   ├── elevator/         # Elevator images
-│   ├── room/             # Room background images
-│   └── settings/         # Settings screen images
-├── audios/               # Audio files
-├── fonts/                # Font files
-└── icon/                 # App icons
+├── images/                      # Image resources
+│   ├── menu/                   # Menu images
+│   ├── button/                 # Button images
+│   ├── elevator/               # Elevator images
+│   ├── room/                   # Room background images
+│   └── settings/               # Settings screen images
+├── audios/                     # Audio files
+├── fonts/                      # Font files
+└── icon/                       # App icons
 ```
 
 ## 🎨 Customization
@@ -217,7 +220,7 @@ This app uses the following open-source libraries:
 - shared_preferences (BSD 3-Clause License)
 - flutter_dotenv (MIT License)
 - flutter_tts (BSD 3-Clause License)
-- audioplayers (MIT License)
+- just_audio (MIT License)
 - vibration (MIT License)
 - games_services (MIT License)
 - hooks_riverpod, flutter_hooks (MIT License)

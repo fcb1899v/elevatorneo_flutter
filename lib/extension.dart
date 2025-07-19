@@ -14,7 +14,7 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:letselevatorneo/audio_manager.dart';
+import 'audio_manager.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vibration/vibration.dart';
 import 'l10n/app_localizations.dart' show AppLocalizations;
@@ -129,7 +129,7 @@ extension ContextExt on BuildContext {
   // --- Navigation & UI Basics ---
   // Core navigation and UI utility methods for screen management and responsive design
   void pushFadeReplacement(Widget page) {
-    AudioManager().playEffectSound(index: 0, asset: changeSound, volume: 1.0);
+    AudioManager().playEffectSound(asset: changeSound, volume: 1.0);
     Navigator.pushAndRemoveUntil(this, PageRouteBuilder(
       pageBuilder: (_, animation, __) => page,
       transitionsBuilder: (_, animation, __, child) => FadeTransition(
@@ -911,7 +911,7 @@ extension BoolExt on bool {
   // --- Menu Interaction ---
   // Methods for handling menu interactions with sound and vibration feedback
   Future<bool> pressedMenu() async {
-    await AudioManager().playEffectSound(index: 0, asset: selectSound, volume: 1.0);
+    await AudioManager().playEffectSound(asset: selectSound, volume: 1.0);
     await Vibration.vibrate(duration: vibTime, amplitude: vibAmp);
     return !this;
   }

@@ -1,0 +1,14 @@
+/* 
+  InfoPlist.strings
+  Runner
+
+  Created by 中島正雄 on 2021/07/17.
+  
+*/
+
+CFBundleName = "LETS ELEVATOR NEO";
+CFBundleDisplayName = "LETS ELEVATOR NEO";
+NSUserTrackingUsageDescription = "Cette application fonctionne uniquement grâce aux revenus publicitaires car elle est développée par une personne indépendante. Appuyez sur 'Autoriser' pour donner votre consentement et voir des publicités adaptées à vos centres d’intérêt.";
+NSLocalNetworkUsageDescription = "Cette application nécessite un accès au réseau local pour récupérer correctement l’audio. Appuyez sur 'Autoriser' pour accorder l’accès.";
+NSPhotoLibraryUsageDescription = "Cette application vous permet de choisir des photos depuis votre bibliothèque pour personnaliser les images des étages. L’accès est nécessaire pour cette fonctionnalité. Les images restent sur votre appareil et ne sont jamais partagées ni envoyées ailleurs. Appuyez sur 'Autoriser' pour accorder l’accès. Vous pouvez le révoquer à tout moment dans les réglages.";
+

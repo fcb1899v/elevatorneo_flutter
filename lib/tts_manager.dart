@@ -98,6 +98,5 @@ class TtsManager {
     if (context.mounted) await setTtsVoice();
     await flutterTts.setVolume(1);
     await flutterTts.setSpeechRate(0.5);
-    if (context.mounted) speakText(context.pushNumber(), true);
   }
 } 

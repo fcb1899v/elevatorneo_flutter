@@ -27,24 +27,50 @@ class GamesManager {
 
   /// Check internet connectivity with timeout and fallback
   Future<bool> checkInternetConnection() async {
-    final Duration timeout = const Duration(seconds: 5);
-    final connectivity = await Connectivity().checkConnectivity();
-    if (connectivity == ConnectivityResult.none) return false;
+    final Duration timeout = const Duration(seconds: 10);
+    // Log connectivity result but don't rely on it for decision
     try {
+      final connectivity = await Connectivity().checkConnectivity();
+      "Connectivity result: $connectivity".debugPrint();
+    } catch (e) {
+      "Connectivity check failed: $e".debugPrint();
+    }
+    // Perform direct connection test
+    try {
+      "Attempting socket connection to 1.1.1.1:53...".debugPrint();
+      final stopwatch = Stopwatch()..start();
       final socket = await Socket.connect('1.1.1.1', 53, timeout: timeout);
       socket.destroy();
+      stopwatch.stop();
+      "Socket connection successful in ${stopwatch.elapsedMilliseconds}ms".debugPrint();
       return true;
     } on SocketException catch (e) {
       "SocketException: $e".debugPrint();
-    }
-    try {
-      final res = await InternetAddress.lookup('example.com').timeout(timeout);
-      return res.isNotEmpty && res[0].rawAddress.isNotEmpty;
     } on TimeoutException catch (e) {
-      "TimeoutException: $e".debugPrint();
+      "Socket TimeoutException: $e".debugPrint();
+    } catch (e) {
+      "Socket connection failed with unknown error: $e".debugPrint();
+    }
+    // Fallback: DNS resolution test
+    try {
+      "Attempting DNS lookup for example.com...".debugPrint();
+      final stopwatch = Stopwatch()..start();
+      final res = await InternetAddress.lookup('example.com').timeout(timeout);
+      stopwatch.stop();
+      final result = res.isNotEmpty && res[0].rawAddress.isNotEmpty;
+      "DNS lookup result: $result in ${stopwatch.elapsedMilliseconds}ms".debugPrint();
+      if (result) {
+        "Resolved addresses: ${res.map((addr) => addr.address).join(', ')}".debugPrint();
+      }
+      return result;
+    } on TimeoutException catch (e) {
+      "DNS TimeoutException: $e".debugPrint();
       return false;
     } on SocketException catch (e) {
-      "SocketException: $e".debugPrint();
+      "DNS SocketException: $e".debugPrint();
+      return false;
+    } catch (e) {
+      "DNS lookup failed with unknown error: $e".debugPrint();
       return false;
     }
   }
