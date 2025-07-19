@@ -120,12 +120,12 @@ final List<bool> allPressed = [true, true, true];
 
 /// Audio configuration
 /// Sound file paths for various elevator operations
-const String selectSound = "audios/kako.mp3";
-const String cancelSound = "audios/hi.mp3";
-const String changeSound = "audios/popi.mp3";
-const String callSound   = "audios/call.mp3";
-const String openSound   = "audios/pingpong.mp3";
-const String closeSound  = "audios/ping.mp3";
+const String selectSound = "assets/audios/kako.mp3";
+const String cancelSound = "assets/audios/hi.mp3";
+const String changeSound = "assets/audios/popi.mp3";
+const String callSound   = "assets/audios/call.mp3";
+const String openSound   = "assets/audios/pingpong.mp3";
+const String closeSound  = "assets/audios/ping.mp3";
 
 // =============================================================================
 // FONT CONFIGURATION
