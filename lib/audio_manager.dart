@@ -43,5 +43,4 @@ class AudioManager {
       'Stop audio failed: $e'.debugPrint();
     }
   }
-
 } 

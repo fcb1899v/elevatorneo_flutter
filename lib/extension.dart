@@ -16,7 +16,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'audio_manager.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:vibration/vibration.dart';
 import 'l10n/app_localizations.dart' show AppLocalizations;
 import 'constant.dart';
 
@@ -907,14 +906,6 @@ extension BoolExt on bool {
   double operationTopMarginShapeFactor() => this ? 3: 1.6;
   double operationSideMarginShapeFactor() => this ? 1.8: 0.8;
   double emergencyBottomMarginShapeFactor() => this ? 1.8: 0.8;
-
-  // --- Menu Interaction ---
-  // Methods for handling menu interactions with sound and vibration feedback
-  Future<bool> pressedMenu() async {
-    await AudioManager().playEffectSound(asset: selectSound, volume: 1.0);
-    await Vibration.vibrate(duration: vibTime, amplitude: vibAmp);
-    return !this;
-  }
 }
 
 // =============================
@@ -928,6 +919,12 @@ extension ListBoolExt on List<bool> {
     this[0].openBackGround(buttonStyle),
     this[1].closeBackGround(buttonStyle),
     this[2].phoneBackGround(buttonStyle),
+  ];
+
+  List<bool> setOperationButtonLamp(bool isOn, int i) => [
+    (i == 0) ? isOn: this[0],
+    (i == 1) ? isOn: this[1],
+    (i == 2) ? isOn: this[2],
   ];
 }
 

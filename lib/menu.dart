@@ -182,36 +182,38 @@ class MenuPage extends HookConsumerWidget {
     // --- UI Rendering ---
     // Main menu interface structure
     return Scaffold(
-      body: Stack(alignment: Alignment.topCenter,
-        children: [
-          /// Background image for menu
-          common.commonBackground(menuBackGroundImage),
-          /// Main menu content layout
-          Column(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Spacer(flex: 1),
-              /// Menu button grid (Settings, Rewarded Ad, Leaderboard)
-              ...List.generate(3, (i) =>
-                GestureDetector(
-                  onTap: () async => await pressedMenuLink(i),
-                  child: menu.menuButton(i),
+      body: SafeArea(
+        child: Stack(alignment: Alignment.topCenter,
+          children: [
+            /// Background image for menu
+            common.commonBackground(menuBackGroundImage),
+            /// Main menu content layout
+            Column(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Spacer(flex: 1),
+                /// Menu button grid (Settings, Rewarded Ad, Leaderboard)
+                ...List.generate(3, (i) =>
+                  GestureDetector(
+                    onTap: () async => await pressedMenuLink(i),
+                    child: menu.menuButton(i),
+                  ),
                 ),
-              ),
-              Spacer(flex: 1),
-              /// Bottom navigation with external links
-              menu.bottomMenuLink(),
-              /// AdMob banner space reservation
-              Container(
-                height: context.admobHeight(),
-                color: blackColor,
-              )
-            ]
-          ),
-          /// Loading indicator during data initialization
-          if (isLoadingData.value) common.commonCircularProgressIndicator(),
-        ]
+                Spacer(flex: 1),
+                /// Bottom navigation with external links
+                menu.bottomMenuLink(),
+                /// AdMob banner space reservation
+                Container(
+                  height: context.admobHeight(),
+                  color: blackColor,
+                )
+              ]
+            ),
+            /// Loading indicator during data initialization
+            if (isLoadingData.value) common.commonCircularProgressIndicator(),
+          ]
+        ),
       ),
     );
   }

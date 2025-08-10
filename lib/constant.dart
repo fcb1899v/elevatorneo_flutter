@@ -3,6 +3,8 @@ import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
+import 'main.dart';
+
 // =============================================================================
 // APPLICATION CONFIGURATION
 // =============================================================================
@@ -31,7 +33,8 @@ String rewardAdUnitID =
 /// Minimum and maximum floor numbers, and initial floor position
 const int min = -6;
 const int max = 163;
-const int initialFloor = 2;
+int initialFloor = isTest ? max: 2;
+int initialCurrent = isTest ? max: 1;
 
 /// Initial floor button configuration
 /// List of floor numbers displayed on elevator buttons
@@ -94,6 +97,7 @@ const int toolTipTime = 10000; //[msec]
 const int initialOpenTime = 10; //[sec]
 const int initialWaitTime =  2; //[sec]
 const int flashTime = 700;      //[msec]
+const int operationTime = 300;  //[msec]
 
 // =============================================================================
 // ELEVATOR STATE MANAGEMENT

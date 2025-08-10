@@ -237,6 +237,6 @@ This app uses the following open-source libraries:
 - permission_handler (Apache License 2.0)
 - connectivity_plus (Apache License 2.0)
 - app_tracking_transparency (MIT License)
-- path_provider (BSD 3-Clause License)
+- path_provider (BSD 3-Cl[README.md](README.md)ause License)
 
 For details of each license, please refer to [pub.dev](https://pub.dev/) or the LICENSE file in each repository.

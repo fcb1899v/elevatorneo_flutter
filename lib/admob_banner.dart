@@ -18,11 +18,12 @@ class AdBannerWidget extends HookWidget {
     // final testIdentifiers = ['2793ca2a-5956-45a2-96c0-16fafddc1a15'];
 
     // バナー広告ID
-    String bannerUnitId() =>
-      (!kDebugMode && (Platform.isIOS || Platform.isMacOS)) ? dotenv.get("IOS_BANNER_UNIT_ID"):
-      (Platform.isIOS || Platform.isMacOS) ? dotenv.get("IOS_BANNER_TEST_ID"):
-      (!kDebugMode) ? dotenv.get("ANDROID_BANNER_UNIT_ID"):
-      dotenv.get("ANDROID_BANNER_TEST_ID");
+    String bannerUnitId() => dotenv.get(
+      (!kDebugMode && (Platform.isIOS || Platform.isMacOS)) ? "IOS_BANNER_UNIT_ID":
+      (Platform.isIOS || Platform.isMacOS) ? "IOS_BANNER_TEST_ID":
+      (!kDebugMode) ? "ANDROID_BANNER_UNIT_ID":
+      "ANDROID_BANNER_TEST_ID"
+    );
 
     Future<void> loadAdBanner() async {
       final adBanner = BannerAd(

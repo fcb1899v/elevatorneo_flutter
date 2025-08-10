@@ -9,6 +9,7 @@ import 'dart:async';
 import 'dart:io';
 import 'package:app_tracking_transparency/app_tracking_transparency.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -47,13 +48,14 @@ final gamesSignInProvider = StateProvider<bool>((ref) => false);
 final internetProvider = StateProvider<bool>((ref) => false);
 final pointProvider = StateProvider<int>((ref) => 0);
 
-// --- Application Initialization ---
+/// --- Application Initialization ---
 // Main entry point that handles all app setup and initialization
 // Sets up UI configuration, loads user preferences, initializes Firebase,
 // and launches the app with proper state management
 Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  // --- UI Configuration ---
+  final widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+  FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
+  /// --- UI Configuration ---
   // Configure system UI, orientation, and platform-specific styling  
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
@@ -70,20 +72,21 @@ Future<void> main() async {
       systemNavigationBarIconBrightness: Brightness.light,
     ));
   }
-  // --- Environment and Data Loading ---
+  /// --- Environment and Data Loading ---
   // Load environment variables and restore user preferences from SharedPreferences
   await dotenv.load(fileName: "assets/.env");
   final prefs = await SharedPreferences.getInstance();
+  // Load saved user preferences and current date
   final savedFloorNumbers = "numbersKey".getSharedPrefListInt(prefs, initialFloorNumbers);
   final savedFloorStops = "stopsKey".getSharedPrefListBool(prefs, initialFloorStops);
   final savedButtonShape = "buttonShapeKey".getSharedPrefString(prefs, initialButtonShape);
   final savedButtonStyle = "buttonStyleKey".getSharedPrefInt(prefs, initialButtonStyle);
   final savedBackgroundStyle = "backgroundStyleKey".getSharedPrefString(prefs, initialBackgroundStyle);
   final savedGlassStyle = "glassStyleKey".getSharedPrefString(prefs, initialGlassStyle);
-  // --- Firebase Initialization ---
+  /// --- Firebase Initialization ---
   // Initialize Firebase services with platform-specific configuration
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  // --- App Launch ---
+  /// --- App Launch ---
   // Launch the app with saved preferences and initial state overrides
   runApp(ProviderScope(
     overrides: [
@@ -97,9 +100,9 @@ Future<void> main() async {
       gamesSignInProvider.overrideWith((ref) => false),
       pointProvider.overrideWith((ref) => 0),
     ],
-    child: const MyApp())
-  );
-  // --- Post-Launch Services ---
+    child: const MyApp()
+  ));
+  /// --- Post-Launch Services ---
   // Initialize additional services after app launch (Firebase App Check, ads, tracking)
   await FirebaseAppCheck.instance.activate(
     androidProvider: androidProvider,
@@ -109,7 +112,7 @@ Future<void> main() async {
   await initATTPlugin();
 }
 
-// --- Main Application Widget ---
+/// --- Main Application Widget ---
 // Root MaterialApp widget that configures the entire application
 // Sets up localization, routing, theme, and navigation tracking
 class MyApp extends StatelessWidget {
@@ -120,16 +123,16 @@ class MyApp extends StatelessWidget {
       data: MediaQuery.of(context).copyWith(textScaler: const TextScaler.linear(1)),
       child: child!,
     ),
-    // --- Localization ---
+    /// --- Localization ---
     // Multi-language support configuration
     localizationsDelegates: AppLocalizations.localizationsDelegates,
     supportedLocales: AppLocalizations.supportedLocales,
-    // --- App Configuration ---
+    /// --- App Configuration ---
     // Basic app settings and theme
     title: appTitle,
     theme: ThemeData(primarySwatch: Colors.grey),
     debugShowCheckedModeBanner: false,
-    // --- Routing ---
+    /// --- Routing ---
     // Navigation routes to different app screens
     initialRoute: "/h",
     routes: {
@@ -137,7 +140,7 @@ class MyApp extends StatelessWidget {
       "/m": (context) => const MenuPage(),    // Menu
       "/s": (context) => const SettingsPage(), // Settings
     },
-    // --- Navigation Observers ---
+    /// --- Navigation Observers ---
     // Track navigation for analytics and debugging
     navigatorObservers: <NavigatorObserver>[
       FirebaseAnalyticsObserver(analytics: FirebaseAnalytics.instance),
@@ -145,8 +148,7 @@ class MyApp extends StatelessWidget {
     ],
   );
 }
-
-// --- Privacy and Tracking ---
+/// --- Privacy and Tracking ---
 // App Tracking Transparency implementation for iOS/macOS
 // Requests user permission for app tracking on supported platforms
 Future<void> initATTPlugin() async {
