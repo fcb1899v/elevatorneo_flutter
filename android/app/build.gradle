@@ -56,7 +56,7 @@ android {
 
     defaultConfig {
         applicationId "nakajimamasao.appstudio.letselevatorneo"
-        minSdkVersion 23
+        minSdkVersion flutter.minSdkVersion
         targetSdkVersion 36
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
@@ -86,7 +86,7 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     // ───────────────────── Firebase ─────────────────────
     implementation platform("com.google.firebase:firebase-bom:33.16.0")
-    implementation "com.google.firebase:firebase-analytics-ktx"
+    implementation "com.google.firebase:firebase-analytics-ktx:22.5.0"
     implementation "com.google.firebase:firebase-appcheck-playintegrity"
     // ────────── Google Play Services  (BOM 23.4.0) ──────────
     implementation 'com.google.android.gms:play-services-games-v2:21.0.0'

@@ -95,9 +95,9 @@ class SettingsPage extends HookConsumerWidget {
             isConnectedInternet: hasInternet
         );
         final bestScore = await reUpdatedGamesManager.getBestScore();
-        ref.read(internetProvider.notifier).state = hasInternet;
-        ref.read(gamesSignInProvider.notifier).state = signedIn;
-        ref.read(pointProvider.notifier).state = bestScore;
+        ref.read(internetProvider.notifier).setValue(hasInternet);
+        ref.read(gamesSignInProvider.notifier).setValue(signedIn);
+        ref.read(pointProvider.notifier).setValue(bestScore);
       }
 
       initState() async {
@@ -164,21 +164,21 @@ class SettingsPage extends HookConsumerWidget {
         onChanged: (String? newValue, int row, int col) async {
           if (newValue != null) {
             Vibration.vibrate(duration: vibTime, amplitude: vibAmp);
-            ref.read(floorImagesProvider.notifier).state = await imageManager.saveImagePath(
+            ref.read(floorImagesProvider.notifier).setValue(await imageManager.saveImagePath(
               currentList: roomImages,
               newIndex: buttonIndex(row, col),
               newValue: newValue
-            );
+            ));
           }
           if (context.mounted) context.popPage();
         },
         onChangedMyPhoto: (row, col) async {
           Vibration.vibrate(duration: vibTime, amplitude: vibAmp);
-          ref.read(floorImagesProvider.notifier).state = await photoManager.selectMyPhoto(
+          ref.read(floorImagesProvider.notifier).setValue(await photoManager.selectMyPhoto(
             row: row,
             col: col,
             currentList: roomImages
-          );
+          ));
           if (context.mounted) context.popPage();
         },
         then: (row, col) {
@@ -202,11 +202,11 @@ class SettingsPage extends HookConsumerWidget {
           },
           ok: () async {
             Vibration.vibrate(duration: vibTime, amplitude: vibAmp);
-            ref.read(floorNumbersProvider.notifier).state = await imageManager.saveFloorNumber(
+            ref.read(floorNumbersProvider.notifier).setValue(await imageManager.saveFloorNumber(
               currentList: floorNumbers,
               newIndex: reversedButtonIndex[row][col],
               newValue: selectedNumber.value
-            );
+            ));
             if (context.mounted) context.popPage();
           },
           then: () async {
@@ -222,11 +222,11 @@ class SettingsPage extends HookConsumerWidget {
     Future<void> changeFloorStop(bool value, int row, col) async {
       if (!isNotSelectFloor(row, col)) {
         Vibration.vibrate(duration: vibTime, amplitude: vibAmp);
-        ref.read(floorStopsProvider.notifier).state = await imageManager.saveFloorStops(
+        ref.read(floorStopsProvider.notifier).setValue(await imageManager.saveFloorStops(
           currentList: floorStops,
           newIndex: reversedButtonIndex[row][col],
           newValue: value
-        );
+        ));
       }
     }
 
@@ -234,51 +234,51 @@ class SettingsPage extends HookConsumerWidget {
     // Updates button visual style and saves to storage
     Future<void> changeButtonStyle(int value) async {
       Vibration.vibrate(duration: vibTime, amplitude: vibAmp);
-      ref.read(buttonStyleProvider.notifier).state = await imageManager.changeSettingsIntValue(
+      ref.read(buttonStyleProvider.notifier).setValue(await imageManager.changeSettingsIntValue(
         key: "buttonStyleKey",
         current: buttonStyle,
         next: value
-      );
+      ));
     }
 
     // Change button shape with persistence
     // Updates button shape and saves to storage
     Future<void> changeButtonShape(String value) async {
-      ref.read(buttonShapeProvider.notifier).state = await imageManager.changeSettingsStringValue(
+      ref.read(buttonShapeProvider.notifier).setValue(await imageManager.changeSettingsStringValue(
         key: "buttonShapeKey",
         current: buttonShape,
         next: value,
-      );
+      ));
     }
 
     // Change glass panel style with persistence
     // Toggles glass panel visibility and saves to storage
     Future<void> changeGlassStyle(bool value) async {
       Vibration.vibrate(duration: vibTime, amplitude: vibAmp);
-      ref.read(glassStyleProvider.notifier).state = await imageManager.changeSettingsStringValue(
+      ref.read(glassStyleProvider.notifier).setValue(await imageManager.changeSettingsStringValue(
         key: "glassStyleKey",
         current: glassStyle,
         next: value ? "use": "non"
-      );
+      ));
     }
 
     // Change background style with persistence
     // Updates background image and saves to storage
     Future<void> changeBackground(String value) async {
       Vibration.vibrate(duration: vibTime, amplitude: vibAmp);
-      ref.read(backgroundStyleProvider.notifier).state = await imageManager.changeSettingsStringValue(
+      ref.read(backgroundStyleProvider.notifier).setValue(await imageManager.changeSettingsStringValue(
         key: "backgroundStyleKey",
         current: backgroundStyle,
         next: value
-      );
+      ));
     }
 
     // Handle back button press with navigation
     // Returns to main menu and home page
     Future<void> pressedBack() async {
       await Vibration.vibrate(duration: vibTime, amplitude: vibAmp);
-      ref.read(isMenuProvider.notifier).state = false;
-      ref.read(isMenuProvider.notifier).state = false;
+      ref.read(isMenuProvider.notifier).setValue(false);
+      ref.read(isMenuProvider.notifier).setValue(false);
       if (context.mounted) context.pushFadeReplacement(HomePage());
     }
 

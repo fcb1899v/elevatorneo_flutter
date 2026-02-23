@@ -116,8 +116,8 @@ class MenuPage extends HookConsumerWidget {
       isLoadingData.value = true;
       try {
         loadRewardedAd();
-        ref.read(internetProvider.notifier).state = await gamesManager.checkInternetConnection();
-        ref.read(gamesSignInProvider.notifier).state = await gamesManager.gamesSignIn();
+        ref.read(internetProvider.notifier).setValue(await gamesManager.checkInternetConnection());
+        ref.read(gamesSignInProvider.notifier).setValue(await gamesManager.gamesSignIn());
         isLoadingData.value = false;
       } catch (e) {
         "Error: $e".debugPrint();
@@ -145,8 +145,8 @@ class MenuPage extends HookConsumerWidget {
         final prefs = await SharedPreferences.getInstance();
         'rewardEarned: ${reward.type}, rewardAmount: ${reward.amount}'.debugPrint();
         final addPoint = (earnMilesInt > reward.amount.toInt()) ? earnMilesInt: reward.amount.toInt();
-        ref.read(pointProvider.notifier).update((p) => p + addPoint);
-        final newPoint = ref.read(pointProvider.notifier).state;
+        ref.read(pointProvider.notifier).add(addPoint);
+        final newPoint = ref.read(pointProvider);
         "pointKey".setSharedPrefInt(prefs, newPoint);
         await gamesManager.gamesSubmitScore(newPoint);
         loadRewardedAd();

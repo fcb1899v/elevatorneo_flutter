@@ -32,21 +32,110 @@ final isTest = false;
 // final isTest = true;
 
 // --- State Providers ---
-// Riverpod providers for global state management across the application
-// Includes UI state (menu visibility, view modes), elevator configuration (floors, buttons, styles),
-// user preferences, and system state (connectivity, game center, points)
-final isMenuProvider = StateProvider<bool>((ref) => false);
-final floorNumbersProvider = StateProvider<List<int>>((ref) => initialFloorNumbers);
-final floorStopsProvider = StateProvider<List<bool>>((ref) => initialFloorStops);
-final floorImagesProvider = StateProvider<List<String>>((ref) => initialFloorImages);
-final buttonShapeProvider = StateProvider<String>((ref) => initialButtonShape);
-final buttonStyleProvider = StateProvider<int>((ref) => initialButtonStyle);
-final backgroundStyleProvider = StateProvider<String>((ref) => initialBackgroundStyle);
-final glassStyleProvider = StateProvider<String>((ref) => initialGlassStyle);
-final outsideProvider = StateProvider<bool>((ref) => true);
-final gamesSignInProvider = StateProvider<bool>((ref) => false);
-final internetProvider = StateProvider<bool>((ref) => false);
-final pointProvider = StateProvider<int>((ref) => 0);
+// Riverpod 3: NotifierProvider for mutable state (StateProvider was removed)
+
+final isMenuProvider = NotifierProvider<IsMenuNotifier, bool>(IsMenuNotifier.new);
+final floorNumbersProvider = NotifierProvider<FloorNumbersNotifier, List<int>>(FloorNumbersNotifier.new);
+final floorStopsProvider = NotifierProvider<FloorStopsNotifier, List<bool>>(FloorStopsNotifier.new);
+final floorImagesProvider = NotifierProvider<FloorImagesNotifier, List<String>>(FloorImagesNotifier.new);
+final buttonShapeProvider = NotifierProvider<ButtonShapeNotifier, String>(ButtonShapeNotifier.new);
+final buttonStyleProvider = NotifierProvider<ButtonStyleNotifier, int>(ButtonStyleNotifier.new);
+final backgroundStyleProvider = NotifierProvider<BackgroundStyleNotifier, String>(BackgroundStyleNotifier.new);
+final glassStyleProvider = NotifierProvider<GlassStyleNotifier, String>(GlassStyleNotifier.new);
+final outsideProvider = NotifierProvider<OutsideNotifier, bool>(OutsideNotifier.new);
+final gamesSignInProvider = NotifierProvider<GamesSignInNotifier, bool>(GamesSignInNotifier.new);
+final internetProvider = NotifierProvider<InternetNotifier, bool>(InternetNotifier.new);
+final pointProvider = NotifierProvider<PointNotifier, int>(PointNotifier.new);
+
+class IsMenuNotifier extends Notifier<bool> {
+  @override
+  bool build() => false;
+  void setValue(bool value) => state = value;
+}
+
+class FloorNumbersNotifier extends Notifier<List<int>> {
+  final List<int>? _override;
+  FloorNumbersNotifier([this._override]);
+  @override
+  List<int> build() => _override ?? initialFloorNumbers;
+  void setValue(List<int> value) => state = value;
+}
+
+class FloorStopsNotifier extends Notifier<List<bool>> {
+  final List<bool>? _override;
+  FloorStopsNotifier([this._override]);
+  @override
+  List<bool> build() => _override ?? initialFloorStops;
+  void setValue(List<bool> value) => state = value;
+}
+
+class FloorImagesNotifier extends Notifier<List<String>> {
+  @override
+  List<String> build() => initialFloorImages;
+  void setValue(List<String> value) => state = value;
+}
+
+class ButtonShapeNotifier extends Notifier<String> {
+  final String? _override;
+  ButtonShapeNotifier([this._override]);
+  @override
+  String build() => _override ?? initialButtonShape;
+  void setValue(String value) => state = value;
+}
+
+class ButtonStyleNotifier extends Notifier<int> {
+  final int? _override;
+  ButtonStyleNotifier([this._override]);
+  @override
+  int build() => _override ?? initialButtonStyle;
+  void setValue(int value) => state = value;
+}
+
+class BackgroundStyleNotifier extends Notifier<String> {
+  final String? _override;
+  BackgroundStyleNotifier([this._override]);
+  @override
+  String build() => _override ?? initialBackgroundStyle;
+  void setValue(String value) => state = value;
+}
+
+class GlassStyleNotifier extends Notifier<String> {
+  final String? _override;
+  GlassStyleNotifier([this._override]);
+  @override
+  String build() => _override ?? initialGlassStyle;
+  void setValue(String value) => state = value;
+}
+
+class OutsideNotifier extends Notifier<bool> {
+  @override
+  bool build() => true;
+}
+
+class GamesSignInNotifier extends Notifier<bool> {
+  final bool? _override;
+  GamesSignInNotifier([this._override]);
+  @override
+  bool build() => _override ?? false;
+  void setValue(bool value) => state = value;
+}
+
+class InternetNotifier extends Notifier<bool> {
+  final bool? _override;
+  InternetNotifier([this._override]);
+  @override
+  bool build() => _override ?? false;
+  void setValue(bool value) => state = value;
+}
+
+class PointNotifier extends Notifier<int> {
+  final int? _override;
+  PointNotifier([this._override]);
+  @override
+  int build() => _override ?? 0;
+  void setValue(int value) => state = value;
+  void add(int n) => state = state + n;
+}
 
 /// --- Application Initialization ---
 // Main entry point that handles all app setup and initialization
@@ -90,23 +179,23 @@ Future<void> main() async {
   // Launch the app with saved preferences and initial state overrides
   runApp(ProviderScope(
     overrides: [
-      floorNumbersProvider.overrideWith((ref) => savedFloorNumbers),
-      floorStopsProvider.overrideWith((ref) => savedFloorStops),
-      buttonStyleProvider.overrideWith((ref) => savedButtonStyle),
-      buttonShapeProvider.overrideWith((ref) => savedButtonShape),
-      backgroundStyleProvider.overrideWith((ref) => savedBackgroundStyle),
-      glassStyleProvider.overrideWith((ref) => savedGlassStyle),
-      internetProvider.overrideWith((ref) => false),
-      gamesSignInProvider.overrideWith((ref) => false),
-      pointProvider.overrideWith((ref) => 0),
+      floorNumbersProvider.overrideWith(() => FloorNumbersNotifier(savedFloorNumbers)),
+      floorStopsProvider.overrideWith(() => FloorStopsNotifier(savedFloorStops)),
+      buttonStyleProvider.overrideWith(() => ButtonStyleNotifier(savedButtonStyle)),
+      buttonShapeProvider.overrideWith(() => ButtonShapeNotifier(savedButtonShape)),
+      backgroundStyleProvider.overrideWith(() => BackgroundStyleNotifier(savedBackgroundStyle)),
+      glassStyleProvider.overrideWith(() => GlassStyleNotifier(savedGlassStyle)),
+      internetProvider.overrideWith(() => InternetNotifier(false)),
+      gamesSignInProvider.overrideWith(() => GamesSignInNotifier(false)),
+      pointProvider.overrideWith(() => PointNotifier(0)),
     ],
     child: const MyApp()
   ));
   /// --- Post-Launch Services ---
   // Initialize additional services after app launch (Firebase App Check, ads, tracking)
   await FirebaseAppCheck.instance.activate(
-    androidProvider: androidProvider,
-    appleProvider: appleProvider,
+    providerAndroid: providerAndroid,
+    providerApple: providerApple,
   );
   await MobileAds.instance.initialize();
   await initATTPlugin();

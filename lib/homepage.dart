@@ -117,9 +117,9 @@ class HomePage extends HookConsumerWidget {
             isConnectedInternet: hasInternet
         );
         final bestScore = await reUpdatedGamesManager.getBestScore();
-        ref.read(internetProvider.notifier).state = hasInternet;
-        ref.read(gamesSignInProvider.notifier).state = signedIn;
-        ref.read(pointProvider.notifier).state = bestScore;
+        ref.read(internetProvider.notifier).setValue(hasInternet);
+        ref.read(gamesSignInProvider.notifier).setValue(signedIn);
+        ref.read(pointProvider.notifier).setValue(bestScore);
       }
 
       Future<void> initState() async {
@@ -127,7 +127,7 @@ class HomePage extends HookConsumerWidget {
         try {
           if (!isGamesSignIn) await gamesInit();
           final images = await imageManager.getImagesList();
-          ref.read(floorImagesProvider.notifier).state = images;
+          ref.read(floorImagesProvider.notifier).setValue(images);
           if (context.mounted) {
             imageTopMargin.value = context.imageMarginTop(isOutside.value, counter.value, max);
           }
@@ -189,7 +189,7 @@ class HomePage extends HookConsumerWidget {
               if (context.mounted) imageTopMargin.value += context.floorHeight();
               await Future.delayed(Duration(milliseconds: i.elevatorSpeed(count, nextFloor.value))).then((_) async {
                 count++;
-                if (!isOutside.value && !isEmergency.value) ref.read(pointProvider.notifier).state++;
+                if (!isOutside.value && !isEmergency.value) ref.read(pointProvider.notifier).add(1);
                 if (counter.value < nextFloor.value && nextFloor.value < max + 1) counter.value = counter.value + 1;
                 if (counter.value == 0) counter.value = 1;
                 if (counter.value == nextFloor.value || counter.value == max) {
@@ -201,7 +201,7 @@ class HomePage extends HookConsumerWidget {
                     "isOutside: ${isOutside.value}, currentFloor: ${currentFloor.value}, nextFloor: ${nextFloor.value}".debugPrint();
                     if (isOutside.value && counter.value == currentFloor.value) isWaitingUp.value = false;
                     if (isOutside.value && counter.value == currentFloor.value) isWaitingDown.value = false;
-                    final newPoint = ref.read(pointProvider.notifier).state;
+                    final newPoint = ref.read(pointProvider);
                     final prefs = await SharedPreferences.getInstance();
                     "pointKey".setSharedPrefInt(prefs, newPoint);
                     await gamesManager.gamesSubmitScore(newPoint);
@@ -238,7 +238,7 @@ class HomePage extends HookConsumerWidget {
                 if (context.mounted) imageTopMargin.value -= context.floorHeight();
                 await Future.delayed(Duration(milliseconds: i.elevatorSpeed(count, nextFloor.value))).then((_) async {
                   count++;
-                  if (!isOutside.value && !isEmergency.value) ref.read(pointProvider.notifier).state++;
+                  if (!isOutside.value && !isEmergency.value) ref.read(pointProvider.notifier).add(1);
                   if (min - 1 < nextFloor.value && nextFloor.value < counter.value) counter.value = counter.value - 1;
                   if (counter.value == 0) counter.value = -1;
                   if (counter.value == nextFloor.value || counter.value == min) {
@@ -250,7 +250,7 @@ class HomePage extends HookConsumerWidget {
                       "isOutside: ${isOutside.value}, currentFloor: ${currentFloor.value}, nextFloor: ${nextFloor.value}".debugPrint();
                       if (isOutside.value && counter.value == currentFloor.value) isWaitingUp.value = false;
                       if (isOutside.value && counter.value == currentFloor.value) isWaitingDown.value = false;
-                      final newPoint = ref.read(pointProvider.notifier).state;
+                      final newPoint = ref.read(pointProvider);
                       final prefs = await SharedPreferences.getInstance();
                       "pointKey".setSharedPrefInt(prefs, newPoint);
                       await gamesManager.gamesSubmitScore(newPoint);
@@ -278,8 +278,8 @@ class HomePage extends HookConsumerWidget {
     /// Handle floor button selection and deselection
     /// Manages floor button states and triggers elevator movement
     Future<void> floorSelected(int i, bool selectFlag) async {
-      await audioManager.playEffectSound(asset: selectSound, volume: 0.8);
-      await Vibration.vibrate(duration: vibTime, amplitude: vibAmp);
+      audioManager.playEffectSound(asset: selectSound, volume: 0.8);
+      Vibration.vibrate(duration: vibTime, amplitude: vibAmp);
       if (!isEmergency.value) {
         if (i == counter.value) {
           if (!isMoving.value && i == nextFloor.value && context.mounted) await ttsManager.speakText(context.pushNumber(), true);
@@ -306,9 +306,9 @@ class HomePage extends HookConsumerWidget {
     /// Handle floor button deselection
     /// Removes floor from selection and recalculates next destination
     Future<void> floorCanceled(int i) async {
+      audioManager.playEffectSound(asset: cancelSound, volume: 0.8);
+      Vibration.vibrate(duration: vibTime, amplitude: vibAmp);
       if (i.isSelected(isAboveSelectedList.value, isUnderSelectedList.value) && i != nextFloor.value) {
-        await audioManager.playEffectSound(asset: cancelSound, volume: 0.8);
-        await Vibration.vibrate(duration: vibTime, amplitude: vibAmp);
         i.falseSelected(isAboveSelectedList.value, isUnderSelectedList.value);
         if (i == nextFloor.value) {
           nextFloor.value = (counter.value < nextFloor.value) ?
@@ -316,9 +316,6 @@ class HomePage extends HookConsumerWidget {
           counter.value.downNextFloor(isAboveSelectedList.value, isUnderSelectedList.value);
         }
         "currentFloor: ${currentFloor.value}, nextFloor: ${nextFloor.value}".debugPrint();
-      } else {
-        await audioManager.playEffectSound(asset: cancelSound, volume: 1.0);
-        await Vibration.vibrate(duration: vibTime, amplitude: vibAmp);
       }
     }
 
@@ -507,7 +504,7 @@ class HomePage extends HookConsumerWidget {
 
     /// Handle menu button press with vibration feedback
     Future<void> pressedMenu() async {
-      ref.read(isMenuProvider.notifier).state = !isMenu;
+      ref.read(isMenuProvider.notifier).setValue(!isMenu);
       await AudioManager().playEffectSound(asset: selectSound, volume: 1.0);
       await Vibration.vibrate(duration: vibTime, amplitude: vibAmp);
     }

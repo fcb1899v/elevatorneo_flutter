@@ -12,10 +12,10 @@ import 'main.dart';
 /// Application name
 const String appTitle = "LETS ELEVATOR NEO";
 
-/// Firebase App Check configuration
+/// Firebase App Check configuration (firebase_app_check 0.4+)
 /// Uses debug provider in debug mode, production provider in release mode
-final androidProvider = kDebugMode ? AndroidProvider.debug: AndroidProvider.playIntegrity;
-final appleProvider = kDebugMode ? AppleProvider.debug: AppleProvider.appAttestWithDeviceCheckFallback;
+final providerAndroid = kDebugMode ? const AndroidDebugProvider() : const AndroidPlayIntegrityProvider();
+final providerApple = kDebugMode ? const AppleDebugProvider() : const AppleAppAttestProvider();
 
 /// Ad unit ID configuration
 /// Platform-specific ad unit IDs for different build modes
