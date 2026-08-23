@@ -1,7 +1,7 @@
 name: letselevatorneo
 description: elevatorsimulatorneo
 publish_to: 'none'
-version: 1.5.21+68
+version: 1.5.22+69
 
 environment:
   sdk: '>=2.18.0 <4.0.0'
@@ -11,50 +11,52 @@ dependencies:
     sdk: flutter
   flutter_web_plugins:
     sdk: flutter
-  webview_flutter_android: ^4.10.11
-  webview_flutter: ^4.13.1
+  webview_flutter_android: ^4.14.0
+  webview_flutter: ^4.14.1
   # Firebase Analytics
-  firebase_core: ^4.4.0
-  firebase_core_web: ^3.4.0
-  firebase_analytics: ^12.1.2
-  firebase_analytics_web: ^0.6.1+2
-  firebase_app_check: ^0.4.1+4
+  firebase_core: ^4.13.0
+  firebase_core_web: ^3.10.0
+  firebase_analytics: ^12.4.6
+  firebase_analytics_web: ^0.6.1+12
+  firebase_app_check: ^0.4.6
   # App Icon
-  cupertino_icons: ^1.0.8
+  cupertino_icons: ^1.0.9
   flutter_launcher_icons: ^0.14.4
-  # Text to Speech
-  flutter_tts: ^4.2.5
+  # Text to Speech (git: SPM support not yet on pub.dev 4.2.5)
+  flutter_tts:
+    git:
+      url: https://github.com/muhammedeminalan/flutter_tts.git
+      ref: codex/spm-ios-macos-support
   # Audio Player
-  just_audio: ^0.10.5
+  just_audio: ^0.10.6
   # Vibration
-  vibration: ^3.1.7
+  vibration: ^3.2.0
   # SharedPreference
-  shared_preferences: ^2.5.4
+  shared_preferences: ^2.5.5
   shared_preferences_web: ^2.4.3
   # Game Center
-  games_services: ^5.0.0
-  connectivity_plus: ^7.0.0
+  games_services: ^5.3.0
+  connectivity_plus: ^7.3.1
   # Admob
-  google_mobile_ads: ^7.0.0
-  app_tracking_transparency: ^2.0.6+1
+  google_mobile_ads: ^9.0.0
+  app_tracking_transparency: ^2.0.7
   #env
-  flutter_dotenv: ^6.0.0
+  flutter_dotenv: ^6.0.1
   # HyperLink
   path: ^1.9.1
   url_launcher: ^6.3.2
-  url_launcher_web: ^2.4.2
+  url_launcher_web: ^2.4.3
   #MVVM
-  hooks_riverpod: ^3.2.1
+  hooks_riverpod: ^3.4.2
   flutter_hooks: ^0.21.3+1
   # Image
-  file_picker: ^10.3.10
-  image_picker: ^1.2.1
-  image_cropper: ^11.0.0
-  path_provider: ^2.1.5
+  image_picker: ^1.2.3
+  image_cropper: ^12.2.1
+  path_provider: ^2.1.6
   # Permission
-  permission_handler: ^12.0.1
+  permission_handler: ^13.0.0
   # App Splash
-  flutter_native_splash: ^2.4.7
+  flutter_native_splash: ^2.4.8
 
   # Localize
   flutter_localizations:
@@ -75,6 +77,8 @@ flutter_native_splash:
   ios: true
 
 flutter:
+  config:
+    enable-swift-package-manager: true
   generate: true
   uses-material-design: true
   assets:

@@ -7,12 +7,9 @@ import com.google.android.gms.games.PlayGamesSdk
 
 class MainActivity: FlutterActivity() {
     override fun onCreate(savedInstanceState: android.os.Bundle?) {
-        super.onCreate(savedInstanceState)
-        
-        // Initialize Google Play Games SDK
+        // Must run before super.onCreate() per Play Games SDK v2 docs
         PlayGamesSdk.initialize(this)
-        
-        // Enable edge-to-edge display for all Android versions
+        super.onCreate(savedInstanceState)
         setupEdgeToEdgeDisplay()
     }
     

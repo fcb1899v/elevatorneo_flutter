@@ -116,8 +116,13 @@ class MenuPage extends HookConsumerWidget {
       isLoadingData.value = true;
       try {
         loadRewardedAd();
-        ref.read(internetProvider.notifier).setValue(await gamesManager.checkInternetConnection());
-        ref.read(gamesSignInProvider.notifier).setValue(await gamesManager.gamesSignIn());
+        final hasInternet = await gamesManager.checkInternetConnection();
+        ref.read(internetProvider.notifier).setValue(hasInternet);
+        final signedIn = await GamesManager(
+          isGamesSignIn: ref.read(gamesSignInProvider),
+          isConnectedInternet: hasInternet,
+        ).gamesSignIn();
+        ref.read(gamesSignInProvider.notifier).setValue(signedIn);
         isLoadingData.value = false;
       } catch (e) {
         "Error: $e".debugPrint();

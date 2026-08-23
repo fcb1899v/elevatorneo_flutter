@@ -1,0 +1,13 @@
+.env
+.env.*
+*.pem
+*.key
+*.p8
+*.p12
+*.jks
+*.keystore
+*.mobileprovision
+android/key.properties
+android/local.properties
+**/*service-account*.json
+fastlane/**/*.json

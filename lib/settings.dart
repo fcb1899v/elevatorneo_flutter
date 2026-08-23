@@ -91,7 +91,7 @@ class SettingsPage extends HookConsumerWidget {
         );
         final signedIn = await updatedGamesManager.gamesSignIn();
         final reUpdatedGamesManager = GamesManager(
-            isGamesSignIn: isGamesSignIn,
+            isGamesSignIn: signedIn,
             isConnectedInternet: hasInternet
         );
         final bestScore = await reUpdatedGamesManager.getBestScore();

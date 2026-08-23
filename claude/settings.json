@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "deny": [
+      "Read(**/key.properties)",
+      "Read(**/*.jks)",
+      "Read(**/*.keystore)",
+      "Read(**/*.p8)",
+      "Read(**/*.p12)",
+      "Read(**/.env)",
+      "Read(**/.env.*)",
+      "Read(**/*service-account*.json)",
+      "Read(~/.ssh/**)",
+      "Read(~/.aws/**)",
+      "Read(~/.config/gcloud/**)",
+      "Bash(cat *key.properties*)",
+      "Bash(cat *.env*)",
+      "Bash(git push --force:*)",
+      "Bash(git reset --hard:*)",
+      "Bash(fastlane:*)",
+      "Bash(firebase deploy:*)",
+      "Bash(rm -rf:*)",
+      "Bash(curl:*)"
+    ]
+  }
+}

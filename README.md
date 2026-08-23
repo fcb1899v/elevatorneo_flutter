@@ -39,7 +39,7 @@ It provides a practical and enjoyable experience through Game Center and Google 
 - **Localization**: flutter_localizations
 - **Environment Variables**: flutter_dotenv
 - **App Tracking Transparency**: app_tracking_transparency
-- **File Management**: file_picker, image_picker, image_cropper
+- **File Management**: image_picker, image_cropper
 - **Permissions**: permission_handler
 - **WebView**: webview_flutter
 - **State Management**: hooks_riverpod, flutter_hooks
@@ -231,12 +231,11 @@ This app uses the following open-source libraries:
 - flutter_native_splash (MIT License)
 - intl (BSD 3-Clause License)
 - flutter_localizations (BSD 3-Clause License)
-- file_picker (MIT License)
 - image_picker (Apache License 2.0)
 - image_cropper (Apache License 2.0)
 - permission_handler (Apache License 2.0)
 - connectivity_plus (Apache License 2.0)
 - app_tracking_transparency (MIT License)
-- path_provider (BSD 3-Cl[README.md](README.md)ause License)
+- path_provider (BSD 3-Clause License)
 
 For details of each license, please refer to [pub.dev](https://pub.dev/) or the LICENSE file in each repository.
