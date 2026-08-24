@@ -28,7 +28,7 @@ Elevator simulator app (Flutter) for iOS and Android.
 | `android/` | Android / Play Games / Firebase |
 | `ios/` | iOS / SPM / Game Center |
 | `assets/` | Images, audio, `.env` (public IDs only) |
-| `claude/settings.json` | Claude Code permission deny list |
+| `.claude/settings.json` | Claude Code permission deny list |
 
 ## Verification commands
 

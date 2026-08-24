@@ -288,4 +288,38 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get ranking => 'Ranking';
+
+  @override
+  String get attTitle => 'About ads in this app\n';
+
+  @override
+  String get attDesc =>
+      'Allowing tracking lets us show ads that fit you better, which keeps this app free. It is never used to identify you personally.';
+
+  @override
+  String get premiumTitle => 'Unlock Everything\n';
+
+  @override
+  String get premiumDesc =>
+      'Remove ads and unlock every button, background and floor image right away, without collecting EV miles.';
+
+  @override
+  String premiumPrice(Object PRICE) {
+    return 'Unlock for $PRICE';
+  }
+
+  @override
+  String get premiumBuy => 'Unlock';
+
+  @override
+  String get premiumRestore => 'Restore';
+
+  @override
+  String get premiumThanks => 'Thank you! Everything is unlocked.';
+
+  @override
+  String get premiumFailed => 'The purchase could not be completed.';
+
+  @override
+  String get premiumRestoreFailed => 'No purchase was found to restore.';
 }

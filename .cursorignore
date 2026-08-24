@@ -8,6 +8,9 @@
 *.keystore
 *.mobileprovision
 android/key.properties
+**/key.properties
 android/local.properties
 **/*service-account*.json
+**/google-services.json
+**/GoogleService-Info.plist
 fastlane/**/*.json

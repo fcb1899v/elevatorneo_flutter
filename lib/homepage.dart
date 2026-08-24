@@ -22,8 +22,13 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'admob_banner.dart';
+import 'admob_interstitial.dart';
+import 'analytics_manager.dart';
+import 'att_manager.dart';
 import 'games_manager.dart';
 import 'audio_manager.dart';
+import 'plan_provider.dart';
+import 'review_manager.dart';
 import 'tts_manager.dart';
 import 'common_widget.dart';
 import 'extension.dart';
@@ -51,10 +56,12 @@ class HomePage extends HookConsumerWidget {
     final isGamesSignIn = ref.watch(gamesSignInProvider);
     final isConnectedInternet = ref.watch(internetProvider);
     final point = ref.watch(pointProvider);
+    final isPremium = ref.watch(planProvider).isPremium;
 
     // --- Hooks State Management ---
     // Local state management using Flutter Hooks for reactive UI updates
     final counter = useState(initialFloor);                    // Current elevator position
+    final departureFloor = useState(initialFloor);             // Floor the current ride started from
     final currentFloor = useState(initialCurrent);             // Target floor for outside view
     final nextFloor = useState(initialFloor);                  // Next destination floor
     final isOutside = useState(!isTest);                       // View mode (inside/outside elevator)
@@ -137,6 +144,9 @@ class HomePage extends HookConsumerWidget {
         } finally {
           isLoadingData.value = false;
           FlutterNativeSplash.remove();
+          // Ask for tracking only once the splash is gone so the pre-prompt is visible
+          if (context.mounted) await AttManager.request(context);
+          await AdInterstitialManager.load(isPremium: ref.read(planProvider).isPremium);
         }
       }
 
@@ -174,6 +184,19 @@ class HomePage extends HookConsumerWidget {
     // --- Elevator Movement Functions ---
     // Functions for controlling elevator movement and navigation logic
 
+    /// Record a finished ride: analytics, review timing and interstitial pacing
+    /// Called once per arrival, after the destination floor is reached
+    Future<void> onArrived() async {
+      final rideCount = await ReviewManager.incrementRideCount();
+      await AnalyticsManager.rideComplete(
+        fromFloor: departureFloor.value,
+        toFloor: counter.value,
+        totalMiles: ref.read(pointProvider),
+      );
+      await AdInterstitialManager.load(isPremium: isPremium);
+      await ReviewManager.requestReviewIfEarned(rideCount);
+    }
+
     /// Move elevator upward to the next selected floor
     /// Handles floor-by-floor movement with realistic timing and animations
     Future<void> counterUp() async {
@@ -181,6 +204,7 @@ class HomePage extends HookConsumerWidget {
         await Future.delayed(Duration(seconds: waitTime.value)).then((_) async {
           if (!isMoving.value && isDoorState.value == closedState) {
             isMoving.value = true;
+            departureFloor.value = counter.value;
             int count = 0;
             if (context.mounted) await ttsManager.speakText(context.upFloor(), !isOutside.value || currentFloor.value == counter.value);
             Future.forEach(counter.value.upFromToNumber(nextFloor.value), (int i) async {
@@ -211,6 +235,7 @@ class HomePage extends HookConsumerWidget {
                     if (context.mounted) await ttsManager.speakText(context.openingSound(counter.value, counter.value.roomImageFile(floorNumbers, floorImages)), !isOutside.value || currentFloor.value == counter.value);
                     isDoorState.value = openingState;
                     "isDoorState: ${isDoorState.value}".debugPrint();
+                    await onArrived();
                   });
                 }
               });
@@ -230,6 +255,7 @@ class HomePage extends HookConsumerWidget {
         await Future.delayed(Duration(seconds: waitTime.value)).then((_) async {
           if (!isMoving.value && isDoorState.value == closedState) {
             isMoving.value = true;
+            departureFloor.value = counter.value;
             int count = 0;
             if (context.mounted) await ttsManager.speakText(context.downFloor(), !isOutside.value || currentFloor.value == counter.value);
             Future.forEach(counter.value.downFromToNumber(nextFloor.value), (int i) async {
@@ -260,6 +286,7 @@ class HomePage extends HookConsumerWidget {
                       if (context.mounted) await ttsManager.speakText(context.openingSound(counter.value, counter.value.roomImageFile(floorNumbers, floorImages)), !isOutside.value || currentFloor.value == counter.value);
                       isDoorState.value = openingState;
                       "isDoorState: ${isDoorState.value}".debugPrint();
+                      await onArrived();
                     });
                   }
                 });

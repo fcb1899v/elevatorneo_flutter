@@ -40,6 +40,10 @@ dependencies:
   # Admob
   google_mobile_ads: ^9.0.0
   app_tracking_transparency: ^2.0.7
+  # In-App Purchase (RevenueCat)
+  purchases_flutter: ^9.12.2
+  # Store Review
+  in_app_review: ^2.0.10
   #env
   flutter_dotenv: ^6.0.1
   # HyperLink

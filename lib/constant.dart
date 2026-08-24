@@ -25,6 +25,38 @@ String rewardAdUnitID =
   (Platform.isIOS || Platform.isMacOS) ? "IOS_REWARDED_TEST_ID":
   "ANDROID_REWARDED_TEST_ID";
 
+String bannerAdUnitID =
+  (!kDebugMode && (Platform.isIOS || Platform.isMacOS)) ? "IOS_BANNER_UNIT_ID":
+  (!kDebugMode) ? "ANDROID_BANNER_UNIT_ID":
+  (Platform.isIOS || Platform.isMacOS) ? "IOS_BANNER_TEST_ID":
+  "ANDROID_BANNER_TEST_ID";
+
+String interstitialAdUnitID =
+  (!kDebugMode && (Platform.isIOS || Platform.isMacOS)) ? "IOS_INTERSTITIAL_UNIT_ID":
+  (!kDebugMode) ? "ANDROID_INTERSTITIAL_UNIT_ID":
+  (Platform.isIOS || Platform.isMacOS) ? "IOS_INTERSTITIAL_TEST_ID":
+  "ANDROID_INTERSTITIAL_TEST_ID";
+
+/// Interstitial frequency capping
+/// Keeps interstitials from interrupting the elevator experience too often
+const int interstitialIntervalSec = 180;   // Minimum gap between two interstitials
+const int interstitialMaxPerSession = 3;   // Upper bound within a single session
+const int interstitialMinRides = 5;        // Rides required before the first interstitial
+
+/// RevenueCat configuration
+/// Keys are looked up in assets/.env, entitlement is defined in the RevenueCat dashboard
+String revenueCatApiKey = (Platform.isIOS || Platform.isMacOS) ?
+  "REVENUE_CAT_IOS_API_KEY":
+  "REVENUE_CAT_ANDROID_API_KEY";
+const String premiumEntitlementID = "premium";
+
+/// Store review request
+/// Minimum rides before asking the user for a store review
+const int reviewRequestRides = 30;
+
+/// Maximum time ad loading waits for the ATT dialog to be resolved
+const int attWaitTimeoutSec = 15;
+
 // =============================================================================
 // FLOOR CONFIGURATION
 // =============================================================================

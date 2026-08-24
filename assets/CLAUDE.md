@@ -13,7 +13,7 @@ Guidance for static assets.
 ## `.env` handling
 
 - Values are mostly non-critical public IDs (AdMob / leaderboard)
-- Still keep them out of the repo (`claude/settings.json` denies Read)
+- Still keep them out of the repo (`.claude/settings.json` denies Read)
 - If you rename keys, update `flutter_dotenv` usages in `lib/` at the same time
 
 ## Audio and images

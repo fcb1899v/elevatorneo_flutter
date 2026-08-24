@@ -24,11 +24,14 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:vibration/vibration.dart';
+import 'analytics_manager.dart';
+import 'att_manager.dart';
 import 'games_manager.dart';
 import 'common_widget.dart';
 import 'extension.dart';
 import 'constant.dart';
 import 'main.dart';
+import 'plan_provider.dart';
 import 'settings.dart';
 
 class MenuPage extends HookConsumerWidget {
@@ -41,6 +44,7 @@ class MenuPage extends HookConsumerWidget {
     // Riverpod providers for managing app state
     final isConnectedInternet = ref.watch(internetProvider);
     final isGamesSignIn = ref.watch(gamesSignInProvider);
+    final isPremium = ref.watch(planProvider).isPremium;
 
     // --- Hooks State Management ---
     // Local state management using Flutter Hooks
@@ -66,7 +70,9 @@ class MenuPage extends HookConsumerWidget {
 
     /// Load rewarded ad with retry logic and error handling
     /// Attempts to load ad multiple times with exponential backoff
-    void loadRewardedAd() {
+    void loadRewardedAd() async {
+      // Wait for the ATT decision so the impression can use the IDFA
+      await AttManager.ready;
       RewardedAd.load(
         adUnitId: dotenv.get(rewardAdUnitID),
         request: const AdRequest(),
@@ -74,6 +80,14 @@ class MenuPage extends HookConsumerWidget {
           onAdLoaded: (RewardedAd ad) async {
             if (!cancelToken.isCompleted) {
               'ad loaded'.debugPrint();
+              ad.onPaidEvent = (ad, valueMicros, precision, currencyCode) =>
+                AnalyticsManager.adRevenue(
+                  format: "rewarded",
+                  adUnitId: dotenv.get(rewardAdUnitID),
+                  valueMicros: valueMicros,
+                  precision: precision,
+                  currencyCode: currencyCode,
+                );
               rewardedAd.value = ad;
               retryAttempt.value = 0;
             }
@@ -154,6 +168,7 @@ class MenuPage extends HookConsumerWidget {
         final newPoint = ref.read(pointProvider);
         "pointKey".setSharedPrefInt(prefs, newPoint);
         await gamesManager.gamesSubmitScore(newPoint);
+        await AnalyticsManager.rewardAdEarned(addPoint);
         loadRewardedAd();
       }
     );
@@ -170,11 +185,15 @@ class MenuPage extends HookConsumerWidget {
         menu.showSnackBar(context.notConnectedInternet());
       } else if (i == 1) {
         // Rewarded ad handling
-        (rewardedAd.value == null) ? loadRewardedAd():
+        if (rewardedAd.value == null) {
+          loadRewardedAd();
+        } else {
+          await AnalyticsManager.rewardAdOffered();
           menu.rewardedAdPermissionAlert(onTap: () {
             context.popPage();
             showRewardedAd();
           });
+        }
       } else if (!isGamesSignIn) {
         // Game Center sign-in check
         menu.showSnackBar(context.notSignedInGameCenter());
@@ -208,8 +227,8 @@ class MenuPage extends HookConsumerWidget {
                 Spacer(flex: 1),
                 /// Bottom navigation with external links
                 menu.bottomMenuLink(),
-                /// AdMob banner space reservation
-                Container(
+                /// AdMob banner space reservation (the banner itself is drawn by HomePage)
+                if (!isPremium) Container(
                   height: context.admobHeight(),
                   color: blackColor,
                 )

@@ -285,4 +285,38 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get ranking => '랭킹';
+
+  @override
+  String get attTitle => '광고 표시에 대하여\n';
+
+  @override
+  String get attDesc =>
+      '추적을 허용하시면 관심사에 더 맞는 광고를 표시할 수 있어 본 앱을 무료로 제공할 수 있습니다. 개인을 식별하는 목적으로는 사용하지 않습니다.';
+
+  @override
+  String get premiumTitle => '전체 해제\n';
+
+  @override
+  String get premiumDesc =>
+      '광고가 사라지고 버튼, 배경, 층 이미지를 EV 마일을 모으지 않고 바로 사용할 수 있습니다.';
+
+  @override
+  String premiumPrice(Object PRICE) {
+    return '$PRICE에 해제하기';
+  }
+
+  @override
+  String get premiumBuy => '해제하기';
+
+  @override
+  String get premiumRestore => '구매 복원';
+
+  @override
+  String get premiumThanks => '감사합니다! 모두 해제되었습니다.';
+
+  @override
+  String get premiumFailed => '구매를 완료하지 못했습니다.';
+
+  @override
+  String get premiumRestoreFailed => '복원할 구매 내역을 찾을 수 없습니다.';
 }

@@ -97,5 +97,16 @@
   "terms" : "利用規約",
   "officialPage" : "公式ページ",
   "officialShop" : "公式ショップ",
-  "ranking" : "ランキング"
+  "ranking" : "ランキング",
+
+  "attTitle" : "広告表示について\n",
+  "attDesc" : "トラッキングを許可いただくと、より興味に合った広告が表示され、本アプリを無料でご提供できます。個人を特定する目的では利用しません。",
+  "premiumTitle" : "すべて解放\n",
+  "premiumDesc" : "広告が非表示になり、ボタン・背景・フロア画像のすべてがEVマイルを貯めずにすぐ使えるようになります。",
+  "premiumPrice" : "{PRICE}で解放する",
+  "premiumBuy" : "解放する",
+  "premiumRestore" : "購入を復元",
+  "premiumThanks" : "ありがとうございます！すべて解放されました。",
+  "premiumFailed" : "購入を完了できませんでした。",
+  "premiumRestoreFailed" : "復元できる購入が見つかりませんでした。"
 }

@@ -97,5 +97,16 @@
   "terms" : "이용약관",
   "officialPage" : "공식 페이지",
   "officialShop" : "공식 샵",
-  "ranking" : "랭킹"
+  "ranking" : "랭킹",
+
+  "attTitle" : "광고 표시에 대하여\n",
+  "attDesc" : "추적을 허용하시면 관심사에 더 맞는 광고를 표시할 수 있어 본 앱을 무료로 제공할 수 있습니다. 개인을 식별하는 목적으로는 사용하지 않습니다.",
+  "premiumTitle" : "전체 해제\n",
+  "premiumDesc" : "광고가 사라지고 버튼, 배경, 층 이미지를 EV 마일을 모으지 않고 바로 사용할 수 있습니다.",
+  "premiumPrice" : "{PRICE}에 해제하기",
+  "premiumBuy" : "해제하기",
+  "premiumRestore" : "구매 복원",
+  "premiumThanks" : "감사합니다! 모두 해제되었습니다.",
+  "premiumFailed" : "구매를 완료하지 못했습니다.",
+  "premiumRestoreFailed" : "복원할 구매 내역을 찾을 수 없습니다."
 }

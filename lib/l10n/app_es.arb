@@ -97,5 +97,16 @@
   "terms": "Términos",
   "officialPage": "Página Oficial",
   "officialShop": "Tienda Oficial",
-  "ranking": "Clasificación"
+  "ranking": "Clasificación",
+
+  "attTitle": "Sobre los anuncios de esta app\n",
+  "attDesc": "Al permitir el seguimiento podemos mostrar anuncios más acordes a tus intereses, lo que mantiene esta app gratuita. Nunca se usa para identificarte personalmente.",
+  "premiumTitle": "Desbloquear todo\n",
+  "premiumDesc": "Elimina los anuncios y desbloquea al instante todos los botones, fondos e imágenes de planta, sin acumular millas EV.",
+  "premiumPrice": "Desbloquear por {PRICE}",
+  "premiumBuy": "Desbloquear",
+  "premiumRestore": "Restaurar compra",
+  "premiumThanks": "¡Gracias! Todo está desbloqueado.",
+  "premiumFailed": "No se pudo completar la compra.",
+  "premiumRestoreFailed": "No se encontró ninguna compra para restaurar."
 }

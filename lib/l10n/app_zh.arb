@@ -97,5 +97,16 @@
   "terms": "使用条款",
   "officialPage" : "官方页面",
   "officialShop": "官方商店",
-  "ranking" : "排名"
+  "ranking" : "排名",
+
+  "attTitle" : "关于本应用的广告\n",
+  "attDesc" : "允许跟踪后，我们可以展示更符合您兴趣的广告，从而让本应用保持免费。我们绝不会用于识别您的个人身份。",
+  "premiumTitle" : "全部解锁\n",
+  "premiumDesc" : "去除广告，并立即解锁所有按钮、背景和楼层图片，无需累积EV里程。",
+  "premiumPrice" : "以{PRICE}解锁",
+  "premiumBuy" : "解锁",
+  "premiumRestore" : "恢复购买",
+  "premiumThanks" : "感谢您！已全部解锁。",
+  "premiumFailed" : "购买未能完成。",
+  "premiumRestoreFailed" : "未找到可恢复的购买记录。"
 }

@@ -19,6 +19,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:vibration/vibration.dart';
+import 'admob_interstitial.dart';
+import 'analytics_manager.dart';
 import 'games_manager.dart';
 import 'photo_manager.dart';
 import 'image_manager.dart';
@@ -27,6 +29,8 @@ import 'extension.dart';
 import 'constant.dart';
 import 'admob_banner.dart';
 import 'main.dart';
+import 'plan_provider.dart';
+import 'review_manager.dart';
 import 'homepage.dart';
 
 class SettingsPage extends HookConsumerWidget {
@@ -46,6 +50,7 @@ class SettingsPage extends HookConsumerWidget {
     final buttonStyle = ref.watch(buttonStyleProvider);
     final backgroundStyle = ref.watch(backgroundStyleProvider);
     final glassStyle = ref.watch(glassStyleProvider);
+    final isPremium = ref.watch(planProvider).isPremium;
 
     // --- Hooks State Management ---
     // Local state management using Flutter Hooks for UI interactions
@@ -63,6 +68,58 @@ class SettingsPage extends HookConsumerWidget {
     // --- Widget and Manager Instances ---
     // UI widget instances and service managers
     final common = CommonWidget(context);
+
+    // --- Premium Purchase Functions ---
+    // Purchase entry point reached from the lock overlays
+
+    /// Run the purchase or restore flow and report the result to the user
+    Future<void> runPurchase({required bool isRestore, required String source}) async {
+      isLoadingData.value = true;
+      try {
+        final purchased = await ref.read(planProvider.notifier).buyPremium(
+          isRestore: isRestore,
+          source: source,
+        );
+        if (!context.mounted) return;
+        if (purchased) {
+          // A premium user should never see the preloaded interstitial
+          AdInterstitialManager.dispose();
+          common.commonSnackBar(context.premiumThanks());
+        } else if (isRestore) {
+          common.commonSnackBar(context.premiumRestoreFailed());
+        }
+      } catch (e) {
+        "Purchase error: $e".debugPrint();
+        if (context.mounted) common.commonSnackBar(context.premiumFailed());
+      } finally {
+        isLoadingData.value = false;
+      }
+    }
+
+    /// Offer the premium unlock when the user taps a locked feature
+    /// The lock tap itself is the strongest demand signal, so it is logged first
+    Future<void> showUpgrade(String feature, int requiredPoint) async {
+      await AnalyticsManager.unlockBlocked(
+        feature: feature,
+        requiredPoint: requiredPoint,
+        currentPoint: point,
+      );
+      await ref.read(planProvider.notifier).fetchPrice();
+      if (!context.mounted) return;
+      await AnalyticsManager.upgradeOffered(feature);
+      common.upgradeAlert(
+        price: ref.read(planProvider).priceString,
+        onBuy: () async {
+          context.popPage();
+          await runPurchase(isRestore: false, source: feature);
+        },
+        onRestore: () async {
+          context.popPage();
+          await runPurchase(isRestore: true, source: feature);
+        },
+      );
+    }
+
     final settings = SettingsWidget(context,
       point: point,
       roomImages: roomImages,
@@ -72,6 +129,8 @@ class SettingsPage extends HookConsumerWidget {
       buttonShape: buttonShape,
       backgroundStyle: backgroundStyle,
       glassStyle: glassStyle,
+      isPremium: isPremium,
+      onLockTap: showUpgrade,
     );
 
     /// --- Initialization Effect ---
@@ -278,8 +337,17 @@ class SettingsPage extends HookConsumerWidget {
     Future<void> pressedBack() async {
       await Vibration.vibrate(duration: vibTime, amplitude: vibAmp);
       ref.read(isMenuProvider.notifier).setValue(false);
-      ref.read(isMenuProvider.notifier).setValue(false);
-      if (context.mounted) context.pushFadeReplacement(HomePage());
+      void backToHome() {
+        if (context.mounted) context.pushFadeReplacement(HomePage());
+      }
+      // Leaving settings is a natural break, so an interstitial may run here
+      final isShown = await AdInterstitialManager.showIfAllowed(
+        placement: "settings_back",
+        isPremium: isPremium,
+        rideCount: await ReviewManager.getRideCount(),
+        onDismissed: backToHome,
+      );
+      if (!isShown) backToHome();
     }
 
     /// --- UI Rendering ---
@@ -334,11 +402,13 @@ class SettingsPage extends HookConsumerWidget {
             children: [
               settings.settingsButtonStyleWidget(onTap: changeButtonStyle),
               /// Lock overlay for premium features
-              if (point < buttonStyleLockPoint && !isTest) settings.settingsLockContainer(
+              if (settings.isLocked(buttonStyleLockPoint)) settings.settingsLockContainer(
                 margin: EdgeInsets.only(top: context.settingsButtonStyleLockMargin()),
                 width: context.settingsButtonStyleLockWidth(),
                 height: context.settingsButtonStyleLockHeight(),
-                point: "$buttonStyleLockPoint"
+                point: "$buttonStyleLockPoint",
+                feature: "button_style",
+                requiredPoint: buttonStyleLockPoint,
               ),
             ]
           ):
@@ -350,11 +420,13 @@ class SettingsPage extends HookConsumerWidget {
             children: [
               settings.settingsButtonShapeWidget(onTap: changeButtonShape),
               /// Lock overlay for premium features
-              if (point < buttonShapeLockPoint && !isTest) settings.settingsLockContainer(
+              if (settings.isLocked(buttonShapeLockPoint)) settings.settingsLockContainer(
                 width: context.settingsButtonShapeLockWidth(),
                 height: context.settingsButtonShapeLockHeight(),
                 margin: EdgeInsets.only(top: context.settingsButtonShapeLockMarginTop()),
                 point: "$buttonShapeLockPoint",
+                feature: "button_shape",
+                requiredPoint: buttonShapeLockPoint,
               ),
             ]
           ):
@@ -363,16 +435,18 @@ class SettingsPage extends HookConsumerWidget {
             children: [
               settings.settingsBackgroundSelectWidget(onTap: changeBackground),
               /// Lock overlay for premium features
-              if (point < backgroundLockPoint && !isTest) settings.settingsLockContainer(
+              if (settings.isLocked(backgroundLockPoint)) settings.settingsLockContainer(
                 width: context.settingsBackgroundLockWidth(),
                 height: context.settingsBackgroundLockHeight(),
                 margin: EdgeInsets.only(top: context.settingsBackgroundLockMargin()),
                 point: "$backgroundLockPoint",
+                feature: "background",
+                requiredPoint: backgroundLockPoint,
               ),
             ]
           ): SizedBox(),
           /// AdMob banner space reservation
-          Container(
+          if (!isPremium) Container(
             height: context.admobHeight(),
             color: blackColor,
           )
@@ -404,6 +478,8 @@ class SettingsWidget {
   final String buttonShape;
   final String glassStyle;
   final String backgroundStyle;
+  final bool isPremium;
+  final void Function(String, int) onLockTap;
 
   SettingsWidget(this.context, {
     required this.point,
@@ -414,7 +490,13 @@ class SettingsWidget {
     required this.buttonShape,
     required this.glassStyle,
     required this.backgroundStyle,
+    required this.isPremium,
+    required this.onLockTap,
   });
+
+  /// Whether a feature is still locked for this user
+  /// Premium unlocks everything without changing the EV mile balance
+  bool isLocked(int requiredPoint) => !isPremium && point < requiredPoint && !isTest;
 
   /// --- Common UI Components ---
   // Reusable UI elements used throughout the settings interface
@@ -426,13 +508,17 @@ class SettingsWidget {
   );
 
   // Create lock overlay container for premium features
-  // Displays lock icon and required points for locked features
+  // Displays lock icon and required points, and offers the unlock on tap
   Widget settingsLockContainer({
     required double width,
     required double height,
     required EdgeInsets margin,
     required point,
-  }) => Container(
+    required String feature,
+    required int requiredPoint,
+  }) => GestureDetector(
+    onTap: () => onLockTap(feature, requiredPoint),
+    child: Container(
     alignment: Alignment.center,
     color: transpBlackColor,
     width: width,
@@ -464,6 +550,7 @@ class SettingsWidget {
           ],
         ),
       ],
+    ),
     ),
   );
 
@@ -571,16 +658,18 @@ class SettingsWidget {
                   height: context.settingsFloorImageHeight(),
                   child: Stack(children: [
                     roomImages.roomsList()[row.key][col.key].roomImage(),
-                    if (isImageOn[row.key][col.key] && point >= changePointList[row.key][col.key]) Container(color: transpLampColor),
+                    if (isImageOn[row.key][col.key] && !isLocked(changePointList[row.key][col.key])) Container(color: transpLampColor),
                   ]),
                 ),
               ),
               /// Lock overlay for premium features
-              if (point < changePointList[row.key][col.key] && !isTest) settingsLockContainer(
+              if (isLocked(changePointList[row.key][col.key])) settingsLockContainer(
                 width: context.settingsFloorImageLockWidth(),
                 height: context.settingsFloorImageLockHeight(),
                 margin: EdgeInsets.zero,
                 point: "${changePointList[row.key][col.key]}",
+                feature: "floor_image",
+                requiredPoint: changePointList[row.key][col.key],
               )
             ],
           )
@@ -623,7 +712,10 @@ class SettingsWidget {
           Stack(children: [
             floorImageFromMyAlbumButton(onTap: () => onChangedMyPhoto(row, col)),
             /// Lock overlay for photo selection feature
-            if (point < albumImagePoint && !isTest) alertLockWidget(),
+            if (isLocked(albumImagePoint)) GestureDetector(
+              onTap: () => onLockTap("album_photo", albumImagePoint),
+              child: alertLockWidget(),
+            ),
           ]),
           const Spacer(flex: 1),
         ]),
@@ -837,11 +929,13 @@ class SettingsWidget {
                 color: transpBlackColor,
               ),
               /// Lock overlay for premium features
-              if (point < changePointList[row.key][col.key] && !isTest && col.value != max && col.value != min) settingsLockContainer(
+              if (isLocked(changePointList[row.key][col.key]) && col.value != max && col.value != min) settingsLockContainer(
                 width: context.settingsButtonNumberLockWidth(),
                 height: context.settingsButtonNumberLockHeight(),
                 margin: EdgeInsets.zero,
                 point: "${changePointList[row.key][col.key]}",
+                feature: "floor_number",
+                requiredPoint: changePointList[row.key][col.key],
               ),
             ])
           )).toList()

@@ -639,6 +639,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Ranking'**
   String get ranking;
+
+  /// No description provided for @attTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'About ads in this app\n'**
+  String get attTitle;
+
+  /// No description provided for @attDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Allowing tracking lets us show ads that fit you better, which keeps this app free. It is never used to identify you personally.'**
+  String get attDesc;
+
+  /// No description provided for @premiumTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock Everything\n'**
+  String get premiumTitle;
+
+  /// No description provided for @premiumDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove ads and unlock every button, background and floor image right away, without collecting EV miles.'**
+  String get premiumDesc;
+
+  /// No description provided for @premiumPrice.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock for {PRICE}'**
+  String premiumPrice(Object PRICE);
+
+  /// No description provided for @premiumBuy.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock'**
+  String get premiumBuy;
+
+  /// No description provided for @premiumRestore.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore'**
+  String get premiumRestore;
+
+  /// No description provided for @premiumThanks.
+  ///
+  /// In en, this message translates to:
+  /// **'Thank you! Everything is unlocked.'**
+  String get premiumThanks;
+
+  /// No description provided for @premiumFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'The purchase could not be completed.'**
+  String get premiumFailed;
+
+  /// No description provided for @premiumRestoreFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'No purchase was found to restore.'**
+  String get premiumRestoreFailed;
 }
 
 class _AppLocalizationsDelegate

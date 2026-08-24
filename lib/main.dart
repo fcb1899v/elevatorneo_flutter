@@ -7,8 +7,8 @@
 
 import 'dart:async';
 import 'dart:io';
-import 'package:app_tracking_transparency/app_tracking_transparency.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -17,11 +17,13 @@ import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'l10n/app_localizations.dart' show AppLocalizations;
 import 'firebase_options.dart';
 import 'extension.dart';
 import 'constant.dart';
+import 'plan_provider.dart';
 import 'homepage.dart';
 import 'menu.dart';
 import 'settings.dart';
@@ -175,6 +177,19 @@ Future<void> main() async {
   /// --- Firebase Initialization ---
   // Initialize Firebase services with platform-specific configuration
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  /// --- Purchase Initialization ---
+  // Configure RevenueCat and resolve the premium entitlement before the first frame
+  // Skipped when no API key is configured yet, so the app still runs ad-supported
+  final apiKey = dotenv.maybeGet(revenueCatApiKey);
+  bool initialPremium = false;
+  if (apiKey != null && apiKey.isNotEmpty) {
+    await Purchases.setLogLevel(kDebugMode ? LogLevel.debug: LogLevel.warn);
+    await Purchases.configure(PurchasesConfiguration(apiKey));
+    if (Platform.isIOS || Platform.isMacOS) {
+      await Purchases.enableAdServicesAttributionTokenCollection();
+    }
+    initialPremium = await getInitialPremiumStatus();
+  }
   /// --- App Launch ---
   // Launch the app with saved preferences and initial state overrides
   runApp(ProviderScope(
@@ -188,6 +203,7 @@ Future<void> main() async {
       internetProvider.overrideWith(() => InternetNotifier(false)),
       gamesSignInProvider.overrideWith(() => GamesSignInNotifier(false)),
       pointProvider.overrideWith(() => PointNotifier(0)),
+      planProvider.overrideWith(() => PlanNotifier(PlanState(isPremium: initialPremium))),
     ],
     child: const MyApp()
   ));
@@ -198,7 +214,6 @@ Future<void> main() async {
     providerApple: providerApple,
   );
   await MobileAds.instance.initialize();
-  await initATTPlugin();
 }
 
 /// --- Main Application Widget ---
@@ -238,13 +253,5 @@ class MyApp extends StatelessWidget {
   );
 }
 /// --- Privacy and Tracking ---
-// App Tracking Transparency implementation for iOS/macOS
-// Requests user permission for app tracking on supported platforms
-Future<void> initATTPlugin() async {
-  if (Platform.isIOS || Platform.isMacOS) {
-    final status = await AppTrackingTransparency.trackingAuthorizationStatus;
-    if (status == TrackingStatus.notDetermined) {
-      await AppTrackingTransparency.requestTrackingAuthorization();
-    }
-  }
-}
+// The ATT flow lives in AttManager and runs from HomePage once the splash is
+// gone, so the explanatory pre-prompt is actually visible to the user.

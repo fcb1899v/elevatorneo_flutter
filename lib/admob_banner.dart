@@ -1,38 +1,55 @@
-import 'dart:io';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'analytics_manager.dart';
+import 'att_manager.dart';
 import 'constant.dart';
 import 'extension.dart';
+import 'plan_provider.dart';
 
-class AdBannerWidget extends HookWidget {
+// =============================
+// AdBannerWidget: bottom anchored banner
+//
+// Uses an inline adaptive size capped to the reserved slot height so Google
+// can pick the best performing creative without shifting the app layout.
+// The ad request waits for the ATT decision and is skipped for premium users.
+// =============================
+
+class AdBannerWidget extends HookConsumerWidget {
   const AdBannerWidget({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isPremium = ref.watch(planProvider).isPremium;
     final adLoaded = useState(false);
     final adFailedLoading = useState(false);
+    final adHeight = useState(context.admobHeight());
     final bannerAd = useState<BannerAd?>(null);
     // final testIdentifiers = ['2793ca2a-5956-45a2-96c0-16fafddc1a15'];
 
     // バナー広告ID
-    String bannerUnitId() => dotenv.get(
-      (!kDebugMode && (Platform.isIOS || Platform.isMacOS)) ? "IOS_BANNER_UNIT_ID":
-      (Platform.isIOS || Platform.isMacOS) ? "IOS_BANNER_TEST_ID":
-      (!kDebugMode) ? "ANDROID_BANNER_UNIT_ID":
-      "ANDROID_BANNER_TEST_ID"
-    );
+    String bannerUnitId() => dotenv.get(bannerAdUnitID);
 
     Future<void> loadAdBanner() async {
+      // Read layout metrics before awaiting so no BuildContext crosses the gap
+      final adWidth = context.width().truncate();
+      final adMaxHeight = context.admobHeight().truncate();
+      // Wait for the ATT decision so the first impression can use the IDFA
+      await AttManager.ready;
       final adBanner = BannerAd(
         adUnitId: bannerUnitId(),
-        size: AdSize.largeBanner,
+        size: AdSize.getInlineAdaptiveBannerAdSize(adWidth, adMaxHeight),
         request: const AdRequest(),
         listener: BannerAdListener(
-          onAdLoaded: (Ad ad) {
+          onAdLoaded: (Ad ad) async {
             'Ad: $ad loaded.'.debugPrint();
+            // Fit the container to the size the server actually returned
+            final platformAdSize = await (ad as BannerAd).getPlatformAdSize();
+            if (platformAdSize != null) {
+              adHeight.value = platformAdSize.height.toDouble();
+            }
             adLoaded.value = true;
           },
           onAdFailedToLoad: (ad, error) {
@@ -43,6 +60,14 @@ class AdBannerWidget extends HookWidget {
               if (!adLoaded.value && !adFailedLoading.value) loadAdBanner();
             });
           },
+          onPaidEvent: (ad, valueMicros, precision, currencyCode) =>
+            AnalyticsManager.adRevenue(
+              format: "banner",
+              adUnitId: bannerUnitId(),
+              valueMicros: valueMicros,
+              precision: precision,
+              currencyCode: currencyCode,
+            ),
         ),
       );
       adBanner.load();
@@ -50,6 +75,8 @@ class AdBannerWidget extends HookWidget {
     }
 
     useEffect(() {
+      // Premium users never see ads, so no consent form and no ad request
+      if (isPremium) return null;
       ConsentInformation.instance.requestConsentInfoUpdate(ConsentRequestParameters(
         // consentDebugSettings: ConsentDebugSettings(
         //   debugGeography: DebugGeography.debugGeographyEea,
@@ -76,8 +103,9 @@ class AdBannerWidget extends HookWidget {
       });
       "bannerAd: ${bannerAd.value}".debugPrint();
       return () => bannerAd.value?.dispose();      // unmount時に広告を破棄する
-    }, []);
+    }, [isPremium]);
 
+    if (isPremium) return const SizedBox.shrink();
     return Column(mainAxisAlignment: MainAxisAlignment.end,
       children: [
         Spacer(),
@@ -85,7 +113,12 @@ class AdBannerWidget extends HookWidget {
           width: context.width(),
           height: context.admobHeight(),
           color: blackColor,
-          child: (adLoaded.value) ? AdWidget(ad: bannerAd.value!): null,
+          alignment: Alignment.center,
+          child: (adLoaded.value && bannerAd.value != null) ? SizedBox(
+            width: context.width(),
+            height: adHeight.value,
+            child: AdWidget(ad: bannerAd.value!),
+          ): null,
         ),
       ]
     );

@@ -287,4 +287,39 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get ranking => 'Clasificación';
+
+  @override
+  String get attTitle => 'Sobre los anuncios de esta app\n';
+
+  @override
+  String get attDesc =>
+      'Al permitir el seguimiento podemos mostrar anuncios más acordes a tus intereses, lo que mantiene esta app gratuita. Nunca se usa para identificarte personalmente.';
+
+  @override
+  String get premiumTitle => 'Desbloquear todo\n';
+
+  @override
+  String get premiumDesc =>
+      'Elimina los anuncios y desbloquea al instante todos los botones, fondos e imágenes de planta, sin acumular millas EV.';
+
+  @override
+  String premiumPrice(Object PRICE) {
+    return 'Desbloquear por $PRICE';
+  }
+
+  @override
+  String get premiumBuy => 'Desbloquear';
+
+  @override
+  String get premiumRestore => 'Restaurar compra';
+
+  @override
+  String get premiumThanks => '¡Gracias! Todo está desbloqueado.';
+
+  @override
+  String get premiumFailed => 'No se pudo completar la compra.';
+
+  @override
+  String get premiumRestoreFailed =>
+      'No se encontró ninguna compra para restaurar.';
 }

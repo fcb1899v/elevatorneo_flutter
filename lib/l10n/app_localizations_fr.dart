@@ -290,4 +290,38 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get ranking => 'Classement';
+
+  @override
+  String get attTitle => 'À propos des publicités de cette app\n';
+
+  @override
+  String get attDesc =>
+      'En autorisant le suivi, nous pouvons afficher des publicités mieux adaptées à vos centres d\'intérêt, ce qui permet de garder cette app gratuite. Cela ne sert jamais à vous identifier personnellement.';
+
+  @override
+  String get premiumTitle => 'Tout débloquer\n';
+
+  @override
+  String get premiumDesc =>
+      'Supprimez les publicités et débloquez immédiatement tous les boutons, arrière-plans et images d\'étage, sans accumuler de miles EV.';
+
+  @override
+  String premiumPrice(Object PRICE) {
+    return 'Débloquer pour $PRICE';
+  }
+
+  @override
+  String get premiumBuy => 'Débloquer';
+
+  @override
+  String get premiumRestore => 'Restaurer l\'achat';
+
+  @override
+  String get premiumThanks => 'Merci ! Tout est débloqué.';
+
+  @override
+  String get premiumFailed => 'L\'achat n\'a pas pu être finalisé.';
+
+  @override
+  String get premiumRestoreFailed => 'Aucun achat à restaurer n\'a été trouvé.';
 }

@@ -286,4 +286,38 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get ranking => 'ランキング';
+
+  @override
+  String get attTitle => '広告表示について\n';
+
+  @override
+  String get attDesc =>
+      'トラッキングを許可いただくと、より興味に合った広告が表示され、本アプリを無料でご提供できます。個人を特定する目的では利用しません。';
+
+  @override
+  String get premiumTitle => 'すべて解放\n';
+
+  @override
+  String get premiumDesc =>
+      '広告が非表示になり、ボタン・背景・フロア画像のすべてがEVマイルを貯めずにすぐ使えるようになります。';
+
+  @override
+  String premiumPrice(Object PRICE) {
+    return '$PRICEで解放する';
+  }
+
+  @override
+  String get premiumBuy => '解放する';
+
+  @override
+  String get premiumRestore => '購入を復元';
+
+  @override
+  String get premiumThanks => 'ありがとうございます！すべて解放されました。';
+
+  @override
+  String get premiumFailed => '購入を完了できませんでした。';
+
+  @override
+  String get premiumRestoreFailed => '復元できる購入が見つかりませんでした。';
 }

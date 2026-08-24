@@ -150,6 +150,19 @@ extension L10nContextExt on BuildContext {
   String privacyPolicyLink() => (lang() == "ja") ? privacyPolicyJa: privacyPolicyEn;
   String youtubeLink() => (lang() == "ja") ? youtubeJa: youtubeEn;
   String notConnectedInternet() => AppLocalizations.of(this)!.notConnectedInternet;
+  // App Tracking Transparency pre-prompt
+  String attTitle() => AppLocalizations.of(this)!.attTitle;
+  String attDesc() => AppLocalizations.of(this)!.attDesc;
+  // Premium upgrade
+  String premiumTitle() => AppLocalizations.of(this)!.premiumTitle;
+  String premiumDesc() => AppLocalizations.of(this)!.premiumDesc;
+  String premiumBuy(String price) => (price.isEmpty) ?
+      AppLocalizations.of(this)!.premiumBuy:
+      AppLocalizations.of(this)!.premiumPrice(price);
+  String premiumRestore() => AppLocalizations.of(this)!.premiumRestore;
+  String premiumThanks() => AppLocalizations.of(this)!.premiumThanks;
+  String premiumFailed() => AppLocalizations.of(this)!.premiumFailed;
+  String premiumRestoreFailed() => AppLocalizations.of(this)!.premiumRestoreFailed;
   String notSignedInGameCenter() => AppLocalizations.of(this)!.notSignedInGameCenter(
     (Platform.isIOS || Platform.isMacOS) ? "Game Center": "Play Games"
   );

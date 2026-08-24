@@ -285,4 +285,36 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get ranking => '排名';
+
+  @override
+  String get attTitle => '关于本应用的广告\n';
+
+  @override
+  String get attDesc => '允许跟踪后，我们可以展示更符合您兴趣的广告，从而让本应用保持免费。我们绝不会用于识别您的个人身份。';
+
+  @override
+  String get premiumTitle => '全部解锁\n';
+
+  @override
+  String get premiumDesc => '去除广告，并立即解锁所有按钮、背景和楼层图片，无需累积EV里程。';
+
+  @override
+  String premiumPrice(Object PRICE) {
+    return '以$PRICE解锁';
+  }
+
+  @override
+  String get premiumBuy => '解锁';
+
+  @override
+  String get premiumRestore => '恢复购买';
+
+  @override
+  String get premiumThanks => '感谢您！已全部解锁。';
+
+  @override
+  String get premiumFailed => '购买未能完成。';
+
+  @override
+  String get premiumRestoreFailed => '未找到可恢复的购买记录。';
 }
