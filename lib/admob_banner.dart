@@ -1,10 +1,11 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'analytics_manager.dart';
-import 'att_manager.dart';
 import 'constant.dart';
 import 'extension.dart';
 import 'plan_provider.dart';
@@ -14,7 +15,14 @@ import 'plan_provider.dart';
 //
 // Uses an inline adaptive size capped to the reserved slot height so Google
 // can pick the best performing creative without shifting the app layout.
-// The ad request waits for the ATT decision and is skipped for premium users.
+// The request fires as soon as consent allows and is skipped for premium users.
+//
+// The UMP consent flow below is also the only place tracking is asked for. On
+// iOS the AdMob form shows the IDFA explainer and then the system ATT dialog,
+// so the app must not present a prompt of its own: UMP answers ATT while an app
+// side dialog is still on screen. The request itself never waits on that
+// decision, since a wait costs impressions and personalization catches up on
+// the next refresh anyway.
 // =============================
 
 class AdBannerWidget extends HookConsumerWidget {
@@ -24,20 +32,33 @@ class AdBannerWidget extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final isPremium = ref.watch(planProvider).isPremium;
     final adLoaded = useState(false);
-    final adFailedLoading = useState(false);
     final adHeight = useState(context.admobHeight());
     final bannerAd = useState<BannerAd?>(null);
+    // Refs, not state: the SDK calls back after unmount, and writing to a
+    // disposed ValueNotifier asserts in debug and is a silent no-op in release
+    final retryAttempt = useRef(0);
+    final isLoadingAd = useRef(false);
     // final testIdentifiers = ['2793ca2a-5956-45a2-96c0-16fafddc1a15'];
 
     // バナー広告ID
     String bannerUnitId() => dotenv.get(bannerAdUnitID);
 
     Future<void> loadAdBanner() async {
-      // Read layout metrics before awaiting so no BuildContext crosses the gap
+      // Every caller sits behind the consent round trip or a retry timer, so
+      // the screen can already be gone by the time this runs
+      if (!context.mounted) return;
+      // isPremium was captured when this build ran. Read the plan again: buying
+      // premium across that gap would send a request for a user who must not
+      // get ads, and the premium branch of the effect registers no cleanup, so
+      // nothing would ever dispose that BannerAd
+      if (ref.read(planProvider).isPremium) return;
+      // A pending retry and a fresh consent callback can both land here. The
+      // second BannerAd would overwrite bannerAd.value and leave the first with
+      // no owner to dispose it
+      if (isLoadingAd.value) return;
+      isLoadingAd.value = true;
       final adWidth = context.width().truncate();
       final adMaxHeight = context.admobHeight().truncate();
-      // Wait for the ATT decision so the first impression can use the IDFA
-      await AttManager.ready;
       final adBanner = BannerAd(
         adUnitId: bannerUnitId(),
         size: AdSize.getInlineAdaptiveBannerAdSize(adWidth, adMaxHeight),
@@ -45,19 +66,40 @@ class AdBannerWidget extends HookConsumerWidget {
         listener: BannerAdListener(
           onAdLoaded: (Ad ad) async {
             'Ad: $ad loaded.'.debugPrint();
-            // Fit the container to the size the server actually returned
+            isLoadingAd.value = false;
+            // Mount the AdWidget first. Awaiting the platform size call before
+            // this delays the impression, and a screen change during that gap
+            // throws away an ad that was already filled
+            adLoaded.value = true;
+            // Then fit the container to the size the server actually returned.
+            // The request caps the height, so this only ever shrinks the slot
             final platformAdSize = await (ad as BannerAd).getPlatformAdSize();
             if (platformAdSize != null) {
               adHeight.value = platformAdSize.height.toDouble();
             }
-            adLoaded.value = true;
           },
           onAdFailedToLoad: (ad, error) {
-            ad.dispose();
             'Ad: $ad failed to load: $error'.debugPrint();
-            adFailedLoading.value = true;
-            Future.delayed(const Duration(seconds: 30), () {
-              if (!adLoaded.value && !adFailedLoading.value) loadAdBanner();
+            isLoadingAd.value = false;
+            // The listener stays attached to one platform AdView for its whole
+            // life, so a failed auto refresh reports here on the very instance
+            // the AdWidget is showing. Disposing it would tear down a live view
+            // and the SDK keeps refreshing on its own, so an ad that reached
+            // the screen is left alone. The retry below is for the first fill
+            if (adLoaded.value) return;
+            ad.dispose();
+            retryAttempt.value += 1;
+            // This widget stays mounted for the whole screen, so a fixed retry
+            // with no ceiling would keep asking a device that has no fill.
+            // Unfilled requests never match, so they pollute the match rate
+            if (retryAttempt.value > bannerMaxRetry) return;
+            final backoffSec = math.min(
+              bannerRetryBaseSec * (1 << (retryAttempt.value - 1)),
+              bannerRetryMaxSec,
+            );
+            Future.delayed(Duration(seconds: backoffSec), () {
+              if (adLoaded.value || !context.mounted) return;
+              loadAdBanner();
             });
           },
           onPaidEvent: (ad, valueMicros, precision, currencyCode) =>
@@ -77,6 +119,16 @@ class AdBannerWidget extends HookConsumerWidget {
     useEffect(() {
       // Premium users never see ads, so no consent form and no ad request
       if (isPremium) return null;
+      // Coming back from premium leaves the previous ad disposed by that
+      // switch's cleanup, while adLoaded still says true. Rendering an AdWidget
+      // around a disposed instance is what that stale pair would do, so the
+      // slot starts empty again and only fills once the new ad is ready
+      adLoaded.value = false;
+      retryAttempt.value = 0;
+      // isLoadingAd is deliberately not reset: a request already in flight
+      // still owes us a callback, and clearing the flag here would let a second
+      // request start and orphan the first
+
       ConsentInformation.instance.requestConsentInfoUpdate(ConsentRequestParameters(
         // consentDebugSettings: ConsentDebugSettings(
         //   debugGeography: DebugGeography.debugGeographyEea,

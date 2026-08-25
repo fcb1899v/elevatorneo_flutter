@@ -287,13 +287,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get ranking => '랭킹';
 
   @override
-  String get attTitle => '광고 표시에 대하여\n';
-
-  @override
-  String get attDesc =>
-      '추적을 허용하시면 관심사에 더 맞는 광고를 표시할 수 있어 본 앱을 무료로 제공할 수 있습니다. 개인을 식별하는 목적으로는 사용하지 않습니다.';
-
-  @override
   String get premiumTitle => '전체 해제\n';
 
   @override

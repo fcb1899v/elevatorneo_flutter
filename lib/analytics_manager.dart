@@ -120,9 +120,11 @@ class AnalyticsManager {
   /// Log that the in-app store review prompt was requested
   static Future<void> reviewRequested() => _log("review_requested");
 
-  // --- Tracking Events ---
-
-  /// Log the outcome of the App Tracking Transparency prompt
-  static Future<void> attResult(String status) =>
-      _log("att_result", {"status": status});
+  // No ATT event here on purpose. The AdMob UMP flow owns the tracking prompt,
+  // so the app has no callback that fires when the user answers, and reading
+  // the status at launch would record notDetermined on the one launch that
+  // matters. AdMob already reports explainer views and the opt-in rate. If
+  // Firebase side segmentation is ever wanted, set a user property on a later
+  // launch, where the persisted status is stable, instead of logging an event
+  // during startup
 }

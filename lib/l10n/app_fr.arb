@@ -99,8 +99,6 @@
   "officialShop": "Boutique officielle",
   "ranking": "Classement",
 
-  "attTitle": "À propos des publicités de cette app\n",
-  "attDesc": "En autorisant le suivi, nous pouvons afficher des publicités mieux adaptées à vos centres d'intérêt, ce qui permet de garder cette app gratuite. Cela ne sert jamais à vous identifier personnellement.",
   "premiumTitle": "Tout débloquer\n",
   "premiumDesc": "Supprimez les publicités et débloquez immédiatement tous les boutons, arrière-plans et images d'étage, sans accumuler de miles EV.",
   "premiumPrice": "Débloquer pour {PRICE}",

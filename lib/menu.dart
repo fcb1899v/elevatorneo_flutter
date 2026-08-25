@@ -25,7 +25,6 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:vibration/vibration.dart';
 import 'analytics_manager.dart';
-import 'att_manager.dart';
 import 'games_manager.dart';
 import 'common_widget.dart';
 import 'extension.dart';
@@ -50,6 +49,7 @@ class MenuPage extends HookConsumerWidget {
     // Local state management using Flutter Hooks
     final rewardedAd = useState<RewardedAd?>(null);           // Rewarded ad instance
     final retryAttempt = useState(0);                         // Ad loading retry counter
+    final isLoadingAd = useState(false);                      // Guards against duplicate in-flight loads
     final cancelToken = useMemoized(() => Completer<void>(), []); // Cancellation token for cleanup
     final isLoadingData = useState(false);                    // Data loading state
 
@@ -69,39 +69,50 @@ class MenuPage extends HookConsumerWidget {
     // Functions for handling rewarded ad loading and display
 
     /// Load rewarded ad with retry logic and error handling
-    /// Attempts to load ad multiple times with exponential backoff
+    /// Retries on a linear backoff, capped, since the user is waiting on it
     void loadRewardedAd() async {
-      // Wait for the ATT decision so the impression can use the IDFA
-      await AttManager.ready;
+      // A second load while one is in flight only burns an ad request
+      if (cancelToken.isCompleted || isLoadingAd.value || rewardedAd.value != null) return;
+      isLoadingAd.value = true;
+      // No ATT gate here: the menu opens long after launch, so the status is
+      // already settled, and holding the request would only leave the reward
+      // button dead while the user is standing in front of it
       RewardedAd.load(
         adUnitId: dotenv.get(rewardAdUnitID),
         request: const AdRequest(),
         rewardedAdLoadCallback: RewardedAdLoadCallback(
           onAdLoaded: (RewardedAd ad) async {
-            if (!cancelToken.isCompleted) {
-              'ad loaded'.debugPrint();
-              ad.onPaidEvent = (ad, valueMicros, precision, currencyCode) =>
-                AnalyticsManager.adRevenue(
-                  format: "rewarded",
-                  adUnitId: dotenv.get(rewardAdUnitID),
-                  valueMicros: valueMicros,
-                  precision: precision,
-                  currencyCode: currencyCode,
-                );
-              rewardedAd.value = ad;
-              retryAttempt.value = 0;
+            // The menu is gone: release the ad instead of leaking a filled one
+            if (cancelToken.isCompleted) {
+              ad.dispose();
+              return;
             }
+            'ad loaded'.debugPrint();
+            ad.onPaidEvent = (ad, valueMicros, precision, currencyCode) =>
+              AnalyticsManager.adRevenue(
+                format: "rewarded",
+                adUnitId: dotenv.get(rewardAdUnitID),
+                valueMicros: valueMicros,
+                precision: precision,
+                currencyCode: currencyCode,
+              );
+            isLoadingAd.value = false;
+            rewardedAd.value = ad;
+            retryAttempt.value = 0;
           },
           onAdFailedToLoad: (LoadAdError error) {
             'Ad failed to load: $error'.debugPrint();
-            if (!cancelToken.isCompleted) {
-              Future.delayed(Duration(seconds: 2 * retryAttempt.value), () {
-                if (!cancelToken.isCompleted) {
-                  retryAttempt.value += 1;
-                  loadRewardedAd();
-                }
-              });
-            }
+            if (cancelToken.isCompleted) return;
+            isLoadingAd.value = false;
+            // Back off from 2s upward; the counter must grow before the delay
+            // is computed, otherwise the first retry fires instantly
+            retryAttempt.value += 1;
+            // Retrying forever would only pile up requests that never become
+            // impressions. The button press reloads on demand anyway
+            if (retryAttempt.value > rewardedMaxRetry) return;
+            Future.delayed(Duration(seconds: 2 * retryAttempt.value), () {
+              if (!cancelToken.isCompleted) loadRewardedAd();
+            });
           },
         ),
       );
@@ -109,17 +120,18 @@ class MenuPage extends HookConsumerWidget {
 
     // --- Ad Loading Effect ---
     // Automatic ad loading and cleanup management
+    // The cancel token means "the menu is gone", so this effect must only run
+    // on mount and unmount. Keying it on retryAttempt completed the token on
+    // the first retry, after which every filled ad was silently discarded.
     useEffect(() {
-      if (!cancelToken.isCompleted) {
-        loadRewardedAd();
-      }
+      loadRewardedAd();
       return () {
         if (!cancelToken.isCompleted) {
           cancelToken.complete();
         }
         rewardedAd.value?.dispose();
       };
-    }, [retryAttempt.value]);
+    }, []);
 
     // --- Initialization Functions ---
     // Functions for setting up initial app state
@@ -158,20 +170,37 @@ class MenuPage extends HookConsumerWidget {
 
     /// Display rewarded ad and handle reward distribution
     /// Shows ad to user and awards points upon completion
-    showRewardedAd() => rewardedAd.value!.show(
-      onUserEarnedReward: (AdWithoutView ad, RewardItem reward) async {
-        "showRewardedAd".debugPrint();
-        final prefs = await SharedPreferences.getInstance();
-        'rewardEarned: ${reward.type}, rewardAmount: ${reward.amount}'.debugPrint();
-        final addPoint = (earnMilesInt > reward.amount.toInt()) ? earnMilesInt: reward.amount.toInt();
-        ref.read(pointProvider.notifier).add(addPoint);
-        final newPoint = ref.read(pointProvider);
-        "pointKey".setSharedPrefInt(prefs, newPoint);
-        await gamesManager.gamesSubmitScore(newPoint);
-        await AnalyticsManager.rewardAdEarned(addPoint);
-        loadRewardedAd();
-      }
-    );
+    showRewardedAd() {
+      final ad = rewardedAd.value;
+      if (ad == null) return;
+      // A rewarded instance is single use: drop the reference before showing so
+      // the consumed ad cannot block the next preload
+      rewardedAd.value = null;
+      ad.fullScreenContentCallback = FullScreenContentCallback(
+        onAdDismissedFullScreenContent: (RewardedAd ad) {
+          ad.dispose();
+          loadRewardedAd();
+        },
+        onAdFailedToShowFullScreenContent: (RewardedAd ad, AdError error) {
+          '$ad failed to show: $error'.debugPrint();
+          ad.dispose();
+          loadRewardedAd();
+        },
+      );
+      ad.show(
+        onUserEarnedReward: (AdWithoutView ad, RewardItem reward) async {
+          "showRewardedAd".debugPrint();
+          final prefs = await SharedPreferences.getInstance();
+          'rewardEarned: ${reward.type}, rewardAmount: ${reward.amount}'.debugPrint();
+          final addPoint = (earnMilesInt > reward.amount.toInt()) ? earnMilesInt: reward.amount.toInt();
+          ref.read(pointProvider.notifier).add(addPoint);
+          final newPoint = ref.read(pointProvider);
+          "pointKey".setSharedPrefInt(prefs, newPoint);
+          await gamesManager.gamesSubmitScore(newPoint);
+          await AnalyticsManager.rewardAdEarned(addPoint);
+        }
+      );
+    }
 
     /// Handle menu button presses with navigation and validation
     /// Routes user to appropriate sections based on button index and app state

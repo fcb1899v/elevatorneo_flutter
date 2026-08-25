@@ -290,13 +290,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get ranking => 'Ranking';
 
   @override
-  String get attTitle => 'About ads in this app\n';
-
-  @override
-  String get attDesc =>
-      'Allowing tracking lets us show ads that fit you better, which keeps this app free. It is never used to identify you personally.';
-
-  @override
   String get premiumTitle => 'Unlock Everything\n';
 
   @override

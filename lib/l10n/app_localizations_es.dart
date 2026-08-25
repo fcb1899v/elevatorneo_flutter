@@ -289,13 +289,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String get ranking => 'Clasificación';
 
   @override
-  String get attTitle => 'Sobre los anuncios de esta app\n';
-
-  @override
-  String get attDesc =>
-      'Al permitir el seguimiento podemos mostrar anuncios más acordes a tus intereses, lo que mantiene esta app gratuita. Nunca se usa para identificarte personalmente.';
-
-  @override
   String get premiumTitle => 'Desbloquear todo\n';
 
   @override

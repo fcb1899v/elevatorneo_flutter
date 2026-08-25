@@ -292,13 +292,6 @@ class AppLocalizationsFr extends AppLocalizations {
   String get ranking => 'Classement';
 
   @override
-  String get attTitle => 'À propos des publicités de cette app\n';
-
-  @override
-  String get attDesc =>
-      'En autorisant le suivi, nous pouvons afficher des publicités mieux adaptées à vos centres d\'intérêt, ce qui permet de garder cette app gratuite. Cela ne sert jamais à vous identifier personnellement.';
-
-  @override
   String get premiumTitle => 'Tout débloquer\n';
 
   @override

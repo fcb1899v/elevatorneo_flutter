@@ -19,7 +19,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:vibration/vibration.dart';
-import 'admob_interstitial.dart';
 import 'analytics_manager.dart';
 import 'games_manager.dart';
 import 'photo_manager.dart';
@@ -30,7 +29,6 @@ import 'constant.dart';
 import 'admob_banner.dart';
 import 'main.dart';
 import 'plan_provider.dart';
-import 'review_manager.dart';
 import 'homepage.dart';
 
 class SettingsPage extends HookConsumerWidget {
@@ -82,8 +80,6 @@ class SettingsPage extends HookConsumerWidget {
         );
         if (!context.mounted) return;
         if (purchased) {
-          // A premium user should never see the preloaded interstitial
-          AdInterstitialManager.dispose();
           common.commonSnackBar(context.premiumThanks());
         } else if (isRestore) {
           common.commonSnackBar(context.premiumRestoreFailed());
@@ -340,14 +336,10 @@ class SettingsPage extends HookConsumerWidget {
       void backToHome() {
         if (context.mounted) context.pushFadeReplacement(HomePage());
       }
-      // Leaving settings is a natural break, so an interstitial may run here
-      final isShown = await AdInterstitialManager.showIfAllowed(
-        placement: "settings_back",
-        isPremium: isPremium,
-        rideCount: await ReviewManager.getRideCount(),
-        onDismissed: backToHome,
-      );
-      if (!isShown) backToHome();
+      // No interstitial here. Leaving settings means heading back to the
+      // elevator, and a full screen ad across that intent was judged not worth
+      // the retention cost. Rewarded stays the only full screen format.
+      backToHome();
     }
 
     /// --- UI Rendering ---

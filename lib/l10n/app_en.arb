@@ -99,8 +99,6 @@
   "officialShop" : "Official Shop",
   "ranking" : "Ranking",
 
-  "attTitle" : "About ads in this app\n",
-  "attDesc" : "Allowing tracking lets us show ads that fit you better, which keeps this app free. It is never used to identify you personally.",
   "premiumTitle" : "Unlock Everything\n",
   "premiumDesc" : "Remove ads and unlock every button, background and floor image right away, without collecting EV miles.",
   "premiumPrice" : "Unlock for {PRICE}",

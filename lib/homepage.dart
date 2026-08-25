@@ -22,12 +22,9 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'admob_banner.dart';
-import 'admob_interstitial.dart';
 import 'analytics_manager.dart';
-import 'att_manager.dart';
 import 'games_manager.dart';
 import 'audio_manager.dart';
-import 'plan_provider.dart';
 import 'review_manager.dart';
 import 'tts_manager.dart';
 import 'common_widget.dart';
@@ -56,7 +53,6 @@ class HomePage extends HookConsumerWidget {
     final isGamesSignIn = ref.watch(gamesSignInProvider);
     final isConnectedInternet = ref.watch(internetProvider);
     final point = ref.watch(pointProvider);
-    final isPremium = ref.watch(planProvider).isPremium;
 
     // --- Hooks State Management ---
     // Local state management using Flutter Hooks for reactive UI updates
@@ -144,9 +140,10 @@ class HomePage extends HookConsumerWidget {
         } finally {
           isLoadingData.value = false;
           FlutterNativeSplash.remove();
-          // Ask for tracking only once the splash is gone so the pre-prompt is visible
-          if (context.mounted) await AttManager.request(context);
-          await AdInterstitialManager.load(isPremium: ref.read(planProvider).isPremium);
+          // Nothing tracking related runs here. The AdMob UMP flow in
+          // admob_banner.dart shows the IDFA explainer and the system ATT
+          // dialog on its own, so a second app owned prompt only ever arrives
+          // after the user has already answered
         }
       }
 
@@ -193,7 +190,6 @@ class HomePage extends HookConsumerWidget {
         toFloor: counter.value,
         totalMiles: ref.read(pointProvider),
       );
-      await AdInterstitialManager.load(isPremium: isPremium);
       await ReviewManager.requestReviewIfEarned(rideCount);
     }
 

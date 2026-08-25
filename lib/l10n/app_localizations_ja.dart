@@ -288,13 +288,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get ranking => 'ランキング';
 
   @override
-  String get attTitle => '広告表示について\n';
-
-  @override
-  String get attDesc =>
-      'トラッキングを許可いただくと、より興味に合った広告が表示され、本アプリを無料でご提供できます。個人を特定する目的では利用しません。';
-
-  @override
   String get premiumTitle => 'すべて解放\n';
 
   @override

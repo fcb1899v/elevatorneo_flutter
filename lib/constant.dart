@@ -54,8 +54,24 @@ const String premiumEntitlementID = "premium";
 /// Minimum rides before asking the user for a store review
 const int reviewRequestRides = 30;
 
-/// Maximum time ad loading waits for the ATT dialog to be resolved
-const int attWaitTimeoutSec = 15;
+// There are no ATT constants here on purpose, and no ATT code in this app at
+// all. The AdMob UMP flow started from admob_banner.dart shows the IDFA
+// explainer and then the system ATT dialog itself, so the app owns neither a
+// pre-prompt to pace nor a decision to wait on. An app side prompt cannot win
+// that race: UMP answers ATT while the user is still reading, which is exactly
+// what shipped and had to be removed. Ad loading does not gate on the tracking
+// decision either; a wait would cost impressions outright and buy nothing
+
+/// Ad retry limits
+/// Unfilled requests never match, so retrying without a ceiling drags the match
+/// rate down and spends battery and data on a device that has no inventory
+///
+/// The two formats are deliberately not symmetric: nobody waits on a banner, so
+/// it backs off slowly, while the user is standing in front of the reward button
+const int bannerMaxRetry = 5;          // Only a settings round trip re-arms this
+const int bannerRetryBaseSec = 30;     // First banner retry delay; doubles each attempt
+const int bannerRetryMaxSec = 300;     // Ceiling for the banner backoff
+const int rewardedMaxRetry = 3;        // Re-armed by the next button press
 
 // =============================================================================
 // FLOOR CONFIGURATION

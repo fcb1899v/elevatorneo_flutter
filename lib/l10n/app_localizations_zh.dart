@@ -287,12 +287,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get ranking => '排名';
 
   @override
-  String get attTitle => '关于本应用的广告\n';
-
-  @override
-  String get attDesc => '允许跟踪后，我们可以展示更符合您兴趣的广告，从而让本应用保持免费。我们绝不会用于识别您的个人身份。';
-
-  @override
   String get premiumTitle => '全部解锁\n';
 
   @override

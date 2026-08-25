@@ -1,19 +1,20 @@
 // =============================
-// AdInterstitialManager: full screen ads shown at natural breaks
+// AdInterstitialManager: NOT IN USE
 //
-// Interstitials are only shown between activities (leaving the settings
-// screen), never during elevator operation, and are frequency capped so the
-// experience stays intact.
-// Key features:
-// - Preloading with retry
-// - Session cap, minimum interval and minimum ride count
-// - Skipped entirely for premium users and when no ad unit is configured
+// Nothing calls this. Interstitials were removed on 2026-08-24: the only
+// placement was the moment the user leaves settings to get back to the
+// elevator, and interrupting that intent was judged not worth the retention
+// cost. Rewarded is the only full screen format this app shows.
+//
+// Kept because the capping design (session cap, minimum interval, minimum ride
+// count) is worth having if the decision is ever revisited. Re-enabling means
+// restoring the call sites in settings.dart and homepage.dart, and the
+// dispose() on premium purchase in settings.dart.
 // =============================
 
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'analytics_manager.dart';
-import 'att_manager.dart';
 import 'constant.dart';
 import 'extension.dart';
 
@@ -48,7 +49,6 @@ class AdInterstitialManager {
     final adUnitId = _adUnitId;
     if (isPremium || adUnitId == null || _isLoading || _interstitialAd != null) return;
     _isLoading = true;
-    await AttManager.ready;
     await InterstitialAd.load(
       adUnitId: adUnitId,
       request: const AdRequest(),

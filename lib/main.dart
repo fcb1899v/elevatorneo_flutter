@@ -253,5 +253,6 @@ class MyApp extends StatelessWidget {
   );
 }
 /// --- Privacy and Tracking ---
-// The ATT flow lives in AttManager and runs from HomePage once the splash is
-// gone, so the explanatory pre-prompt is actually visible to the user.
+// This app has no ATT code of its own. The AdMob UMP flow in admob_banner.dart
+// shows the IDFA explainer and the system ATT dialog, so consent and tracking
+// are configured in the AdMob console, not here.

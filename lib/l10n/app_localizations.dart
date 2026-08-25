@@ -640,18 +640,6 @@ abstract class AppLocalizations {
   /// **'Ranking'**
   String get ranking;
 
-  /// No description provided for @attTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'About ads in this app\n'**
-  String get attTitle;
-
-  /// No description provided for @attDesc.
-  ///
-  /// In en, this message translates to:
-  /// **'Allowing tracking lets us show ads that fit you better, which keeps this app free. It is never used to identify you personally.'**
-  String get attDesc;
-
   /// No description provided for @premiumTitle.
   ///
   /// In en, this message translates to:
