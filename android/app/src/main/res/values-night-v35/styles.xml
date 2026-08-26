@@ -1,6 +1,54 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Edge-to-edge on API 35+: do not set statusBarColor/navigationBarColor (deprecated in Android 15), night -->
+    <!-- API 35+ (Android 15) edge-to-edge overrides, night mode.
+
+         Resource qualifier precedence puts night mode ahead of platform version, so on a
+         night-mode API 35 device a style defined only in values-v35 is NOT selected: the
+         best match is values-night-v31, then values-night. Every style needed on API 35 in
+         night mode must therefore be defined in this file.
+
+         LaunchTheme below mirrors values-night-v31/styles.xml, which uses the Android 12
+         splash screen attributes rather than windowBackground. Dropping any of the three
+         windowSplashScreen* items would silently remove the splash icon, because styles are
+         not merged across qualifiers.
+
+         Removed here because the backing API is @Deprecated in android.jar 35/36/37:
+           - android:windowTranslucentStatus     -> WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS
+           - android:windowTranslucentNavigation -> WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION
+           - android:enforceStatusBarContrast    -> Window.setStatusBarContrastEnforced
+         Also never set here: statusBarColor / navigationBarColor, which are @Deprecated
+         and forced transparent for apps targeting VANILLA_ICE_CREAM (API 35) or above.
+
+         Kept: android:enforceNavigationBarContrast. Window.setNavigationBarContrastEnforced
+         is NOT deprecated in API 35/36/37; it is still the supported way to opt out of the
+         system scrim behind the 3-button navigation bar. -->
+
+    <!-- Theme applied to the Android Window while the process is starting -->
+    <style name="LaunchTheme" parent="@android:style/Theme.Black.NoTitleBar">
+        <item name="android:forceDarkAllowed">false</item>
+        <item name="android:windowFullscreen">false</item>
+        <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
+        <item name="android:windowSplashScreenBackground">#F7B249</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/android12splash</item>
+        <item name="android:windowSplashScreenIconBackgroundColor">#F7B249</item>
+        <!-- Draw behind the system bars via FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS (not deprecated)
+             instead of the deprecated translucent flags. Theme.Black.NoTitleBar inherits
+             false from the base platform Theme, so this must be set explicitly. -->
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+        <!-- Matches values/, values-night/ and values-v31/ LaunchTheme. values-night-v31
+             omits it, which looks like an oversight from the Android 12 splash rewrite. -->
+        <item name="android:enforceNavigationBarContrast">false</item>
+    </style>
+
+    <!-- Theme for com.yalantis.ucrop.UCropActivity, declared in AndroidManifest.xml.
+         Backed by the image_cropper package. Parent kept as the Light AppCompat theme to
+         match values-night/styles.xml; UCrop draws its own dark chrome. -->
+    <style name="Ucrop.CropTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="android:enforceNavigationBarContrast">false</item>
+    </style>
+
+    <!-- Theme applied to the Android Window as soon as the process has started, and
+         behind the Flutter UI while it is running. -->
     <style name="NormalTheme" parent="@android:style/Theme.Black.NoTitleBar">
         <item name="android:windowBackground">?android:colorBackground</item>
         <item name="android:windowDrawsSystemBarBackgrounds">true</item>

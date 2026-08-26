@@ -1,6 +1,46 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Edge-to-edge on API 35+: do not set statusBarColor/navigationBarColor (deprecated in Android 15) -->
+    <!-- API 35+ (Android 15) edge-to-edge overrides, light mode.
+
+         Styles are not merged across resource qualifiers: the single best-matching
+         definition wins as a whole. Each style below therefore repeats every attribute
+         it needs from values-v31/styles.xml, which is the definition API 35 would
+         otherwise fall back to.
+
+         Removed here because the backing API is @Deprecated in android.jar 35/36/37:
+           - android:windowTranslucentStatus     -> WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS
+           - android:windowTranslucentNavigation -> WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION
+           - android:enforceStatusBarContrast    -> Window.setStatusBarContrastEnforced
+         Also never set here: statusBarColor / navigationBarColor, which are @Deprecated
+         and forced transparent for apps targeting VANILLA_ICE_CREAM (API 35) or above.
+
+         Kept: android:enforceNavigationBarContrast. Window.setNavigationBarContrastEnforced
+         is NOT deprecated in API 35/36/37; it is still the supported way to opt out of the
+         system scrim behind the 3-button navigation bar. -->
+
+    <!-- Theme applied to the Android Window while the process is starting -->
+    <style name="LaunchTheme" parent="@android:style/Theme.Light.NoTitleBar">
+        <!-- Show a splash screen on the activity. Automatically removed when
+             Flutter draws its first frame -->
+        <item name="android:windowBackground">@drawable/launch_background</item>
+        <item name="android:forceDarkAllowed">false</item>
+        <item name="android:windowFullscreen">false</item>
+        <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
+        <!-- Draw behind the system bars via FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS (not deprecated)
+             instead of the deprecated translucent flags. Theme.Light.NoTitleBar inherits
+             false from the base platform Theme, so this must be set explicitly. -->
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+        <item name="android:enforceNavigationBarContrast">false</item>
+    </style>
+
+    <!-- Theme for com.yalantis.ucrop.UCropActivity, declared in AndroidManifest.xml.
+         Backed by the image_cropper package. -->
+    <style name="Ucrop.CropTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="android:enforceNavigationBarContrast">false</item>
+    </style>
+
+    <!-- Theme applied to the Android Window as soon as the process has started, and
+         behind the Flutter UI while it is running. -->
     <style name="NormalTheme" parent="@android:style/Theme.Light.NoTitleBar">
         <item name="android:windowBackground">?android:colorBackground</item>
         <item name="android:windowDrawsSystemBarBackgrounds">true</item>
