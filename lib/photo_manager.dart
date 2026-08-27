@@ -113,15 +113,26 @@ class PhotoManager {
 
   // --- Photo Selection Workflow ---
 
-  /// Complete photo selection workflow with permission handling
+  /// Complete photo selection workflow with permission handling.
+  /// Android uses the system Photo Picker (image_picker) and must not request
+  /// READ_MEDIA_IMAGES / READ_MEDIA_VIDEO. iOS still needs photos permission.
   Future<List<String>> selectMyPhoto({
     required int row,
     required int col,
     required List<String> currentList
   }) async {
+    if (Platform.isAndroid) {
+      final String? savedImagePath = await pickAndCropImage(row, col);
+      return ImageManager().saveImagePath(
+        currentList: currentList,
+        newValue: savedImagePath,
+        newIndex: buttonIndex(row, col),
+      );
+    }
+
     final photoPermission = await Permission.photos.status;
-    "photoPermission: $photoPermission";
-    if (Platform.isAndroid || photoPermission.isGranted) {
+    "photoPermission: $photoPermission".debugPrint();
+    if (photoPermission.isGranted) {
       final String? savedImagePath = await pickAndCropImage(row, col);
       return ImageManager().saveImagePath(
         currentList: currentList,
