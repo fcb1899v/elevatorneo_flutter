@@ -25,6 +25,15 @@ import 'plan_provider.dart';
 // the next refresh anyway.
 // =============================
 
+// The Mobile Ads SDK has to be started before an ad is requested. main() starts
+// it right after runApp, but the consent check in this file reads a cached
+// answer over a single channel call, so it can reach a request first. Both
+// paths go through this future, which keeps the platform start at exactly one
+// call and leaves main()'s await where it was.
+Future<InitializationStatus>? _mobileAdsInitialization;
+Future<InitializationStatus> initializeMobileAds() =>
+  _mobileAdsInitialization ??= MobileAds.instance.initialize();
+
 class AdBannerWidget extends HookConsumerWidget {
   const AdBannerWidget({super.key});
 
@@ -38,6 +47,10 @@ class AdBannerWidget extends HookConsumerWidget {
     // disposed ValueNotifier asserts in debug and is a silent no-op in release
     final retryAttempt = useRef(0);
     final isLoadingAd = useRef(false);
+    // Three callers can ask for the first ad: the cached consent check at
+    // mount, the consent form callback and the consent update failure. Only
+    // one of them may own a request, and the retry path below bypasses this
+    final isAdRequested = useRef(false);
     // final testIdentifiers = ['2793ca2a-5956-45a2-96c0-16fafddc1a15'];
 
     // バナー広告ID
@@ -116,6 +129,24 @@ class AdBannerWidget extends HookConsumerWidget {
       bannerAd.value = adBanner;
     }
 
+    // The single gate for the first ad request. canRequestAds is the SDK's own
+    // verdict: it already weighs the region, the TCF consent string and
+    // Additional Consent, so the app must not read ConsentStatus and decide for
+    // itself. unknown means the SDK could not determine consent, and letting
+    // that through is exactly what serving without consent looks like in the
+    // EEA. Anything the SDK is unsure about is a no here
+    Future<void> requestAdIfAllowed() async {
+      if (isAdRequested.value) return;
+      if (!await ConsentInformation.instance.canRequestAds()) return;
+      // Callers race across that await. Claiming the request happens with no
+      // await in between, so whoever resumes second always sees the flag and
+      // no second BannerAd is ever created for the same slot
+      if (isAdRequested.value) return;
+      isAdRequested.value = true;
+      await initializeMobileAds();
+      await loadAdBanner();
+    }
+
     useEffect(() {
       // Premium users never see ads, so no consent form and no ad request
       if (isPremium) return null;
@@ -125,9 +156,17 @@ class AdBannerWidget extends HookConsumerWidget {
       // slot starts empty again and only fills once the new ad is ready
       adLoaded.value = false;
       retryAttempt.value = 0;
+      // Coming back from premium has to be able to request again. The flag only
+      // guards duplicate requests within one run of this effect
+      isAdRequested.value = false;
       // isLoadingAd is deliberately not reset: a request already in flight
       // still owes us a callback, and clearing the flag here would let a second
       // request start and orphan the first
+
+      // The consent decision from the last session is already on the device, so
+      // the first request does not have to wait for the update below. This runs
+      // in parallel with it and only proceeds if the SDK already says yes
+      requestAdIfAllowed();
 
       ConsentInformation.instance.requestConsentInfoUpdate(ConsentRequestParameters(
         // consentDebugSettings: ConsentDebugSettings(
@@ -135,23 +174,22 @@ class AdBannerWidget extends HookConsumerWidget {
         //   testIdentifiers: testIdentifiers,
         // ),
       ), () async {
-        if (await ConsentInformation.instance.isConsentFormAvailable()) {
-          ConsentForm.loadConsentForm((ConsentForm consentForm) async {
-            var status = await ConsentInformation.instance.getConsentStatus();
-            "status: $status".debugPrint();
-            if (status == ConsentStatus.required) {
-              consentForm.show((formError) async => await loadAdBanner());
-            } else {
-              await loadAdBanner();
-            }
-          }, (formError) {
-            "formError: $formError".debugPrint();
-          });
-        } else {
-          await loadAdBanner();
-        }
-      }, (FormError error) {
-        "error: ${error.message}: $error".debugPrint();
+        // The SDK decides whether a form is needed, loads it and presents it.
+        // Assembling that by hand from isConsentFormAvailable, loadConsentForm
+        // and getConsentStatus re-implements rules that Google changes on their
+        // side. This call does nothing when no form is required
+        await ConsentForm.loadAndShowConsentFormIfRequired((formError) async {
+          if (formError != null) {
+            "formError: ${formError.errorCode}: ${formError.message}".debugPrint();
+          }
+          await requestAdIfAllowed();
+        });
+      }, (FormError error) async {
+        // The update failed, but consent given in an earlier session still
+        // stands and canRequestAds can still say yes. Stopping here would throw
+        // away impressions the SDK would have allowed
+        "error: ${error.errorCode}: ${error.message}".debugPrint();
+        await requestAdIfAllowed();
       });
       "bannerAd: ${bannerAd.value}".debugPrint();
       return () => bannerAd.value?.dispose();      // unmount時に広告を破棄する

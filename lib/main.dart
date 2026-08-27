@@ -14,7 +14,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
-import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
@@ -24,6 +23,7 @@ import 'firebase_options.dart';
 import 'extension.dart';
 import 'constant.dart';
 import 'plan_provider.dart';
+import 'admob_banner.dart';
 import 'homepage.dart';
 import 'menu.dart';
 import 'settings.dart';
@@ -213,7 +213,10 @@ Future<void> main() async {
     providerAndroid: providerAndroid,
     providerApple: providerApple,
   );
-  await MobileAds.instance.initialize();
+  // Same call and same place as before. It goes through the shared future in
+  // admob_banner.dart because the banner may reach the ad request before this
+  // line runs, and the platform SDK must only be started once
+  await initializeMobileAds();
 }
 
 /// --- Main Application Widget ---
