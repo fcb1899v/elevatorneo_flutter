@@ -14,10 +14,21 @@ class MainActivity: FlutterActivity() {
     }
     
     private fun setupEdgeToEdgeDisplay() {
-        // Use modern WindowCompat approach that works for all Android versions
-        // This avoids deprecated APIs completely and provides edge-to-edge support
-        
-        // Allow content to extend behind system bars
+        // Draw behind the system bars.
+        //
+        // This is what puts the app edge to edge on API 24 through 34. From
+        // API 35 the platform does it on its own and Window#setDecorFitsSystemWindows
+        // is deprecated and has no effect, so the call below is a no-op there --
+        // keep it anyway, or older devices lose edge to edge entirely.
+        //
+        // Google's replacement, enableEdgeToEdge(), is an extension on
+        // ComponentActivity and cannot be used here: FlutterActivity extends
+        // android.app.Activity (FlutterActivity.java:211). Reaching it would mean
+        // moving to FlutterFragmentActivity, which is not worth it while the
+        // display is correct on device.
+        //
+        // Flutter handles the insets: main.dart sets SystemUiMode.edgeToEdge and
+        // the screens wrap their content in SafeArea.
         WindowCompat.setDecorFitsSystemWindows(window, false)
         
         // Configure system bars appearance for better visibility
