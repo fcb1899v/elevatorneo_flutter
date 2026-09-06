@@ -121,13 +121,26 @@ class CommonWidget {
         ),
         TextButton(
           onPressed: onBuy,
-          child: Text(context.premiumBuy(price),
-            style: TextStyle(
-              color: blackColor,
-              fontSize: context.menuAlertSelectFontSize(),
-              fontWeight: FontWeight.bold,
-              fontFamily: context.font(),
-            ),
+          // The open padlock pairs with the closed one on the lock overlay, so
+          // the button reads as "this is what you get" rather than "you are
+          // buying something". The price text carries the cost on its own
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(CupertinoIcons.lock_open_fill,
+                color: blackColor,
+                size: context.menuAlertSelectFontSize(),
+              ),
+              SizedBox(width: context.menuAlertIconMargin()),
+              Text(context.premiumBuy(price),
+                style: TextStyle(
+                  color: blackColor,
+                  fontSize: context.menuAlertSelectFontSize(),
+                  fontWeight: FontWeight.bold,
+                  fontFamily: context.font(),
+                ),
+              ),
+            ],
           ),
         ),
       ],

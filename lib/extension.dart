@@ -134,8 +134,8 @@ extension ContextExt on BuildContext {
   void pushFadeReplacement(Widget page) {
     AudioManager().playEffectSound(asset: changeSound, volume: 1.0);
     Navigator.pushAndRemoveUntil(this, PageRouteBuilder(
-      pageBuilder: (_, animation, __) => page,
-      transitionsBuilder: (_, animation, __, child) => FadeTransition(
+      pageBuilder: (_, animation, _) => page,
+      transitionsBuilder: (_, animation, _, child) => FadeTransition(
         opacity: animation,
         child: child,
       ),
@@ -239,6 +239,7 @@ extension ContextExt on BuildContext {
   double menuAlertTitleFontSize()  => (widthResponsible() * 0.06 > 36) ? 36: widthResponsible() * 0.06;
   double menuAlertDescFontSize()   => (widthResponsible() * 0.032 > 14) ? 14: widthResponsible() * 0.032;
   double menuAlertSelectFontSize() => (widthResponsible() * 0.040 > 24) ? 24: widthResponsible() * 0.040;
+  double menuAlertIconMargin()     => widthResponsible() * 0.01;
   double menuLinksLogoSize() => widthResponsible() * 0.16;
   double menuLinksTitleSize() => widthResponsible() * 0.025;
   double menuLinksMargin() => widthResponsible() * 0.01;

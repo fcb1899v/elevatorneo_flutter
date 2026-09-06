@@ -108,27 +108,54 @@ class HomePage extends HookConsumerWidget {
     // --- Initial Data Loading Effect ---
     // Load initial data when the widget is first created
     useEffect(() {
+      /// Game services setup. Runs in the background, after the splash is gone
+      /// This is the only part of startup that needs the network:
+      /// checkInternetConnection() opens a socket to 1.1.1.1:53 and falls back
+      /// to a DNS lookup, both of which can time out where those are blocked.
+      /// Nothing on this screen needs the answer in order to render, so the
+      /// user must never wait for it
       Future<void> gamesInit() async {
         final hasInternet = await gamesManager.checkInternetConnection();
+        if (!context.mounted) return;
+        // Publish each result as soon as it is known. The menu treats
+        // isConnectedInternet == false as "offline" and refuses the rewarded
+        // ad, so the window where that is still the startup default has to be
+        // as short as possible
+        ref.read(internetProvider.notifier).setValue(hasInternet);
         final updatedGamesManager = GamesManager(
             isGamesSignIn: false,
             isConnectedInternet: hasInternet
         );
         final signedIn = await updatedGamesManager.gamesSignIn();
+        if (!context.mounted) return;
+        ref.read(gamesSignInProvider.notifier).setValue(signedIn);
         final reUpdatedGamesManager = GamesManager(
             isGamesSignIn: signedIn,
             isConnectedInternet: hasInternet
         );
         final bestScore = await reUpdatedGamesManager.getBestScore();
-        ref.read(internetProvider.notifier).setValue(hasInternet);
-        ref.read(gamesSignInProvider.notifier).setValue(signedIn);
-        ref.read(pointProvider.notifier).setValue(bestScore);
+        if (!context.mounted) return;
+        // The elevator is already usable while this runs, so a plain setValue
+        // would throw away the miles earned in the meantime. Only ever raise
+        ref.read(pointProvider.notifier).setValue(
+          (bestScore > ref.read(pointProvider)) ? bestScore: ref.read(pointProvider)
+        );
       }
 
+      /// Local setup only. Every await below reads SharedPreferences or the
+      /// documents directory, so the splash waits for disk and never for the
+      /// network
       Future<void> initState() async {
         isLoadingData.value = true;
         try {
-          if (!isGamesSignIn) await gamesInit();
+          // Show the cached mileage straight away. gamesInit() no longer runs
+          // before the first frame, and the app bar must not show 0 to a
+          // returning player until the leaderboard answers
+          final prefs = await SharedPreferences.getInstance();
+          ref.read(pointProvider.notifier).setValue("pointKey".getSharedPrefInt(prefs, 0));
+          // Stays ahead of the splash on purpose. floorImagesProvider starts
+          // at the bundled rooms, so removing the splash first would show
+          // those and then swap in the photos the user picked
           final images = await imageManager.getImagesList();
           ref.read(floorImagesProvider.notifier).setValue(images);
           if (context.mounted) {
@@ -145,6 +172,10 @@ class HomePage extends HookConsumerWidget {
           // dialog on its own, so a second app owned prompt only ever arrives
           // after the user has already answered
         }
+        // Deliberately not awaited, and deliberately after the splash is gone.
+        // Awaiting it here used to hold the splash for the full connectivity
+        // timeout on every launch that could not sign in to game services
+        if (!isGamesSignIn) unawaited(gamesInit());
       }
 
       WidgetsBinding.instance.addPostFrameCallback((_) async => await initState(),);

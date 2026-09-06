@@ -1,5 +1,5 @@
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'dart:io';
-import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
@@ -12,30 +12,32 @@ import 'main.dart';
 /// Application name
 const String appTitle = "LETS ELEVATOR NEO";
 
-/// Firebase App Check configuration (firebase_app_check 0.4+)
-/// Uses debug provider in debug mode, production provider in release mode
-final providerAndroid = kDebugMode ? const AndroidDebugProvider() : const AndroidPlayIntegrityProvider();
-final providerApple = kDebugMode ? const AppleDebugProvider() : const AppleAppAttestProvider();
 
 /// Ad unit ID configuration
 /// Platform-specific ad unit IDs for different build modes
 String rewardAdUnitID =
-  (!kDebugMode && (Platform.isIOS || Platform.isMacOS)) ? "IOS_REWARDED_UNIT_ID":
-  (!kDebugMode) ? "ANDROID_REWARDED_UNIT_ID":
-  (Platform.isIOS || Platform.isMacOS) ? "IOS_REWARDED_TEST_ID":
-  "ANDROID_REWARDED_TEST_ID";
+  // Production units resolve through .env at the call site; the demo units
+  // are Google's published constants and are returned directly
+  (!kDebugMode && (Platform.isIOS || Platform.isMacOS)) ? dotenv.get("IOS_REWARDED_UNIT_ID"):
+  (!kDebugMode) ? dotenv.get("ANDROID_REWARDED_UNIT_ID"):
+  (Platform.isIOS || Platform.isMacOS) ? iosRewardedTestId:
+  androidRewardedTestId;
 
 String bannerAdUnitID =
-  (!kDebugMode && (Platform.isIOS || Platform.isMacOS)) ? "IOS_BANNER_UNIT_ID":
-  (!kDebugMode) ? "ANDROID_BANNER_UNIT_ID":
-  (Platform.isIOS || Platform.isMacOS) ? "IOS_BANNER_TEST_ID":
-  "ANDROID_BANNER_TEST_ID";
+  // Production units resolve through .env at the call site; the demo units
+  // are Google's published constants and are returned directly
+  (!kDebugMode && (Platform.isIOS || Platform.isMacOS)) ? dotenv.get("IOS_BANNER_UNIT_ID"):
+  (!kDebugMode) ? dotenv.get("ANDROID_BANNER_UNIT_ID"):
+  (Platform.isIOS || Platform.isMacOS) ? iosBannerTestId:
+  androidBannerTestId;
 
 String interstitialAdUnitID =
-  (!kDebugMode && (Platform.isIOS || Platform.isMacOS)) ? "IOS_INTERSTITIAL_UNIT_ID":
-  (!kDebugMode) ? "ANDROID_INTERSTITIAL_UNIT_ID":
-  (Platform.isIOS || Platform.isMacOS) ? "IOS_INTERSTITIAL_TEST_ID":
-  "ANDROID_INTERSTITIAL_TEST_ID";
+  // Production units resolve through .env at the call site; the demo units
+  // are Google's published constants and are returned directly
+  (!kDebugMode && (Platform.isIOS || Platform.isMacOS)) ? dotenv.get("IOS_INTERSTITIAL_UNIT_ID"):
+  (!kDebugMode) ? dotenv.get("ANDROID_INTERSTITIAL_UNIT_ID"):
+  (Platform.isIOS || Platform.isMacOS) ? iosInterstitialTestId:
+  androidInterstitialTestId;
 
 /// Interstitial frequency capping
 /// Keeps interstitials from interrupting the elevator experience too often
@@ -72,6 +74,10 @@ const int bannerMaxRetry = 5;          // Only a settings round trip re-arms thi
 const int bannerRetryBaseSec = 30;     // First banner retry delay; doubles each attempt
 const int bannerRetryMaxSec = 300;     // Ceiling for the banner backoff
 const int rewardedMaxRetry = 3;        // Re-armed by the next button press
+
+/// The consent round trip can hang on a bad network. The reward button waits on
+/// it behind a spinner, so it needs a point at which it gives up and answers
+const int consentFormTimeoutSec = 15;
 
 // =============================================================================
 // FLOOR CONFIGURATION
@@ -389,3 +395,20 @@ const List<Color> numberColorList = [
 // Red = 255 = FF
 // Green = 99.47080 * Ln(30) - 161.11957 = 177 = B1
 // Blue = 138.51773 * Ln(30-10) - 305.04480 = 110 = 6E
+
+// --- AdMob demo ad units ---
+//
+// Google publishes these and they are the same for every developer, so they are
+// constants here rather than .env entries: they are not secret, and keeping them
+// in source means a missing .env key can no longer break a debug build.
+// Production unit IDs stay in .env, because those are ours.
+// https://developers.google.com/admob/android/test-ads
+// https://developers.google.com/admob/ios/test-ads  (checked 2026-09-02)
+// Adaptive banners have their own demo unit. The fixed size ones (6300978111,
+// 2934735716) only serve 320x50, making every adaptive size look like 320x50
+const String androidBannerTestId = "ca-app-pub-3940256099942544/9214589741";
+const String iosBannerTestId = "ca-app-pub-3940256099942544/2435281174";
+const String androidRewardedTestId = "ca-app-pub-3940256099942544/5224354917";
+const String iosRewardedTestId = "ca-app-pub-3940256099942544/1712485313";
+const String androidInterstitialTestId = "ca-app-pub-3940256099942544/1033173712";
+const String iosInterstitialTestId = "ca-app-pub-3940256099942544/4411468910";

@@ -27,7 +27,13 @@ class GamesManager {
 
   /// Check internet connectivity with timeout and fallback
   Future<bool> checkInternetConnection() async {
-    final Duration timeout = const Duration(seconds: 10);
+    // 3 seconds, not 10. A reachable resolver answers a TCP connect in well
+    // under a second, so the extra time only ever bought a slower "offline".
+    // The menu awaits this call inline (menu.dart), and both timeouts can run
+    // back to back, so 10 + 10 meant a 20 second spinner on networks that
+    // block 1.1.1.1. A false "offline" here is recoverable: the menu and the
+    // settings screen re-run this check, and both say so in a snackbar
+    final Duration timeout = const Duration(seconds: 3);
     // Log connectivity result but don't rely on it for decision
     try {
       final connectivity = await Connectivity().checkConnectivity();

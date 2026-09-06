@@ -1,11 +1,16 @@
 name: letselevatorneo
 description: elevatorsimulatorneo
 publish_to: 'none'
-version: 1.5.25+72
+version: 1.5.26+74
 
 environment:
-  sdk: '>=2.18.0 <4.0.0'
-  flutter: '>=3.3.0'
+  # 3.47 is the floor, not 3.3: Android Gradle Plugin 9 rejects the Kotlin
+  # Gradle Plugin being applied on top, and Flutter forces it onto plugin
+  # modules until 3.47 adds the isBuiltInKotlinEnabled guard. Declaring 3.3
+  # let `pub get` succeed and the Android build fail later with an error
+  # that names neither.
+  sdk: '>=3.13.0 <4.0.0'
+  flutter: '>=3.47.0'
 dependencies:
   flutter:
     sdk: flutter
@@ -18,15 +23,21 @@ dependencies:
   firebase_core_web: ^3.10.0
   firebase_analytics: ^12.4.6
   firebase_analytics_web: ^0.6.1+12
-  firebase_app_check: ^0.4.6
   # App Icon
   cupertino_icons: ^1.0.9
   flutter_launcher_icons: ^0.14.4
-  # Text to Speech (git: SPM support not yet on pub.dev 4.2.5)
+  # Text to Speech
+  # Fork of pub.dev flutter_tts 4.2.5. Upstream has no Swift Package Manager
+  # support and its last commit was 2026-01-05, so waiting for it would keep
+  # CocoaPods in the iOS build. Changes from the published 4.2.5:
+  #   ios/flutter_tts/, macos/flutter_tts/   SPM manifests, added
+  #   android/build.gradle                   branch on android.builtInKotlin so
+  #                                          AGP 9 compiles the Kotlin itself
+  #   example/, gen/, test/                  removed; not needed to build
+  # The Dart sources are unchanged. `diff -rq` against the pub-cache copy shows
+  # exactly the five entries above.
   flutter_tts:
-    git:
-      url: https://github.com/muhammedeminalan/flutter_tts.git
-      ref: codex/spm-ios-macos-support
+    path: packages/flutter_tts
   # Audio Player
   just_audio: ^0.10.6
   # Vibration
@@ -38,8 +49,7 @@ dependencies:
   games_services: ^5.3.0
   connectivity_plus: ^7.3.1
   # Admob
-  google_mobile_ads: ^9.0.0
-  app_tracking_transparency: ^2.0.7
+  google_mobile_ads: ^9.1.0
   # In-App Purchase (RevenueCat)
   purchases_flutter: ^10.10.0
   # Store Review

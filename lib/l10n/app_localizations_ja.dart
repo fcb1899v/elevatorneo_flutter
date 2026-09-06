@@ -1,5 +1,6 @@
 // ignore: unused_import
 import 'package:intl/intl.dart' as intl;
+
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -263,6 +264,9 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get notConnectedInternet => 'インターネット接続がありません';
+
+  @override
+  String get rewardAdUnavailable => '動画を再生できません。広告の同意設定を確認するか、しばらくしてからお試しください';
 
   @override
   String notSignedInGameCenter(Object Platform) {

@@ -1,5 +1,6 @@
 // ignore: unused_import
 import 'package:intl/intl.dart' as intl;
+
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -262,6 +263,10 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get notConnectedInternet => '인터넷 연결이 없습니다';
+
+  @override
+  String get rewardAdUnavailable =>
+      '영상을 재생할 수 없습니다. 광고 동의 설정을 확인하거나 잠시 후 다시 시도해 주세요';
 
   @override
   String notSignedInGameCenter(Object Platform) {

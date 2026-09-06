@@ -90,6 +90,7 @@
   "earnMilesAfterAdTitle" : "看广告赚取{NUMBER}电梯里程!\n",
   "earnMilesAfterAdDesc" : "如果您在指定的时间内观看广告，您可以获得{NUMBER}电梯里程。",
   "notConnectedInternet" : "当前没有网络连接",
+  "rewardAdUnavailable" : "无法播放视频。请检查广告同意设置，或稍后再试",
   "notSignedInGameCenter" : "请登录 {Platform}",
   
   "aboutLetsElevator": "关于操作乐趣电梯",

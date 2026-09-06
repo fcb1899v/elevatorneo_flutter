@@ -90,6 +90,7 @@
   "earnMilesAfterAdTitle": "Gagnez\n{NUMBER} Miles EV\nen regardant des publicités\n",
   "earnMilesAfterAdDesc": "Pour gagner {NUMBER} Miles EV, veuillez regarder les publicités pendant la durée spécifiée.",
   "notConnectedInternet": "Pas de connexion Internet",
+  "rewardAdUnavailable": "Aucune vidéo disponible. Vérifiez votre consentement publicitaire ou réessayez plus tard",
   "notSignedInGameCenter": "Connectez-vous à {Platform}",
 
   "aboutLetsElevator": "À propos de LETS ELEVATOR",

@@ -150,6 +150,7 @@ extension L10nContextExt on BuildContext {
   String privacyPolicyLink() => (lang() == "ja") ? privacyPolicyJa: privacyPolicyEn;
   String youtubeLink() => (lang() == "ja") ? youtubeJa: youtubeEn;
   String notConnectedInternet() => AppLocalizations.of(this)!.notConnectedInternet;
+  String rewardAdUnavailable() => AppLocalizations.of(this)!.rewardAdUnavailable;
   // Premium upgrade
   String premiumTitle() => AppLocalizations.of(this)!.premiumTitle;
   String premiumDesc() => AppLocalizations.of(this)!.premiumDesc;

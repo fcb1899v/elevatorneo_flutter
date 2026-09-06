@@ -1,7 +1,6 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -54,7 +53,7 @@ class AdBannerWidget extends HookConsumerWidget {
     // final testIdentifiers = ['2793ca2a-5956-45a2-96c0-16fafddc1a15'];
 
     // バナー広告ID
-    String bannerUnitId() => dotenv.get(bannerAdUnitID);
+    String bannerUnitId() => bannerAdUnitID;
 
     Future<void> loadAdBanner() async {
       // Every caller sits behind the consent round trip or a retry timer, so
@@ -87,6 +86,7 @@ class AdBannerWidget extends HookConsumerWidget {
             // Then fit the container to the size the server actually returned.
             // The request caps the height, so this only ever shrinks the slot
             final platformAdSize = await (ad as BannerAd).getPlatformAdSize();
+            'AdSize: cap $adMaxHeight width $adWidth / served: ${platformAdSize?.width} x ${platformAdSize?.height}'.debugPrint();
             if (platformAdSize != null) {
               adHeight.value = platformAdSize.height.toDouble();
             }

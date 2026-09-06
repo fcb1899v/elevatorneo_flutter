@@ -1,5 +1,6 @@
 // ignore: unused_import
 import 'package:intl/intl.dart' as intl;
+
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -262,6 +263,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get notConnectedInternet => '当前没有网络连接';
+
+  @override
+  String get rewardAdUnavailable => '无法播放视频。请检查广告同意设置，或稍后再试';
 
   @override
   String notSignedInGameCenter(Object Platform) {

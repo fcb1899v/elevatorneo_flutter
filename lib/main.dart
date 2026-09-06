@@ -7,8 +7,6 @@
 
 import 'dart:async';
 import 'dart:io';
-import 'package:firebase_app_check/firebase_app_check.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -16,7 +14,6 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'l10n/app_localizations.dart' show AppLocalizations;
 import 'firebase_options.dart';
@@ -177,19 +174,11 @@ Future<void> main() async {
   /// --- Firebase Initialization ---
   // Initialize Firebase services with platform-specific configuration
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  /// --- Purchase Initialization ---
-  // Configure RevenueCat and resolve the premium entitlement before the first frame
-  // Skipped when no API key is configured yet, so the app still runs ad-supported
-  final apiKey = dotenv.maybeGet(revenueCatApiKey);
-  bool initialPremium = false;
-  if (apiKey != null && apiKey.isNotEmpty) {
-    await Purchases.setLogLevel(kDebugMode ? LogLevel.debug: LogLevel.warn);
-    await Purchases.configure(PurchasesConfiguration(apiKey));
-    if (Platform.isIOS || Platform.isMacOS) {
-      await Purchases.enableAdServicesAttributionTokenCollection();
-    }
-    initialPremium = await getInitialPremiumStatus();
-  }
+  /// --- Premium Entitlement ---
+  // purchase_manager.dart is NOT IN USE, so no store SDK starts here and the
+  // entitlement is read from the local cache only. Anyone who already unlocked
+  // premium keeps their unlocks. See purchase_manager.dart to restore
+  final initialPremium = premiumKey.getSharedPrefBool(prefs, false);
   /// --- App Launch ---
   // Launch the app with saved preferences and initial state overrides
   runApp(ProviderScope(
@@ -208,11 +197,6 @@ Future<void> main() async {
     child: const MyApp()
   ));
   /// --- Post-Launch Services ---
-  // Initialize additional services after app launch (Firebase App Check, ads, tracking)
-  await FirebaseAppCheck.instance.activate(
-    providerAndroid: providerAndroid,
-    providerApple: providerApple,
-  );
   // Same call and same place as before. It goes through the shared future in
   // admob_banner.dart because the banner may reach the ad request before this
   // line runs, and the platform SDK must only be started once

@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "266717570850",
+    "project_id": "letselevator-neo",
+    "storage_bucket": "letselevator-neo.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:266717570850:android:34311fc72ed525b63fa77b",
+        "android_client_info": {
+          "package_name": "nakajimamasao.appstudio.letselevatorneo"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "266717570850-gdekap809cecfvr17lun1rmseqbdgn0u.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "nakajimamasao.appstudio.letselevatorneo",
+            "certificate_hash": "1e773aefb6fe327ed17c7640928fdc830f444ec5"
+          }
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDgSicfqsqnBwo5cbGvh9mDXDzDHndBME8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      },
+      "admob_app_id": "ca-app-pub-1585283309075901~2116965599"
+    }
+  ],
+  "configuration_version": "1"
+}

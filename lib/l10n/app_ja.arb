@@ -90,6 +90,7 @@
   "earnMilesAfterAdTitle" : "広告を見て\n{NUMBER}EVマイル\nゲット!\n",
   "earnMilesAfterAdDesc" : "広告を指定の時間ご覧いただくと、{NUMBER}EVマイルが獲得できます。",
   "notConnectedInternet" : "インターネット接続がありません",
+  "rewardAdUnavailable" : "動画を再生できません。広告の同意設定を確認するか、しばらくしてからお試しください",
   "notSignedInGameCenter" : "{Platform}にサインインが必要です",
   
   "aboutLetsElevator" : "レッツ・エレベーターとは",

@@ -67,52 +67,18 @@ class SettingsPage extends HookConsumerWidget {
     // UI widget instances and service managers
     final common = CommonWidget(context);
 
-    // --- Premium Purchase Functions ---
-    // Purchase entry point reached from the lock overlays
+    // --- Locked Feature Handling ---
+    // The upgrade offer that used to open here is gone: purchase_manager.dart is
+    // NOT IN USE, so there would be nothing to buy. The lock overlay already
+    // shows the EV miles required, which stays the only way to unlock. The tap is
+    // still recorded as a demand signal. See purchase_manager.dart to restore
 
-    /// Run the purchase or restore flow and report the result to the user
-    Future<void> runPurchase({required bool isRestore, required String source}) async {
-      isLoadingData.value = true;
-      try {
-        final purchased = await ref.read(planProvider.notifier).buyPremium(
-          isRestore: isRestore,
-          source: source,
-        );
-        if (!context.mounted) return;
-        if (purchased) {
-          common.commonSnackBar(context.premiumThanks());
-        } else if (isRestore) {
-          common.commonSnackBar(context.premiumRestoreFailed());
-        }
-      } catch (e) {
-        "Purchase error: $e".debugPrint();
-        if (context.mounted) common.commonSnackBar(context.premiumFailed());
-      } finally {
-        isLoadingData.value = false;
-      }
-    }
-
-    /// Offer the premium unlock when the user taps a locked feature
-    /// The lock tap itself is the strongest demand signal, so it is logged first
-    Future<void> showUpgrade(String feature, int requiredPoint) async {
+    /// Record that the user reached a locked feature
+    Future<void> logLockTap(String feature, int requiredPoint) async {
       await AnalyticsManager.unlockBlocked(
         feature: feature,
         requiredPoint: requiredPoint,
         currentPoint: point,
-      );
-      await ref.read(planProvider.notifier).fetchPrice();
-      if (!context.mounted) return;
-      await AnalyticsManager.upgradeOffered(feature);
-      common.upgradeAlert(
-        price: ref.read(planProvider).priceString,
-        onBuy: () async {
-          context.popPage();
-          await runPurchase(isRestore: false, source: feature);
-        },
-        onRestore: () async {
-          context.popPage();
-          await runPurchase(isRestore: true, source: feature);
-        },
       );
     }
 
@@ -126,7 +92,7 @@ class SettingsPage extends HookConsumerWidget {
       backgroundStyle: backgroundStyle,
       glassStyle: glassStyle,
       isPremium: isPremium,
-      onLockTap: showUpgrade,
+      onLockTap: logLockTap,
     );
 
     /// --- Initialization Effect ---
@@ -152,7 +118,12 @@ class SettingsPage extends HookConsumerWidget {
         final bestScore = await reUpdatedGamesManager.getBestScore();
         ref.read(internetProvider.notifier).setValue(hasInternet);
         ref.read(gamesSignInProvider.notifier).setValue(signedIn);
-        ref.read(pointProvider.notifier).setValue(bestScore);
+        // This runs unawaited, so the user can keep earning while it is in
+        // flight. A plain setValue would drop whatever arrived meanwhile.
+        // Same reasoning as homepage.dart: mileage only ever goes up
+        ref.read(pointProvider.notifier).setValue(
+          (bestScore > ref.read(pointProvider)) ? bestScore: ref.read(pointProvider)
+        );
       }
 
       initState() async {
