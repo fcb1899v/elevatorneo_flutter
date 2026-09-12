@@ -91,12 +91,13 @@ ios/Flutter/flutter_export_environment.sh
 # implementation itself. Unit IDs come from .env and constant.dart, so these
 # files hold nothing secret. Both are already tracked; the rule only meant
 # that dropping them from the index would have made them unrecoverable.
-# Not firebase_options.dart: the build needs it, and every value in it
-# (apiKey, appId, projectId, messagingSenderId, storageBucket, and the
-# iOS/Android client ids) ships inside the app binary, so hiding the file
-# hides nothing from anyone who has the app. A Firebase API key identifies
-# the project; it does not authorize access. Firestore rules and App Check
-# do that.
+# firebase_options.dart is ignored since 2026-09-12. This does not make its API
+# keys secret: the same values sit in google-services.json / GoogleService-Info.plist
+# and inside every shipped binary. What it does is keep them out of the file that
+# GitHub's scanner flags. Pushing this file on 2026-09-06 was detected, reported to
+# Google through the secret scanning partner program, and the project was suspended
+# two days later. Run `flutterfire configure` after a fresh clone to regenerate it.
+lib/firebase_options.dart
 
 # Keystore files
 **/*.keystore
