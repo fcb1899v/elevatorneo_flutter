@@ -1,9 +1,4 @@
-// =============================
-// Main: Entry point for elevator simulator application
-//
-// Handles app initialization, state management, and global configuration.
-// Key features: Firebase setup, state providers, UI configuration, tracking
-// =============================
+// ===== Main: entry point; Firebase setup, state providers, UI configuration =====
 
 import 'dart:async';
 import 'dart:io';
@@ -20,7 +15,6 @@ import 'firebase_options.dart';
 import 'extension.dart';
 import 'constant.dart';
 import 'plan_provider.dart';
-import 'admob_banner.dart';
 import 'homepage.dart';
 import 'menu.dart';
 import 'settings.dart';
@@ -137,9 +131,7 @@ class PointNotifier extends Notifier<int> {
 }
 
 /// --- Application Initialization ---
-// Main entry point that handles all app setup and initialization
-// Sets up UI configuration, loads user preferences, initializes Firebase,
-// and launches the app with proper state management
+// Sets up UI, loads preferences, initializes Firebase and launches the app
 Future<void> main() async {
   final widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
@@ -165,19 +157,19 @@ Future<void> main() async {
   await dotenv.load(fileName: "assets/.env");
   final prefs = await SharedPreferences.getInstance();
   // Load saved user preferences and current date
-  final savedFloorNumbers = "numbersKey".getSharedPrefListInt(prefs, initialFloorNumbers);
-  final savedFloorStops = "stopsKey".getSharedPrefListBool(prefs, initialFloorStops);
+  final savedFloorNumbers = normalizedFloorNumbers(
+    "numbersKey".getSharedPrefListInt(prefs, initialFloorNumbers));
+  final savedFloorStops = normalizedFloorStops(
+    "stopsKey".getSharedPrefListBool(prefs, initialFloorStops));
   final savedButtonShape = "buttonShapeKey".getSharedPrefString(prefs, initialButtonShape);
   final savedButtonStyle = "buttonStyleKey".getSharedPrefInt(prefs, initialButtonStyle);
   final savedBackgroundStyle = "backgroundStyleKey".getSharedPrefString(prefs, initialBackgroundStyle);
   final savedGlassStyle = "glassStyleKey".getSharedPrefString(prefs, initialGlassStyle);
-  /// --- Firebase Initialization ---
-  // Initialize Firebase services with platform-specific configuration
+  /// --- Firebase Initialization --- must finish before runApp:
+  // MyApp.build reads FirebaseAnalytics.instance, which throws until initializeApp
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  /// --- Premium Entitlement ---
-  // purchase_manager.dart is NOT IN USE, so no store SDK starts here and the
-  // entitlement is read from the local cache only. Anyone who already unlocked
-  // premium keeps their unlocks. See purchase_manager.dart to restore
+  /// --- Premium Entitlement --- read from the local cache, not the store.
+  // PurchaseManager configures RevenueCat on first use; see purchase_manager.dart
   final initialPremium = premiumKey.getSharedPrefBool(prefs, false);
   /// --- App Launch ---
   // Launch the app with saved preferences and initial state overrides
@@ -196,16 +188,12 @@ Future<void> main() async {
     ],
     child: const MyApp()
   ));
-  /// --- Post-Launch Services ---
-  // Same call and same place as before. It goes through the shared future in
-  // admob_banner.dart because the banner may reach the ad request before this
-  // line runs, and the platform SDK must only be started once
-  await initializeMobileAds();
+  /// --- Post-Launch Services --- MobileAds.initialize is no longer started here.
+  // Banner and rewarded menu start the SDK via admob_banner.dart when an ad is wanted
 }
 
 /// --- Main Application Widget ---
-// Root MaterialApp widget that configures the entire application
-// Sets up localization, routing, theme, and navigation tracking
+// Root MaterialApp: localization, routing, theme, and navigation tracking
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
   @override
@@ -240,6 +228,4 @@ class MyApp extends StatelessWidget {
   );
 }
 /// --- Privacy and Tracking ---
-// This app has no ATT code of its own. The AdMob UMP flow in admob_banner.dart
-// shows the IDFA explainer and the system ATT dialog, so consent and tracking
-// are configured in the AdMob console, not here.
+// No ATT code here: the UMP flow in admob_banner.dart shows the explainer and dialog

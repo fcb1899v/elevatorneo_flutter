@@ -100,12 +100,15 @@
   "officialShop" : "Official Shop",
   "ranking" : "Ranking",
 
-  "premiumTitle" : "Unlock Everything\n",
-  "premiumDesc" : "Remove ads and unlock every button, background and floor image right away, without collecting EV miles.",
-  "premiumPrice" : "Unlock for {PRICE}",
-  "premiumBuy" : "Unlock",
+  "premiumTitle" : "Premium Pack",
+  "premiumNoAds" : "No more ads",
+  "premiumUnlockAll" : "Every design and feature,\nwith no EV miles to collect",
+  "premiumOneTime" : "A one-time purchase",
+  "premiumPrice" : "Buy for {PRICE}",
+  "premiumBuy" : "Buy",
   "premiumRestore" : "Restore",
   "premiumThanks" : "Thank you! Everything is unlocked.",
   "premiumFailed" : "The purchase could not be completed.",
-  "premiumRestoreFailed" : "No purchase was found to restore."
+  "premiumRestoreFailed" : "No purchase was found to restore.",
+  "premiumUnavailable" : "Purchases are unavailable right now.\nPlease try again later."
 }

@@ -150,6 +150,21 @@ assets/
 - Normal Mode: Standard floor numbers
 - 1000-Floor Mode: 1000-story building
 - Shimada Mode: Special configuration
+- Every button except 1F can be renumbered. The picker offers only the gap
+  between the neighbouring buttons, inside B6..163F, so the panel always reads
+  bottom to top. With ten buttons the top therefore stops at 8F and the bottom
+  at B2
+- Each button can be set to stop or to bypass, except 1F. At least one floor
+  above 1F and one below it must stop, so the last remaining switch on a side
+  is disabled
+
+## 💳 Premium
+
+A single non-consumable purchase (`premium`), sold through RevenueCat.
+
+- Removes the banner ad and opens every lock at once
+- Reached from the fourth menu tile, and from any padlock in settings
+- Restoring is offered on the same page, as the store guidelines require
 
 ### Visual Themes
 - Door frames: Metal, Pop, White, Wood

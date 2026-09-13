@@ -292,29 +292,37 @@ class AppLocalizationsKo extends AppLocalizations {
   String get ranking => '랭킹';
 
   @override
-  String get premiumTitle => '전체 해제\n';
+  String get premiumTitle => '프리미엄 팩';
 
   @override
-  String get premiumDesc =>
-      '광고가 사라지고 버튼, 배경, 층 이미지를 EV 마일을 모으지 않고 바로 사용할 수 있습니다.';
+  String get premiumNoAds => '광고가 표시되지 않습니다';
+
+  @override
+  String get premiumUnlockAll => 'EV 마일 없이\n모든 디자인과 기능을 사용할 수 있습니다';
+
+  @override
+  String get premiumOneTime => '한 번만 결제합니다';
 
   @override
   String premiumPrice(Object PRICE) {
-    return '$PRICE에 해제하기';
+    return '$PRICE에 구매';
   }
 
   @override
-  String get premiumBuy => '해제하기';
+  String get premiumBuy => '구매';
 
   @override
   String get premiumRestore => '구매 복원';
 
   @override
-  String get premiumThanks => '감사합니다! 모두 해제되었습니다.';
+  String get premiumThanks => '감사합니다! 모두 잠금 해제되었습니다.';
 
   @override
   String get premiumFailed => '구매를 완료하지 못했습니다.';
 
   @override
   String get premiumRestoreFailed => '복원할 구매 내역을 찾을 수 없습니다.';
+
+  @override
+  String get premiumUnavailable => '지금은 구매를 진행할 수 없습니다.\n잠시 후 다시 시도해 주세요.';
 }

@@ -1,10 +1,7 @@
 import 'package:just_audio/just_audio.dart';
 import 'extension.dart';
 
-// =============================
-// AudioManager: Audio management using just_audio
-// Handles playback and stop for sound effects
-// =============================
+// ===== AudioManager: sound effect playback and stop via just_audio =====
 class AudioManager {
   AudioPlayer? _audioPlayer;
 

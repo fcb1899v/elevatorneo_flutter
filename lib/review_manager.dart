@@ -1,12 +1,4 @@
-// =============================
-// ReviewManager: ride counting and store review requests
-//
-// The ride count drives both the store review prompt and interstitial
-// pacing, so new users are never interrupted before they enjoy the app.
-// Key features:
-// - Persistent ride counter
-// - One-shot in-app review request after enough rides
-// =============================
+// ===== ReviewManager: persistent ride counter, one-shot store review request =====
 
 import 'package:in_app_review/in_app_review.dart';
 import 'package:shared_preferences/shared_preferences.dart';

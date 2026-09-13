@@ -1,17 +1,5 @@
-// =============================
-// HomePage: Main elevator simulation interface
-//
-// This file contains the main UI and logic for the elevator simulator.
-// It manages elevator movement, door states, button interactions, and user interface.
-// Key features:
-// - Elevator movement simulation with realistic timing
-// - Door state management (opening, closing, opened, closed)
-// - Floor button selection and deselection
-// - Operation button controls (open, close, emergency)
-// - View switching between inside and outside elevator
-// - TTS announcements and sound effects
-// - Score tracking and game integration
-// =============================
+// ===== HomePage: main elevator simulation interface =====
+// Movement, doors, buttons, view switching, TTS, sounds, score and game integration.
 
 import 'dart:async';
 import 'package:flutter/cupertino.dart';
@@ -108,19 +96,13 @@ class HomePage extends HookConsumerWidget {
     // --- Initial Data Loading Effect ---
     // Load initial data when the widget is first created
     useEffect(() {
-      /// Game services setup. Runs in the background, after the splash is gone
-      /// This is the only part of startup that needs the network:
-      /// checkInternetConnection() opens a socket to 1.1.1.1:53 and falls back
-      /// to a DNS lookup, both of which can time out where those are blocked.
-      /// Nothing on this screen needs the answer in order to render, so the
-      /// user must never wait for it
+      /// Game services setup, in the background after the splash is gone. This is
+      /// the only part of startup that needs the network, so nothing waits on it
       Future<void> gamesInit() async {
         final hasInternet = await gamesManager.checkInternetConnection();
         if (!context.mounted) return;
-        // Publish each result as soon as it is known. The menu treats
-        // isConnectedInternet == false as "offline" and refuses the rewarded
-        // ad, so the window where that is still the startup default has to be
-        // as short as possible
+        // Publish each result as soon as it is known: the menu refuses the
+        // rewarded ad while isConnectedInternet is still the startup default
         ref.read(internetProvider.notifier).setValue(hasInternet);
         final updatedGamesManager = GamesManager(
             isGamesSignIn: false,
@@ -142,20 +124,16 @@ class HomePage extends HookConsumerWidget {
         );
       }
 
-      /// Local setup only. Every await below reads SharedPreferences or the
-      /// documents directory, so the splash waits for disk and never for the
-      /// network
+      /// Local setup only: every await below reads disk, never the network
       Future<void> initState() async {
         isLoadingData.value = true;
         try {
-          // Show the cached mileage straight away. gamesInit() no longer runs
-          // before the first frame, and the app bar must not show 0 to a
-          // returning player until the leaderboard answers
+          // Show the cached mileage straight away; the app bar must not show 0
+          // to a returning player until the leaderboard answers
           final prefs = await SharedPreferences.getInstance();
           ref.read(pointProvider.notifier).setValue("pointKey".getSharedPrefInt(prefs, 0));
-          // Stays ahead of the splash on purpose. floorImagesProvider starts
-          // at the bundled rooms, so removing the splash first would show
-          // those and then swap in the photos the user picked
+          // Stays ahead of the splash: removing it first would show the bundled
+          // rooms and then swap in the user's photos
           final images = await imageManager.getImagesList();
           ref.read(floorImagesProvider.notifier).setValue(images);
           if (context.mounted) {
@@ -167,14 +145,11 @@ class HomePage extends HookConsumerWidget {
         } finally {
           isLoadingData.value = false;
           FlutterNativeSplash.remove();
-          // Nothing tracking related runs here. The AdMob UMP flow in
-          // admob_banner.dart shows the IDFA explainer and the system ATT
-          // dialog on its own, so a second app owned prompt only ever arrives
-          // after the user has already answered
+          // Nothing tracking related runs here: the UMP flow in admob_banner.dart
+          // shows the IDFA explainer and the system ATT dialog on its own
         }
-        // Deliberately not awaited, and deliberately after the splash is gone.
-        // Awaiting it here used to hold the splash for the full connectivity
-        // timeout on every launch that could not sign in to game services
+        // Not awaited, and after the splash: awaiting it held the splash for
+        // the full connectivity timeout whenever sign-in failed
         if (!isGamesSignIn) unawaited(gamesInit());
       }
 
@@ -487,9 +462,7 @@ class HomePage extends HookConsumerWidget {
     }
 
     // --- View Control Functions ---
-    // Functions for managing view switching and waiting button interactions
     /// Switch between inside and outside elevator views
-    /// Adjusts image positioning and view state
     void changeView() {
       Vibration.vibrate(duration: vibTime, amplitude: vibAmp);
       isPressedOperationButtons.value = [false, false, false];
@@ -569,12 +542,14 @@ class HomePage extends HookConsumerWidget {
       backgroundColor: blackColor,
       /// App bar with menu button and point display
       appBar: home.homeAppBar(onPressed: () => pressedMenu()),
-      /// Main body with elevator interface
-      body: SafeArea(
-        top: true,
-        bottom: true,
-        child: Stack(children: [
-          InteractiveViewer(
+      /// Main body. Banner, menu overlay and spinner sit outside the SafeArea on
+      /// purpose: inside it the ad would float above the gesture bar with a gap under
+      body: Stack(children: [
+        SafeArea(
+          top: true,
+          bottom: true,
+          child: Stack(children: [
+            InteractiveViewer(
             minScale: 1.0,
             maxScale: 1.5,
             child: Stack(children: [
@@ -710,25 +685,22 @@ class HomePage extends HookConsumerWidget {
               /// Door cover for visual effects
               home.doorCover()
             ]),
-          ),
-          /// Menu overlay when menu is active
-          if (isMenu) const MenuPage(),
-          /// AdMob banner at bottom of screen
-          if (!isTest) const AdBannerWidget(),
-          /// Loading indicator during data initialization
-          if (isLoadingData.value) common.commonCircularProgressIndicator(),
-        ]),
-      ),
+            ),
+          ]),
+        ),
+        /// Menu overlay when menu is active. It runs its own Scaffold and its
+        /// own SafeArea, so it must not be nested inside this one
+        if (isMenu) const MenuPage(),
+        /// AdMob banner, flush with the bottom of the screen
+        if (!isTest) const AdBannerWidget(),
+        /// Loading indicator during data initialization
+        if (isLoadingData.value) common.commonCircularProgressIndicator(),
+      ]),
     );
   }
 }
 
-// =============================
-// HomeWidget: Main elevator UI components
-//
-// Contains all UI widgets for the elevator simulator interface.
-// Key features: app bar, floor images, doors, hall lamps, displays, buttons
-// =============================
+// ===== HomeWidget: app bar, floor images, doors, hall lamps, displays, buttons =====
 class HomeWidget {
   final BuildContext context;
   final List<int> floorNumbers;
@@ -1157,7 +1129,9 @@ class HomeWidget {
     required bool isWaitingUp,
     required bool isWaitingDown,
   }) => Column(children: List.generate(2, (i) =>
-    ((i == 0 && currentFloor != max) || (i == 1 && currentFloor != min)) ? GestureDetector(
+    // The ends of the panel, not the building: the top and the bottom move now
+    ((i == 0 && currentFloor != floorNumbers.last) ||
+     (i == 1 && currentFloor != floorNumbers.first)) ? GestureDetector(
       onTap: (i == 0) ? onTapUp : onTapDown,
       child: Container(
         width: context.operationButtonSize(),

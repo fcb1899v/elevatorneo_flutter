@@ -295,19 +295,25 @@ class AppLocalizationsEn extends AppLocalizations {
   String get ranking => 'Ranking';
 
   @override
-  String get premiumTitle => 'Unlock Everything\n';
+  String get premiumTitle => 'Premium Pack';
 
   @override
-  String get premiumDesc =>
-      'Remove ads and unlock every button, background and floor image right away, without collecting EV miles.';
+  String get premiumNoAds => 'No more ads';
+
+  @override
+  String get premiumUnlockAll =>
+      'Every design and feature,\nwith no EV miles to collect';
+
+  @override
+  String get premiumOneTime => 'A one-time purchase';
 
   @override
   String premiumPrice(Object PRICE) {
-    return 'Unlock for $PRICE';
+    return 'Buy for $PRICE';
   }
 
   @override
-  String get premiumBuy => 'Unlock';
+  String get premiumBuy => 'Buy';
 
   @override
   String get premiumRestore => 'Restore';
@@ -320,4 +326,8 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get premiumRestoreFailed => 'No purchase was found to restore.';
+
+  @override
+  String get premiumUnavailable =>
+      'Purchases are unavailable right now.\nPlease try again later.';
 }

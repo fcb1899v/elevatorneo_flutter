@@ -35,7 +35,7 @@
   
   "eVMile": "Millas EV",
   "eVMileRanking": "Millas EV\nClasificación",
-  "earnMile": "¡Gana\n{NUMBER}\nMillas EV!",
+  "earnMile": "¡Gana\n{NUMBER}\nmillas EV!",
   "aboutEVMile": "\nPuntos acumulados a través de frecuentes viajes en ascensor.\nLas millas EV acumuladas desbloquean varias funciones, que se pueden ajustar en la configuración del menú.",
   
   "rooftop": "El piso superior, ",
@@ -100,12 +100,15 @@
   "officialShop": "Tienda Oficial",
   "ranking": "Clasificación",
 
-  "premiumTitle": "Desbloquear todo\n",
-  "premiumDesc": "Elimina los anuncios y desbloquea al instante todos los botones, fondos e imágenes de planta, sin acumular millas EV.",
-  "premiumPrice": "Desbloquear por {PRICE}",
-  "premiumBuy": "Desbloquear",
+  "premiumTitle": "Pack Premium",
+  "premiumNoAds" : "Sin anuncios",
+  "premiumUnlockAll" : "Todos los diseños y funciones,\nsin acumular millas EV",
+  "premiumOneTime" : "Una compra única",
+  "premiumPrice": "Comprar por {PRICE}",
+  "premiumBuy": "Comprar",
   "premiumRestore": "Restaurar compra",
   "premiumThanks": "¡Gracias! Todo está desbloqueado.",
   "premiumFailed": "No se pudo completar la compra.",
-  "premiumRestoreFailed": "No se encontró ninguna compra para restaurar."
+  "premiumRestoreFailed": "No se encontró ninguna compra para restaurar.",
+  "premiumUnavailable": "Las compras no están disponibles.\nInténtalo de nuevo más tarde."
 }

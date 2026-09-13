@@ -5,9 +5,7 @@ import 'package:flutter/material.dart';
 
 import 'main.dart';
 
-// =============================================================================
-// APPLICATION CONFIGURATION
-// =============================================================================
+// ===== APPLICATION CONFIGURATION =====
 
 /// Application name
 const String appTitle = "LETS ELEVATOR NEO";
@@ -56,20 +54,11 @@ const String premiumEntitlementID = "premium";
 /// Minimum rides before asking the user for a store review
 const int reviewRequestRides = 30;
 
-// There are no ATT constants here on purpose, and no ATT code in this app at
-// all. The AdMob UMP flow started from admob_banner.dart shows the IDFA
-// explainer and then the system ATT dialog itself, so the app owns neither a
-// pre-prompt to pace nor a decision to wait on. An app side prompt cannot win
-// that race: UMP answers ATT while the user is still reading, which is exactly
-// what shipped and had to be removed. Ad loading does not gate on the tracking
-// decision either; a wait would cost impressions outright and buy nothing
+// No ATT constants or code in this app: the UMP flow in admob_banner.dart shows
+// the IDFA explainer and the system ATT dialog itself, and ads never wait on it
 
-/// Ad retry limits
-/// Unfilled requests never match, so retrying without a ceiling drags the match
-/// rate down and spends battery and data on a device that has no inventory
-///
-/// The two formats are deliberately not symmetric: nobody waits on a banner, so
-/// it backs off slowly, while the user is standing in front of the reward button
+/// Ad retry limits: unfilled requests never match, so retrying needs a ceiling.
+/// Not symmetric on purpose: nobody waits on a banner, but the user waits on a reward
 const int bannerMaxRetry = 5;          // Only a settings round trip re-arms this
 const int bannerRetryBaseSec = 30;     // First banner retry delay; doubles each attempt
 const int bannerRetryMaxSec = 300;     // Ceiling for the banner backoff
@@ -79,9 +68,7 @@ const int rewardedMaxRetry = 3;        // Re-armed by the next button press
 /// it behind a spinner, so it needs a point at which it gives up and answers
 const int consentFormTimeoutSec = 15;
 
-// =============================================================================
-// FLOOR CONFIGURATION
-// =============================================================================
+// ===== FLOOR CONFIGURATION =====
 
 /// Floor configuration
 /// Minimum and maximum floor numbers, and initial floor position
@@ -97,6 +84,16 @@ const List<int> initialFloorNumbers = [
 ];
 List<bool> initialFloorStops = List.generate(initialFloorNumbers.length, (_) => true);
 
+/// How far the top and bottom buttons may travel.
+///
+/// 1F never moves, so the buttons above it must fit between 1 and the top, and
+/// the buttons below it between the bottom and -1. With ten buttons and 1F at
+/// index 2 that leaves eight above ground and two below: the top cannot go
+/// under 8F, and the bottom cannot rise above B2.
+/// The picker enforces this by stopping at the neighbouring buttons
+const int floorButtonCount = 10;
+const int oneFloorIndex = 2;
+
 /// Button layout configuration for reversed button arrangement
 const List<List<int>> reversedButtonIndex = [
   [8, 9],
@@ -111,12 +108,67 @@ const List<List<int>> reversedButtonIndex = [
 bool isBasement(int row, int col) => (row == 4);
 int buttonCol(int row, int col) => isBasement(row, col) ? (1 - col) : col;
 int buttonIndex(int row, int col) => 2 * (4 - row) + buttonCol(row, col);
-bool isNotSelectFloor(int row, int col) =>
-    (col == 0 && row == 3) || (col == 1 && (row == 0 || row == 4));
+/// How far the two 1F controls are faded. They are dimmed rather than covered:
+/// a black plate over the cell hides the floor number itself
+const double fixedFloorOpacity = 0.35;
 
-// =============================================================================
-// GAMEPLAY & UNLOCK SYSTEM
-// =============================================================================
+/// CupertinoSwitch fades itself by 0.5 when onChanged is null
+/// (`cupertino/switch.dart` _kDisabledOpacity), so the switch needs a
+/// lighter touch to land on the same 0.35 as the button beside it
+const double fixedFloorSwitchOpacity = fixedFloorOpacity * 2;
+
+/// Only 1F is fixed. The top and the bottom move too, within the range above
+bool isNotSelectFloor(int row, int col) => (col == 0 && row == 3);
+
+/// The last stop above or below 1F cannot be turned off: the car needs
+/// somewhere to go on each side of the fixed floor
+bool isOnlyStop(List<bool> stops, int index) {
+  if (!stops[index]) return false;
+  for (int i = 0; i < stops.length; i++) {
+    if (i == index || i == oneFloorIndex) continue;
+    if ((i < oneFloorIndex) == (index < oneFloorIndex) && stops[i]) return false;
+  }
+  return true;
+}
+
+/// The gap a button may move within: strictly between its neighbours, inside
+/// min..max, and never floor 0. Both the picker and the save use this
+bool isInFloorGap(List<int> list, int index, int value) {
+  if (value == 0 || value < min || max < value) return false;
+  if (index == oneFloorIndex) return false;
+  if (index > 0 && value <= list[index - 1]) return false;
+  if (index < list.length - 1 && value >= list[index + 1]) return false;
+  return true;
+}
+
+/// A saved panel from an older build may break the rule above: before the
+/// pickers were bounded, the basement buttons could be set independently. Repair
+/// what is broken and keep the rest, rather than throw the whole panel away
+List<int> normalizedFloorNumbers(List<int> numbers) {
+  if (numbers.length != initialFloorNumbers.length) return initialFloorNumbers;
+  final list = List<int>.from(numbers)..[oneFloorIndex] = 1;
+  for (int i = oneFloorIndex - 1; i >= 0; i--) {
+    if (list[i] >= list[i + 1]) list[i] = list[i + 1] - 1;
+    if (list[i] == 0) list[i] = -1;
+  }
+  for (int i = oneFloorIndex + 1; i < list.length; i++) {
+    if (list[i] <= list[i - 1]) list[i] = list[i - 1] + 1;
+  }
+  // Pushing can run off either end. Nothing sensible is left to keep there
+  if (list.first < min || max < list.last) return initialFloorNumbers;
+  return list;
+}
+
+/// Each side of 1F needs a stop. A save made before that rule may have none
+List<bool> normalizedFloorStops(List<bool> stops) {
+  if (stops.length != initialFloorStops.length) return initialFloorStops;
+  final list = List<bool>.from(stops)..[oneFloorIndex] = true;
+  if (!list.sublist(0, oneFloorIndex).contains(true)) list[oneFloorIndex - 1] = true;
+  if (!list.sublist(oneFloorIndex + 1).contains(true)) list[oneFloorIndex + 1] = true;
+  return list;
+}
+
+// ===== GAMEPLAY & UNLOCK SYSTEM =====
 
 /// Unlock points configuration
 /// Points required to unlock various features
@@ -134,9 +186,7 @@ const int backgroundLockPoint = 10000;
 const String earnMiles = "1,000";
 const int earnMilesInt = 1000;
 
-// =============================================================================
-// TIMING & ANIMATION
-// =============================================================================
+// ===== TIMING & ANIMATION =====
 
 /// Vibration settings
 /// Duration and amplitude for haptic feedback
@@ -153,9 +203,7 @@ const int initialWaitTime =  2; //[sec]
 const int flashTime = 700;      //[msec]
 const int operationTime = 300;  //[msec]
 
-// =============================================================================
-// ELEVATOR STATE MANAGEMENT
-// =============================================================================
+// ===== ELEVATOR STATE MANAGEMENT =====
 
 /// Elevator door states
 /// Boolean arrays representing different door states: [opened, closed, opening, closing]
@@ -172,9 +220,7 @@ final List<bool> pressedClose = [false, true, false];
 final List<bool> pressedCall = [false, false, true];
 final List<bool> allPressed = [true, true, true];
 
-// =============================================================================
-// AUDIO CONFIGURATION
-// =============================================================================
+// ===== AUDIO CONFIGURATION =====
 
 /// Audio configuration
 /// Sound file paths for various elevator operations
@@ -185,18 +231,14 @@ const String callSound   = "assets/audios/call.mp3";
 const String openSound   = "assets/audios/pingpong.mp3";
 const String closeSound  = "assets/audios/ping.mp3";
 
-// =============================================================================
-// FONT CONFIGURATION
-// =============================================================================
+// ===== FONT CONFIGURATION =====
 
 /// Font configuration
 /// Font families for numbers and alphabets
 const List<String> numberFont = ["lcd", "dseg", "dseg"];
 const List<String> alphabetFont = ["lcd", "letsgo", "letsgo"];
 
-// =============================================================================
-// ASSET PATHS
-// =============================================================================
+// ===== ASSET PATHS =====
 
 /// Asset folder paths
 /// Base paths for different asset categories
@@ -206,9 +248,7 @@ const String assetsMenu = "assets/images/menu/";
 const String assetsRoom = "assets/images/room/";
 const String assetsSettings = "assets/images/settings/";
 
-// =============================================================================
-// ELEVATOR UI CONFIGURATION
-// =============================================================================
+// ===== ELEVATOR UI CONFIGURATION =====
 
 /// Elevator image configuration
 /// Button styles, shapes, and visual themes
@@ -221,6 +261,11 @@ const int numberButtonColumnCount = 3;
 
 /// Settings and style lists
 const List<String> settingsItemList = ["floor", "number", "button", "style"];
+
+/// Settings tabs that hold something the premium unlock opens.
+/// LETS's number tab is free, so it is not listed. The paywall draws one
+/// icon per entry, which keeps it correct when a tab gains a new feature
+const List<String> premiumTabList = ["floor", "number", "button", "style"];
 const List<String> backgroundStyleList = ["metal", "white", "wood", "pop"];
 const List<String> glassStyleList = ["not", "use"];
 const List<String> buttonShapeList = [
@@ -253,9 +298,7 @@ const String hallLampDown = "${assetsElevator}hallLamp_down.jpg";
 const String hallLampOn = "${assetsElevator}hallLamp_on.jpg";
 const String hallLampOff = "${assetsElevator}hallLamp_off.jpg";
 
-// =============================================================================
-// ROOM BACKGROUND IMAGES
-// =============================================================================
+// ===== ROOM BACKGROUND IMAGES =====
 
 /// Room background images
 /// Floor-specific background images for different locations
@@ -297,9 +340,7 @@ const List<String> addFloorImages = [
 ];
 const List<String> floorImageList = [...initialFloorImages, ...addFloorImages];
 
-// =============================================================================
-// BUTTON & MENU ASSETS
-// =============================================================================
+// ===== BUTTON & MENU ASSETS =====
 
 /// Button images
 /// Transparent and default button images
@@ -312,16 +353,16 @@ const String menuBackGroundImage = "${assetsMenu}metal.png";
 const String settingsButton = "${assetsMenu}settings.png";
 const String rankingButton = "${assetsMenu}ranking.png";
 const String adRewardButton = "${assetsMenu}adReward.png";
+// Baked from square1.png and purchase.svg by purchase_bake.sh, which sits next
+// to them. Edit the SVG and re-run the script; do not retouch the PNG by hand
+const String purchaseButton = "${assetsMenu}purchase.png";
 const String landingPageLogo = "${assetsMenu}web.png";
 const String shopPageLogo = "${assetsMenu}cart.png";
 const String twitterLogo = "${assetsMenu}x.png";
 const String instagramLogo = "${assetsMenu}instagram.png";
-const String youtubeLogo = "${assetsMenu}youtube.png";
 const String privacyPolicyLogo = "${assetsMenu}privacyPolicy.png";
 
-// =============================================================================
-// WEB LINKS & EXTERNAL URLs
-// =============================================================================
+// ===== WEB LINKS & EXTERNAL URLs =====
 
 /// Web page URLs
 /// Landing pages, privacy policy, and social media links
@@ -329,16 +370,11 @@ const String landingPageJa = "https://nakajimamasao-appstudio.web.app/elevatorne
 const String landingPageEn = "https://nakajimamasao-appstudio.web.app/elevatorneo/";
 const String privacyPolicyJa = "https://nakajimamasao-appstudio.web.app/terms/ja/";
 const String privacyPolicyEn = "https://nakajimamasao-appstudio.web.app/terms/";
-const String youtubeJa = "https://www.youtube.com/watch?v=CQuYL0wG47E";
-const String youtubeEn = "https://www.youtube.com/watch?v=oMhqBiNHAtA";
 const String shopLink = "https://letselevator.designstore.jp";
 const String elevatorTwitter = "https://twitter.com/letselevator";
 const String elevatorInstagram = "https://www.instagram.com/letselevator/";
-const String elevatorYoutube = "https://www.youtube.com/channel/UCIEVfzFOhUTMOXos1zaZrQQ";
 
-// =============================================================================
-// COLOR DEFINITIONS
-// =============================================================================
+// ===== COLOR DEFINITIONS =====
 
 /// Primary colors
 const Color lampColor = Color.fromRGBO(247, 178, 73, 1); //#f7b249
@@ -382,30 +418,11 @@ const List<Color> numberColorList = [
   yellowColor, pinkLightColor, goldLightColor,
 ];
 
-/// Color calculation notes
+// Color calculation notes. Shimada's lamp: F7B249 (R 247, G 178, B 73)
+// 3000 K -> FFB16E: G = 99.47080*Ln(30)-161.11957 = B1, B = 138.51773*Ln(20)-305.04480 = 6E
 
-//＜Shimada's lamp　color＞
-// [F7B249]
-// Red = F7 = 247
-// Green = B2 = 178
-// Blue = 49 = 73
-
-//＜Lamp color from temperature＞
-// Temperature = 3000 K → FFB16E
-// Red = 255 = FF
-// Green = 99.47080 * Ln(30) - 161.11957 = 177 = B1
-// Blue = 138.51773 * Ln(30-10) - 305.04480 = 110 = 6E
-
-// --- AdMob demo ad units ---
-//
-// Google publishes these and they are the same for every developer, so they are
-// constants here rather than .env entries: they are not secret, and keeping them
-// in source means a missing .env key can no longer break a debug build.
-// Production unit IDs stay in .env, because those are ours.
-// https://developers.google.com/admob/android/test-ads
-// https://developers.google.com/admob/ios/test-ads  (checked 2026-09-02)
-// Adaptive banners have their own demo unit. The fixed size ones (6300978111,
-// 2934735716) only serve 320x50, making every adaptive size look like 320x50
+// --- AdMob demo ad units --- Google publishes these, so they are not secret and
+// live here rather than in .env. Adaptive banners need their own unit, not 320x50
 const String androidBannerTestId = "ca-app-pub-3940256099942544/9214589741";
 const String iosBannerTestId = "ca-app-pub-3940256099942544/2435281174";
 const String androidRewardedTestId = "ca-app-pub-3940256099942544/5224354917";

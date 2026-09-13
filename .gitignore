@@ -216,3 +216,6 @@ ios/Flutter/flutter_export_environment.sh
 *.certSigningRequest
 *.mobileprovision
 *.provisionprofile
+
+# Editor-generated DevTools state
+devtools_options.yaml

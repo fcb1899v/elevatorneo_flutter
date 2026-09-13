@@ -1,9 +1,4 @@
-// =============================
-// ImageManager: Image and settings management for elevator simulator
-//
-// Handles image list management, settings persistence, and floor configuration.
-// Key features: image storage, settings persistence, floor configuration
-// =============================
+// ===== ImageManager: image list, settings persistence and floor configuration =====
 
 import 'dart:io';
 import 'package:path/path.dart' as path;
@@ -41,16 +36,14 @@ class ImageManager {
     required int newValue,
     required int newIndex,
   }) async {
-    if (!currentList.contains(newValue) && newValue != 0 && min <= newValue && newValue <= max) {
-      final prefs = await SharedPreferences.getInstance();
-      final newList = List<int>.from(currentList);
-      newList[newIndex] = newValue;
-      "newNumber: $newValue".debugPrint();
-      "numbersKey".setSharedPrefListInt(prefs, newList);
-      return newList;
-    } else {
-      return currentList;
-    }
+    // The picker only offers the gap between the neighbouring buttons, so the
+    // same gap is the only thing accepted here. Nothing else has to move
+    if (!isInFloorGap(currentList, newIndex, newValue)) return currentList;
+    final newList = List<int>.from(currentList)..[newIndex] = newValue;
+    final prefs = await SharedPreferences.getInstance();
+    "newNumber: $newValue".debugPrint();
+    "numbersKey".setSharedPrefListInt(prefs, newList);
+    return newList;
   }
 
   /// Save floor stop configuration
@@ -59,10 +52,11 @@ class ImageManager {
     required bool newValue,
     required int newIndex,
   }) async {
+    if (!newValue && isOnlyStop(currentList, newIndex)) return currentList;
     final prefs = await SharedPreferences.getInstance();
     final newList = List<bool>.from(currentList);
     newList[newIndex] = newValue;
-    "newNumber: $newValue".debugPrint();
+    "newStop: $newValue".debugPrint();
     "stopsKey".setSharedPrefListBool(prefs, newList);
     return newList;
   }

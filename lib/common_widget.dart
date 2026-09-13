@@ -1,15 +1,5 @@
-// =============================
-// CommonWidget: Reusable UI components for elevator simulator
-//
-// This file contains common UI widgets that are used throughout the application.
-// These components provide consistent styling and behavior across different screens.
-// Key features:
-// - Responsive background image handling
-// - Animated flash buttons with directional indicators
-// - Loading indicators with consistent styling
-// - Cross-platform UI elements
-// - Responsive design adaptations
-// =============================
+// ===== CommonWidget: reusable UI components =====
+// Backgrounds, flash buttons, loading indicators and responsive helpers.
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -75,90 +65,22 @@ class CommonWidget {
   );
 
   // --- Premium Upgrade Components ---
-  // Purchase entry point shown where the user meets a locked feature
   /// Offer the premium unlock, with a restore option required by both stores
-  void upgradeAlert({
-    required String price,
-    required void Function() onBuy,
-    required void Function() onRestore,
-  }) => showDialog(
-    context: context,
-    builder: (context) => CupertinoAlertDialog(
-      title: Text(context.premiumTitle(),
-        style: TextStyle(
-          color: blackColor,
-          fontSize: context.menuAlertTitleFontSize(),
-          fontFamily: context.font(),
-        ),
-      ),
-      content: Text(context.premiumDesc(),
-        style: TextStyle(
-          color: blackColor,
-          fontSize: context.menuAlertDescFontSize(),
-          fontFamily: context.font(),
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => context.popPage(),
-          child: Text(context.cancel(),
-            style: TextStyle(
-              color: blackColor,
-              fontSize: context.menuAlertSelectFontSize(),
-              fontFamily: context.font(),
-            ),
-          ),
-        ),
-        TextButton(
-          onPressed: onRestore,
-          child: Text(context.premiumRestore(),
-            style: TextStyle(
-              color: blackColor,
-              fontSize: context.menuAlertSelectFontSize(),
-              fontFamily: context.font(),
-            ),
-          ),
-        ),
-        TextButton(
-          onPressed: onBuy,
-          // The open padlock pairs with the closed one on the lock overlay, so
-          // the button reads as "this is what you get" rather than "you are
-          // buying something". The price text carries the cost on its own
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(CupertinoIcons.lock_open_fill,
-                color: blackColor,
-                size: context.menuAlertSelectFontSize(),
-              ),
-              SizedBox(width: context.menuAlertIconMargin()),
-              Text(context.premiumBuy(price),
-                style: TextStyle(
-                  color: blackColor,
-                  fontSize: context.menuAlertSelectFontSize(),
-                  fontWeight: FontWeight.bold,
-                  fontFamily: context.font(),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    ),
-  );
-
   // --- Loading and Feedback Components ---
-  // Loading indicators and user feedback elements
   /// Show a floating notification using the shared app styling
   void commonSnackBar(String text) {
     final snackBar = SnackBar(
-      content: Text(text,
-        style: TextStyle(
-          color: blackColor,
-          fontWeight: FontWeight.bold,
-          fontSize: context.snackBarFontSize(),
+      // Shrunk rather than wrapped: the text carries its own line breaks, and a
+      // language that overruns should keep them instead of folding a third line
+      content: FittedBox(fit: BoxFit.scaleDown,
+        child: Text(text,
+          style: TextStyle(
+            color: blackColor,
+            fontWeight: FontWeight.bold,
+            fontSize: context.snackBarFontSize(),
+          ),
+          textAlign: TextAlign.center,
         ),
-        textAlign: TextAlign.center,
       ),
       backgroundColor: lampColor,
       behavior: SnackBarBehavior.floating,

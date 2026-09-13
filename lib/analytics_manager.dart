@@ -1,13 +1,5 @@
-// =============================
-// AnalyticsManager: Firebase Analytics event logging
-//
-// Centralizes all custom analytics events so the revenue funnel can be
-// measured: rides -> unlock blocked -> reward ad / purchase.
-// Key features:
-// - Gameplay events (ride completion)
-// - Monetization events (reward ad, interstitial, purchase)
-// - Ad revenue reporting via AdMob paid event listener
-// =============================
+// ===== AnalyticsManager: Firebase Analytics event logging =====
+// Gameplay, monetization and AdMob paid events for the revenue funnel.
 
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
@@ -120,11 +112,6 @@ class AnalyticsManager {
   /// Log that the in-app store review prompt was requested
   static Future<void> reviewRequested() => _log("review_requested");
 
-  // No ATT event here on purpose. The AdMob UMP flow owns the tracking prompt,
-  // so the app has no callback that fires when the user answers, and reading
-  // the status at launch would record notDetermined on the one launch that
-  // matters. AdMob already reports explainer views and the opt-in rate. If
-  // Firebase side segmentation is ever wanted, set a user property on a later
-  // launch, where the persisted status is stable, instead of logging an event
-  // during startup
+  // No ATT event on purpose: UMP owns the prompt, so there is no answer callback
+  // and reading the status at launch would record notDetermined
 }

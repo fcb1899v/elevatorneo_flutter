@@ -71,6 +71,11 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
         methodChannel!!.setMethodCallHandler(this)
         handler = Handler(Looper.getMainLooper())
         bundle = Bundle()
+        // Created here, at engine attach, on purpose. Deferring it to the first
+        // method call was tried on 2026-09-06 and moved the service bind into
+        // the app's initTts(), which the first frame waits on behind the native
+        // splash, so the bind ran in series with the frame instead of alongside
+        // main(). Starting it here lets the bind overlap the Dart-side startup
         tts = TextToSpeech(context, onInitListenerWithoutCallback)
     }
 
@@ -80,8 +85,12 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
     }
 
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
-        stop()
-        tts!!.shutdown()
+        // Guard only: the engine is created at attach, so tts is non-null here
+        // in practice. Kept so a detach before initInstance cannot NPE
+        if (tts != null) {
+            stop()
+            tts!!.shutdown()
+        }
         context = null
         methodChannel!!.setMethodCallHandler(null)
         methodChannel = null
@@ -227,16 +236,11 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
 
             if (status == TextToSpeech.SUCCESS) {
                 tts!!.setOnUtteranceProgressListener(utteranceProgressListener)
-                try {
-                    val locale: Locale = tts!!.defaultVoice.locale
-                    if (isLanguageAvailable(locale)) {
-                        tts!!.language = locale
-                    }
-                } catch (e: NullPointerException) {
-                    Log.e(tag, "getDefaultLocale: " + e.message)
-                } catch (e: IllegalArgumentException) {
-                    Log.e(tag, "getDefaultLocale: " + e.message)
-                }
+                // The default-locale probe that used to run here (defaultVoice,
+                // then isLanguageAvailable) is two synchronous binder calls on
+                // the main thread, and it overwrote whatever language a queued
+                // setLanguage had just applied. The app sets its language from
+                // tts_manager.dart, so the engine keeps its own default until then
 
                 engineResult!!.success(1)
             } else {
@@ -258,16 +262,11 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
 
             if (status == TextToSpeech.SUCCESS) {
                 tts!!.setOnUtteranceProgressListener(utteranceProgressListener)
-                try {
-                    val locale: Locale = tts!!.defaultVoice.locale
-                    if (isLanguageAvailable(locale)) {
-                        tts!!.language = locale
-                    }
-                } catch (e: NullPointerException) {
-                    Log.e(tag, "getDefaultLocale: " + e.message)
-                } catch (e: IllegalArgumentException) {
-                    Log.e(tag, "getDefaultLocale: " + e.message)
-                }
+                // The default-locale probe that used to run here (defaultVoice,
+                // then isLanguageAvailable) is two synchronous binder calls on
+                // the main thread, and it overwrote whatever language a queued
+                // setLanguage had just applied. The app sets its language from
+                // tts_manager.dart, so the engine keeps its own default until then
             } else {
                 Log.e(tag, "Failed to initialize TextToSpeech with status: $status")
             }

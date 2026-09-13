@@ -291,18 +291,24 @@ class AppLocalizationsZh extends AppLocalizations {
   String get ranking => '排名';
 
   @override
-  String get premiumTitle => '全部解锁\n';
+  String get premiumTitle => '高级版';
 
   @override
-  String get premiumDesc => '去除广告，并立即解锁所有按钮、背景和楼层图片，无需累积EV里程。';
+  String get premiumNoAds => '不再显示广告';
+
+  @override
+  String get premiumUnlockAll => '无需累积电梯里程，\n即可使用所有设计和功能';
+
+  @override
+  String get premiumOneTime => '一次性购买';
 
   @override
   String premiumPrice(Object PRICE) {
-    return '以$PRICE解锁';
+    return '以$PRICE购买';
   }
 
   @override
-  String get premiumBuy => '解锁';
+  String get premiumBuy => '购买';
 
   @override
   String get premiumRestore => '恢复购买';
@@ -315,4 +321,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get premiumRestoreFailed => '未找到可恢复的购买记录。';
+
+  @override
+  String get premiumUnavailable => '目前无法进行购买。\n请稍后再试。';
 }

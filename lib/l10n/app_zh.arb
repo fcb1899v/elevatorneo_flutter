@@ -100,12 +100,15 @@
   "officialShop": "官方商店",
   "ranking" : "排名",
 
-  "premiumTitle" : "全部解锁\n",
-  "premiumDesc" : "去除广告，并立即解锁所有按钮、背景和楼层图片，无需累积EV里程。",
-  "premiumPrice" : "以{PRICE}解锁",
-  "premiumBuy" : "解锁",
+  "premiumTitle" : "高级版",
+  "premiumNoAds" : "不再显示广告",
+  "premiumUnlockAll" : "无需累积电梯里程，\n即可使用所有设计和功能",
+  "premiumOneTime" : "一次性购买",
+  "premiumPrice" : "以{PRICE}购买",
+  "premiumBuy" : "购买",
   "premiumRestore" : "恢复购买",
   "premiumThanks" : "感谢您！已全部解锁。",
   "premiumFailed" : "购买未能完成。",
-  "premiumRestoreFailed" : "未找到可恢复的购买记录。"
+  "premiumRestoreFailed" : "未找到可恢复的购买记录。",
+  "premiumUnavailable" : "目前无法进行购买。\n请稍后再试。"
 }

@@ -100,12 +100,15 @@
   "officialShop": "Boutique officielle",
   "ranking": "Classement",
 
-  "premiumTitle": "Tout débloquer\n",
-  "premiumDesc": "Supprimez les publicités et débloquez immédiatement tous les boutons, arrière-plans et images d'étage, sans accumuler de miles EV.",
-  "premiumPrice": "Débloquer pour {PRICE}",
-  "premiumBuy": "Débloquer",
+  "premiumTitle": "Pack Premium",
+  "premiumNoAds" : "Plus de publicité",
+  "premiumUnlockAll" : "Tous les designs et fonctions,\nsans accumuler de Miles EV",
+  "premiumOneTime" : "Achat unique",
+  "premiumPrice": "Acheter pour {PRICE}",
+  "premiumBuy": "Acheter",
   "premiumRestore": "Restaurer l'achat",
   "premiumThanks": "Merci ! Tout est débloqué.",
   "premiumFailed": "L'achat n'a pas pu être finalisé.",
-  "premiumRestoreFailed": "Aucun achat à restaurer n'a été trouvé."
+  "premiumRestoreFailed": "Aucun achat à restaurer n'a été trouvé.",
+  "premiumUnavailable": "Les achats sont indisponibles.\nRéessayez plus tard."
 }

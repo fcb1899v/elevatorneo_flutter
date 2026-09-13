@@ -104,7 +104,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String earnMile(Object NUMBER) {
-    return '¡Gana\n$NUMBER\nMillas EV!';
+    return '¡Gana\n$NUMBER\nmillas EV!';
   }
 
   @override
@@ -294,19 +294,25 @@ class AppLocalizationsEs extends AppLocalizations {
   String get ranking => 'Clasificación';
 
   @override
-  String get premiumTitle => 'Desbloquear todo\n';
+  String get premiumTitle => 'Pack Premium';
 
   @override
-  String get premiumDesc =>
-      'Elimina los anuncios y desbloquea al instante todos los botones, fondos e imágenes de planta, sin acumular millas EV.';
+  String get premiumNoAds => 'Sin anuncios';
+
+  @override
+  String get premiumUnlockAll =>
+      'Todos los diseños y funciones,\nsin acumular millas EV';
+
+  @override
+  String get premiumOneTime => 'Una compra única';
 
   @override
   String premiumPrice(Object PRICE) {
-    return 'Desbloquear por $PRICE';
+    return 'Comprar por $PRICE';
   }
 
   @override
-  String get premiumBuy => 'Desbloquear';
+  String get premiumBuy => 'Comprar';
 
   @override
   String get premiumRestore => 'Restaurar compra';
@@ -320,4 +326,8 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get premiumRestoreFailed =>
       'No se encontró ninguna compra para restaurar.';
+
+  @override
+  String get premiumUnavailable =>
+      'Las compras no están disponibles.\nInténtalo de nuevo más tarde.';
 }

@@ -1,6 +1,4 @@
-// =============================
-// L10nContextExt: localization helpers (part of extension.dart)
-// =============================
+// ===== L10nContextExt: localization helpers (part of extension.dart) =====
 part of 'extension.dart';
 
 extension L10nContextExt on BuildContext {
@@ -14,7 +12,6 @@ extension L10nContextExt on BuildContext {
       "roboto";
 
   // --- Localized Strings ---
-  // Comprehensive collection of localized strings for all app features
   // Common app strings
   String thisApp() => AppLocalizations.of(this)!.thisApp;
   String openDoor() => AppLocalizations.of(this)!.openDoor;
@@ -148,12 +145,13 @@ extension L10nContextExt on BuildContext {
   String earnMilesAfterAdDesc(String number) => AppLocalizations.of(this)!.earnMilesAfterAdDesc(number);
   String landingPageLink() => (lang() == "ja") ? landingPageJa: landingPageEn;
   String privacyPolicyLink() => (lang() == "ja") ? privacyPolicyJa: privacyPolicyEn;
-  String youtubeLink() => (lang() == "ja") ? youtubeJa: youtubeEn;
   String notConnectedInternet() => AppLocalizations.of(this)!.notConnectedInternet;
   String rewardAdUnavailable() => AppLocalizations.of(this)!.rewardAdUnavailable;
   // Premium upgrade
   String premiumTitle() => AppLocalizations.of(this)!.premiumTitle;
-  String premiumDesc() => AppLocalizations.of(this)!.premiumDesc;
+  String premiumNoAds() => AppLocalizations.of(this)!.premiumNoAds;
+  String premiumUnlockAll() => AppLocalizations.of(this)!.premiumUnlockAll;
+  String premiumOneTime() => AppLocalizations.of(this)!.premiumOneTime;
   String premiumBuy(String price) => (price.isEmpty) ?
       AppLocalizations.of(this)!.premiumBuy:
       AppLocalizations.of(this)!.premiumPrice(price);
@@ -161,24 +159,24 @@ extension L10nContextExt on BuildContext {
   String premiumThanks() => AppLocalizations.of(this)!.premiumThanks;
   String premiumFailed() => AppLocalizations.of(this)!.premiumFailed;
   String premiumRestoreFailed() => AppLocalizations.of(this)!.premiumRestoreFailed;
+  // Shown when the offer cannot be made at all (no offering, unapproved product,
+  // no network). Distinct from premiumFailed(): nobody has tried to buy yet
+  String premiumUnavailable() => AppLocalizations.of(this)!.premiumUnavailable;
   String notSignedInGameCenter() => AppLocalizations.of(this)!.notSignedInGameCenter(
     (Platform.isIOS || Platform.isMacOS) ? "Game Center": "Play Games"
   );
   // Menu links and titles
   List<String> linkLogos() => [
-    if (Platform.isAndroid) youtubeLogo,
     landingPageLogo,
     privacyPolicyLogo,
     if (lang() == "ja") shopPageLogo,
   ];
   List<String> linkLinks() => [
-    if (Platform.isAndroid) youtubeLink(),
     landingPageLink(),
     privacyPolicyLink(),
     if (lang() == "ja") shopLink,
   ];
   List<String> linkTitles() => [
-    if (Platform.isAndroid) "Youtube",
     officialPage(),
     terms(),
     if (lang() == "ja") officialShop(),

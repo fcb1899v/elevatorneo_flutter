@@ -1,9 +1,4 @@
-// =============================
-// GamesManager: Game services integration for elevator simulator
-//
-// Handles Game Center integration, leaderboards, and internet connectivity.
-// Key features: sign-in, score submission, leaderboards, connectivity checks
-// =============================
+// ===== GamesManager: Game Center sign-in, scores, leaderboards, connectivity =====
 
 import 'dart:async';
 import 'dart:io';
@@ -27,12 +22,8 @@ class GamesManager {
 
   /// Check internet connectivity with timeout and fallback
   Future<bool> checkInternetConnection() async {
-    // 3 seconds, not 10. A reachable resolver answers a TCP connect in well
-    // under a second, so the extra time only ever bought a slower "offline".
-    // The menu awaits this call inline (menu.dart), and both timeouts can run
-    // back to back, so 10 + 10 meant a 20 second spinner on networks that
-    // block 1.1.1.1. A false "offline" here is recoverable: the menu and the
-    // settings screen re-run this check, and both say so in a snackbar
+    // 3 seconds, not 10: a reachable resolver answers well under a second, and
+    // the menu awaits this inline. A false "offline" is recoverable; callers re-check
     final Duration timeout = const Duration(seconds: 3);
     // Log connectivity result but don't rely on it for decision
     try {

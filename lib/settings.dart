@@ -1,18 +1,5 @@
-// =============================
-// SettingsPage: Comprehensive settings interface for elevator simulator
-//
-// This file contains the complete settings system that allows users to customize
-// various aspects of the elevator simulator. It manages floor configurations,
-// visual styles, button layouts, and user preferences.
-// Key features:
-// - Floor image customization with photo selection
-// - Floor number and stop configuration
-// - Button style and shape selection
-// - Background and glass panel settings
-// - Point-based unlock system
-// - Scroll management and UI navigation
-// - Data persistence and state management
-// =============================
+// ===== SettingsPage: floor, button, background and glass customization =====
+// Photo selection, point-based unlocks, scroll management and persistence.
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -29,6 +16,8 @@ import 'constant.dart';
 import 'admob_banner.dart';
 import 'main.dart';
 import 'plan_provider.dart';
+import 'premium_page.dart';
+import 'purchase_manager.dart';
 import 'homepage.dart';
 
 class SettingsPage extends HookConsumerWidget {
@@ -61,25 +50,83 @@ class SettingsPage extends HookConsumerWidget {
     final showSettingNumber = useState(0);                            // Active settings tab index
     final hasScrolledOnce = useState(false);                          // Scroll state tracking
     final isLoadingData = useState(false);                            // Data loading state
+    // The price the store returned, empty until it answers. Every purchase entry
+    // point is drawn from this, never from "the SDK started", which may sell nothing
+    final storePrice = useState("");
     final animationController = useAnimationController(duration:Duration(milliseconds: flashTime))..repeat(reverse: true);
 
     // --- Widget and Manager Instances ---
     // UI widget instances and service managers
     final common = CommonWidget(context);
 
-    // --- Locked Feature Handling ---
-    // The upgrade offer that used to open here is gone: purchase_manager.dart is
-    // NOT IN USE, so there would be nothing to buy. The lock overlay already
-    // shows the EV miles required, which stays the only way to unlock. The tap is
-    // still recorded as a demand signal. See purchase_manager.dart to restore
+    // --- Premium Purchase Functions ---
+    // Entry points: the lock overlays, and the app bar button for those who skip locks
 
-    /// Record that the user reached a locked feature
-    Future<void> logLockTap(String feature, int requiredPoint) async {
+    /// Run the purchase or restore flow and report the result to the user
+    Future<void> runPurchase({required bool isRestore, required String source}) async {
+      isLoadingData.value = true;
+      try {
+        final purchased = await PurchaseManager.buyPremium(
+          isRestore: isRestore,
+          source: source,
+        );
+        if (!context.mounted) return;
+        if (purchased) {
+          await ref.read(planProvider.notifier).setCurrentPlan(true);
+          if (!context.mounted) return;
+          common.commonSnackBar(context.premiumThanks());
+        } else if (isRestore) {
+          common.commonSnackBar(context.premiumRestoreFailed());
+        }
+      } catch (e) {
+        "Purchase error: $e".debugPrint();
+        // Nothing to sell is not a failed purchase. The reviewer sees this one
+        // while the product is still attached to the submission
+        if (context.mounted) {
+          common.commonSnackBar((e is StoreUnavailableException)
+            ? context.premiumUnavailable()
+            : context.premiumFailed());
+        }
+      } finally {
+        isLoadingData.value = false;
+      }
+    }
+
+    /// Open the upgrade dialog, shared by the lock overlays and the app bar. The
+    /// price is fetched again since the offering or network can drop; empty is announced
+    Future<void> openUpgrade(String source) async {
+      isLoadingData.value = true;
+      final price = await PurchaseManager.fetchPrice();
+      if (!context.mounted) return;
+      isLoadingData.value = false;
+      // An empty price still opens the page: the button says "Buy" without an
+      // amount, and pressing it reports why nothing happened
+      storePrice.value = price ?? "";
+      ref.read(planProvider.notifier).setPrice(price ?? "");
+      await AnalyticsManager.upgradeOffered(source);
+      if (!context.mounted) return;
+      context.pushPage(PremiumPage(
+        price: price ?? "",
+        onBuy: () async {
+          context.popPage();
+          await runPurchase(isRestore: false, source: source);
+        },
+        onRestore: () async {
+          context.popPage();
+          await runPurchase(isRestore: true, source: source);
+        },
+      ));
+    }
+
+    /// Offer the premium unlock when the user taps a locked feature. The tap is
+    /// logged first, always; the offer follows only when the store returned a price
+    Future<void> showUpgrade(String feature, int requiredPoint) async {
       await AnalyticsManager.unlockBlocked(
         feature: feature,
         requiredPoint: requiredPoint,
         currentPoint: point,
       );
+      await openUpgrade(feature);
     }
 
     final settings = SettingsWidget(context,
@@ -92,12 +139,11 @@ class SettingsPage extends HookConsumerWidget {
       backgroundStyle: backgroundStyle,
       glassStyle: glassStyle,
       isPremium: isPremium,
-      onLockTap: logLockTap,
+      onLockTap: showUpgrade,
     );
 
     /// --- Initialization Effect ---
-    // Initialize app state including connectivity checks and data loading
-    // Sets up initial settings data and manages loading states
+    // Connectivity checks, initial settings data and loading states
     useEffect(() {
 
       Future<void> gamesInit() async {
@@ -118,9 +164,8 @@ class SettingsPage extends HookConsumerWidget {
         final bestScore = await reUpdatedGamesManager.getBestScore();
         ref.read(internetProvider.notifier).setValue(hasInternet);
         ref.read(gamesSignInProvider.notifier).setValue(signedIn);
-        // This runs unawaited, so the user can keep earning while it is in
-        // flight. A plain setValue would drop whatever arrived meanwhile.
-        // Same reasoning as homepage.dart: mileage only ever goes up
+        // Runs unawaited so the user can keep earning meanwhile; a plain setValue
+        // would drop what arrived in flight. Mileage only ever goes up
         ref.read(pointProvider.notifier).setValue(
           (bestScore > ref.read(pointProvider)) ? bestScore: ref.read(pointProvider)
         );
@@ -140,6 +185,14 @@ class SettingsPage extends HookConsumerWidget {
         await initState();
         if (scrollController.hasClients) scrollController.jumpTo(scrollController.position.maxScrollExtent);
         hasScrolledOnce.value = false;
+        // Settings is a deliberate navigation long after the first frame, so starting
+        // the store SDK here costs launch nothing. The price decides the purchase UI
+        final price = await PurchaseManager.fetchPrice();
+        if (!context.mounted) return;
+        if (price != null) {
+          storePrice.value = price;
+          ref.read(planProvider.notifier).setPrice(price);
+        }
       });
 
       // Control scroll position tracking
@@ -153,7 +206,6 @@ class SettingsPage extends HookConsumerWidget {
     }, []);
 
     /// --- Scroll Management Functions ---
-    // Functions for handling scroll behavior and navigation
     // Animate scroll view to top with smooth transition
     void scrollToTop() {
       scrollController.animateTo(0.0,
@@ -173,7 +225,6 @@ class SettingsPage extends HookConsumerWidget {
     }, [showSettingNumber.value]);
 
     /// --- Settings Configuration Functions ---
-    // Functions for handling various settings changes and user interactions
     // Change active settings tab with vibration feedback
     void changeSelectButton(int i) {
       Vibration.vibrate(duration: vibTime, amplitude: vibAmp);
@@ -221,6 +272,9 @@ class SettingsPage extends HookConsumerWidget {
         Vibration.vibrate(duration: vibTime, amplitude: vibAmp);
         isButtonOn.value[row][col] = true;
         isButtonOn.value = List.from(isButtonOn.value);
+        // The picker does not report the row it opens on, so seed it here or OK
+        // would save whatever the previous dialog left behind
+        selectedNumber.value = floorNumbers[reversedButtonIndex[row][col]];
         settings.floorNumberSelectDialog(row, col,
           select: (int index) {
             selectedNumber.value = floorNumbers.selectedFloor(index, row, col);
@@ -307,9 +361,8 @@ class SettingsPage extends HookConsumerWidget {
       void backToHome() {
         if (context.mounted) context.pushFadeReplacement(HomePage());
       }
-      // No interstitial here. Leaving settings means heading back to the
-      // elevator, and a full screen ad across that intent was judged not worth
-      // the retention cost. Rewarded stays the only full screen format.
+      // No interstitial here: a full screen ad on the way back to the elevator was
+      // judged not worth the retention cost; rewarded is the only full screen format
       backToHome();
     }
 
@@ -423,13 +476,7 @@ class SettingsPage extends HookConsumerWidget {
   }
 }
 
-// =============================
-// SettingsWidget: UI components for settings interface
-//
-// This class provides all the UI components needed for the settings system,
-// including dialogs, selection widgets, lock overlays, and navigation elements.
-// It handles complex layouts and conditional rendering based on user points and settings.
-// =============================
+// ===== SettingsWidget: dialogs, selection widgets, lock overlays and navigation =====
 
 class SettingsWidget {
   final BuildContext context;
@@ -462,7 +509,6 @@ class SettingsWidget {
   bool isLocked(int requiredPoint) => !isPremium && point < requiredPoint && !isTest;
 
   /// --- Common UI Components ---
-  // Reusable UI elements used throughout the settings interface
   // Create divider with consistent styling
   Divider settingsDivider() => Divider(
     height: context.settingsDividerHeight(),
@@ -520,13 +566,17 @@ class SettingsWidget {
   /// Create alert dialog title with close button
   Widget alertDialogTitle(String title) => Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly,
     children: [
-      Text(title,
-        style: TextStyle(
-          fontSize: context.settingsAlertTitleFontSize(),
-          fontFamily: context.font(),
-          color: whiteColor,
+      // Scaled down rather than clipped: the basement title is long in some languages
+      Flexible(child: FittedBox(fit: BoxFit.scaleDown,
+        child: Text(title,
+          maxLines: 1,
+          style: TextStyle(
+            fontSize: context.settingsAlertTitleFontSize(),
+            fontFamily: context.font(),
+            color: whiteColor,
+          ),
         ),
-      ),
+      )),
       SizedBox(width: context.settingsAlertCloseIconSpace()),
       /// Close button for dialog dismissal
       GestureDetector(
@@ -570,6 +620,9 @@ class SettingsWidget {
         ),
       ),
     ),
+    // No purchase action here on purpose: a bare padlock in the bar reads as a
+    // status, the same "blocked" glyph the overlays use. The only offer on this
+    // screen is the lock overlay itself, which is what the user just tapped
   );
 
   // --- Settings Tab Components ---
@@ -855,7 +908,6 @@ class SettingsWidget {
   ]);
 
   /// --- Floor Number Configuration Components ---
-  // UI components for floor number and stop configuration
   // Create floor number configuration grid with stop toggles
   Widget settingsFloorNumberWidget({
     required List<List<bool>> isButtonOn,
@@ -874,25 +926,26 @@ class SettingsWidget {
                 height: context.settingsButtonNumberLockHeight(),
                 child: Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                  GestureDetector(
-                    child: settingsFloorButtonImage(
-                      image: isButtonOn[row.key][col.key].numberBackground(1, "normal"),
-                      number: col.value.buttonNumber()
+                  // 1F never moves and always stops. Fade the button and the
+                  // switch; the plate that used to cover the cell hid the floor
+                  // number too, and the Stop label stays readable
+                  Opacity(
+                    opacity: isNotSelectFloor(row.key, col.key) ? fixedFloorOpacity : 1.0,
+                    child: GestureDetector(
+                      child: settingsFloorButtonImage(
+                        image: isButtonOn[row.key][col.key].numberBackground(1, "normal"),
+                        number: col.value.buttonNumber()
+                      ),
+                      onTap: () => changeButtonNumber(row.key, col.key) ,
                     ),
-                    onTap: () => changeButtonNumber(row.key, col.key) ,
                   ),
                   settingsFloorStopToggleWidget(row.key, col.key, changeFloorStopFlag: changeFloorStopFlag)
                 ]),
               ),
-              /// Hide overlay for non-selectable floors
-              if (isNotSelectFloor(row.key, col.key)) Container(
-                width: context.settingsButtonNumberHideWidth(),
-                height: context.settingsButtonNumberHideHeight(),
-                margin: EdgeInsets.only(right: context.settingsButtonNumberHideMargin()),
-                color: transpBlackColor,
-              ),
-              /// Lock overlay for premium features
-              if (isLocked(changePointList[row.key][col.key]) && col.value != max && col.value != min) settingsLockContainer(
+              /// Lock overlay for premium features. The top and the bottom used
+              /// to be exempt because they could not be changed at all; they can
+              /// now, so they cost what the table always said they would
+              if (isLocked(changePointList[row.key][col.key])) settingsLockContainer(
                 width: context.settingsButtonNumberLockWidth(),
                 height: context.settingsButtonNumberLockHeight(),
                 margin: EdgeInsets.zero,
@@ -977,10 +1030,12 @@ class SettingsWidget {
         initialItem: floorNumbers[reversedButtonIndex[row][col]] - floorNumbers.selectFirstFloor(row, col),
       ),
       onSelectedItemChanged: (int index) => onSelectedItemChanged(index),
+      // No filtering here: the range never contains floor 0, so dropping an item
+      // would only make the index disagree with the value it reports
       children: List.generate(floorNumbers.selectDiffFloor(row, col), (int index) =>
-        (floorNumbers.selectedFloor(index, row, col) != 0) ? Container(
+        Container(
           alignment: Alignment.center,
-          child: Text('${(floorNumbers.selectedFloor(index, row, col) < 0 ? -1: 1) * floorNumbers.selectedFloor(index, row, col)}',
+          child: Text('${floorNumbers.selectedFloor(index, row, col).abs()}',
             style: TextStyle(
               color: lampColor,
               fontSize: context.settingsAlertFloorNumberFontSize(),
@@ -988,8 +1043,8 @@ class SettingsWidget {
               fontFamily: numberFont[1],
             ),
           )
-        ): null
-      ).whereType<Container>().toList(),
+        )
+      ),
     ),
   );
 
@@ -1007,14 +1062,22 @@ class SettingsWidget {
             fontFamily: context.font(),
           ),
         ),
-        Transform.scale(
-          scale: context.settingsFloorStopToggleScale(),
-          child: CupertinoSwitch(
-            activeTrackColor: lampColor,
-            inactiveTrackColor: blackColor,
-            thumbColor: whiteColor,
-            value: floorStops[reversedButtonIndex[row][col]],
-            onChanged: (value) => changeFloorStopFlag(value, row, col),
+        // Only the switch is faded for 1F. The Stop label above it stays legible
+        Opacity(
+          opacity: isNotSelectFloor(row, col) ? fixedFloorSwitchOpacity : 1.0,
+          child: Transform.scale(
+            scale: context.settingsFloorStopToggleScale(),
+            child: CupertinoSwitch(
+              activeTrackColor: lampColor,
+              inactiveTrackColor: blackColor,
+              thumbColor: whiteColor,
+              value: floorStops[reversedButtonIndex[row][col]],
+              // The last stop on its side of 1F stays on, so the switch is disabled
+              onChanged: (isNotSelectFloor(row, col)
+                  || isOnlyStop(floorStops, reversedButtonIndex[row][col]))
+                ? null
+                : (value) => changeFloorStopFlag(value, row, col),
+            ),
           ),
         ),
       ]
@@ -1022,7 +1085,6 @@ class SettingsWidget {
   );
 
   /// --- Background and Glass Components ---
-  // UI components for background and glass panel settings
   // Create background selection grid with preview
   Widget settingsBackgroundSelectWidget({
     required void Function(String) onTap

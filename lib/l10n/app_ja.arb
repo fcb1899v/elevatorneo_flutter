@@ -100,12 +100,15 @@
   "officialShop" : "公式ショップ",
   "ranking" : "ランキング",
 
-  "premiumTitle" : "すべて解放\n",
-  "premiumDesc" : "広告が非表示になり、ボタン・背景・フロア画像のすべてがEVマイルを貯めずにすぐ使えるようになります。",
-  "premiumPrice" : "{PRICE}で解放する",
-  "premiumBuy" : "解放する",
+  "premiumTitle" : "プレミアムパック",
+  "premiumNoAds" : "広告表示がなくなります",
+  "premiumUnlockAll" : "EVマイルを貯めずに\n全てのデザインや機能が使えます",
+  "premiumOneTime" : "1回だけの購入です",
+  "premiumPrice" : "{PRICE}で購入する",
+  "premiumBuy" : "購入する",
   "premiumRestore" : "購入を復元",
   "premiumThanks" : "ありがとうございます！すべて解放されました。",
   "premiumFailed" : "購入を完了できませんでした。",
-  "premiumRestoreFailed" : "復元できる購入が見つかりませんでした。"
+  "premiumRestoreFailed" : "復元できる購入が見つかりませんでした。",
+  "premiumUnavailable" : "いま購入手続きを開始できません。\n時間をおいてお試しください。"
 }

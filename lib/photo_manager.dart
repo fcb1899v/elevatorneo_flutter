@@ -1,9 +1,4 @@
-// =============================
-// PhotoManager: Photo selection and processing for elevator simulator
-//
-// Handles photo selection from gallery, cropping, and permission management.
-// Key features: gallery selection, aspect ratio cropping, permission handling
-// =============================
+// ===== PhotoManager: gallery selection, cropping and permission handling =====
 
 import 'dart:io';
 import 'package:flutter/cupertino.dart';
@@ -113,9 +108,8 @@ class PhotoManager {
 
   // --- Photo Selection Workflow ---
 
-  /// Complete photo selection workflow with permission handling.
-  /// Android uses the system Photo Picker (image_picker) and must not request
-  /// READ_MEDIA_IMAGES / READ_MEDIA_VIDEO. iOS still needs photos permission.
+  /// Complete photo selection workflow. Android uses the system Photo Picker and
+  /// must not request READ_MEDIA_IMAGES / _VIDEO; iOS still needs photos permission
   Future<List<String>> selectMyPhoto({
     required int row,
     required int col,

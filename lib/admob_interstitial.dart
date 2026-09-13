@@ -1,16 +1,5 @@
-// =============================
-// AdInterstitialManager: NOT IN USE
-//
-// Nothing calls this. Interstitials were removed on 2026-08-24: the only
-// placement was the moment the user leaves settings to get back to the
-// elevator, and interrupting that intent was judged not worth the retention
-// cost. Rewarded is the only full screen format this app shows.
-//
-// Kept because the capping design (session cap, minimum interval, minimum ride
-// count) is worth having if the decision is ever revisited. Re-enabling means
-// restoring the call sites in settings.dart and homepage.dart, and the
-// dispose() on premium purchase in settings.dart.
-// =============================
+// ===== AdInterstitialManager: NOT IN USE =====
+// Nothing calls this. To re-enable: call from settings.dart/homepage.dart and dispose on purchase.
 
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';

@@ -1,16 +1,5 @@
-// =============================
-// Extension Methods for LETS ELEVATOR NEO
-//
-// 1. StringExt      : String utilities, SharedPreferences helpers, image path helpers, style helpers
-// 2. ContextExt     : BuildContext utilities, UI helpers
-// 3. L10nContextExt : localization (see l10n_extension.dart)
-// 4. IntExt         : Integer utilities for floor, button, and elevator logic
-// 4. ListIntExt     : List<int> helpers for floor and button matrix
-// 5. ListStringExt  : List<String> helpers for room images and names
-// 6. BoolExt        : Boolean helpers for UI and logic
-// 7. ListBoolExt    : List<bool> helpers for button images
-// 8. ListDynamicExt : Generic List<T> matrix helpers
-// =============================
+// ===== Extension methods for LETS ELEVATOR NEO =====
+// String, BuildContext, int, List<int>, List<String>, bool, List<bool>, List<T>.
 
 import 'dart:io';
 import 'package:flutter/foundation.dart';
@@ -22,9 +11,7 @@ import 'constant.dart';
 
 part 'l10n_extension.dart';
 
-// =============================
-// StringExt: String utilities, SharedPreferences helpers, image path helpers, style helpers
-// =============================
+// ===== StringExt: String, SharedPreferences, image path and style helpers =====
 extension StringExt on String {
 
   // --- Debug Utilities ---
@@ -34,8 +21,7 @@ extension StringExt on String {
   }
 
   // --- SharedPreferences Helpers ---
-  // Comprehensive set of methods for storing and retrieving data from SharedPreferences
-  // All methods include debug logging for development tracking
+  // All methods include debug logging
   void setSharedPrefString(SharedPreferences prefs, String value) {
     "${replaceAll("Key", "")}: $value".debugPrint();
     prefs.setString(this, value);
@@ -123,10 +109,8 @@ extension StringExt on String {
   int buttonShapeIndex() => buttonShapeList.contains(this) ? buttonShapeList.indexOf(this): 0;
 }
 
-// =============================
-// ContextExt: BuildContext utilities, UI helpers
-// (localization → L10nContextExt in l10n_extension.dart)
-// =============================
+// ===== ContextExt: BuildContext and UI helpers =====
+// (localization -> L10nContextExt in l10n_extension.dart)
 extension ContextExt on BuildContext {
 
   // --- Navigation & UI Basics ---
@@ -143,6 +127,23 @@ extension ContextExt on BuildContext {
     ),
     (route) => false);
   }
+  /// Push over the current screen, keeping it underneath. The purchase page
+  /// has to come back to whatever opened it: the menu, or a settings tab with
+  /// a lock the user just tapped. pushFadeReplacement would erase that
+  void pushPage(Widget page) {
+    AudioManager().playEffectSound(asset: changeSound, volume: 1.0);
+    Navigator.push(this, PageRouteBuilder(
+      // Not opaque: HomePage stays painted underneath, and the banner it draws
+      // on top of its own Stack keeps showing through the strip the page leaves
+      opaque: false,
+      pageBuilder: (_, animation, _) => page,
+      transitionsBuilder: (_, animation, _, child) => FadeTransition(
+        opacity: animation,
+        child: child,
+      ),
+      transitionDuration: const Duration(milliseconds: 300),
+    ));
+  }
   double width() => MediaQuery.of(this).size.width;
   double height() => MediaQuery.of(this).size.height;
   double widthResponsible() => (width() < height() / 2) ? width(): height() / 2;
@@ -150,7 +151,6 @@ extension ContextExt on BuildContext {
   void popPage() => Navigator.pop(this);
 
   // --- UI Layout & Sizing ---
-  // Comprehensive set of responsive UI sizing methods for all app components
   // Progress indicator
   double circleSize() => widthResponsible() * 0.08;
   double circleStrokeWidth() => widthResponsible() * 0.01;
@@ -234,6 +234,32 @@ extension ContextExt on BuildContext {
   // Menu
   double menuButtonSize() => widthResponsible() * 0.28;
   double menuButtonMargin() => widthResponsible() * 0.06;
+
+  // --- Premium purchase page ---
+  // 08_Designer/ui/2026-09-11_premium_purchase_page.md の案5A。
+  // 基準は iPhone 430dp 幅。内容幅 382dp = 0.888、左右の余白 24dp = 0.056
+  double premiumContentWidth() => widthResponsible() * 0.888;
+  double premiumSignHeight() => widthResponsible() * 0.242;      // 104dp
+  double premiumSignFontSize() => widthResponsible() * 0.163;    // 70dp
+  // 商品名と説明の大小は入れ替えてある（オーナー指定）。商品名が主、説明が従
+  double premiumNameFontSize() => widthResponsible() * 0.065;    // 28dp
+  double premiumPlateFontSize() => widthResponsible() * 0.051;   // 22dp
+  double premiumBodyFontSize() => widthResponsible() * 0.044;    // 19dp
+  double premiumNoteFontSize() => widthResponsible() * 0.033;    // 14dp
+  double premiumBuyFontSize() => widthResponsible() * 0.051;     // 22dp
+  double premiumRestoreFontSize() => widthResponsible() * 0.037; // 16dp
+  double premiumIconSize() => widthResponsible() * 0.172;        // 74dp
+  double premiumIconMargin() => widthResponsible() * 0.019;      // 8dp（間隔 16dp）
+  double premiumCloseSize() => widthResponsible() * 0.065;       // 28dp
+  double premiumBuyHeight() => widthResponsible() * 0.167;       // 72dp
+  double premiumPlatePadding() => widthResponsible() * 0.030;    // 13dp（高さ 60dp）
+  double premiumPlateRadius() => widthResponsible() * 0.019;     // 8dp
+  double premiumBuyRadius() => widthResponsible() * 0.033;       // 14dp
+  double premiumBorderWidth() => widthResponsible() * 0.005;     // 2dp
+  double premiumBuyBorderWidth() => widthResponsible() * 0.012;  // 5dp
+  // 塊の中は詰め、塊の間を空ける。余りは下に残す（埋めない）
+  double premiumGapInner() => widthResponsible() * 0.033;        // 14dp
+  double premiumGapBlock() => widthResponsible() * 0.084;        // 36dp
   double menuMarginTop() => height() * 0.02;
   double menuMarginBottom() => height() * 0.25;
   double menuAlertTitleFontSize()  => (widthResponsible() * 0.06 > 36) ? 36: widthResponsible() * 0.06;
@@ -276,9 +302,6 @@ extension ContextExt on BuildContext {
   // Change button number
   double settingsButtonSize() => height() * 0.07;
   double settingsButtonNumberSize()   => height() * 0.075;
-  double settingsButtonNumberHideWidth() => height() * 0.165;
-  double settingsButtonNumberHideHeight() => height() * 0.085;
-  double settingsButtonNumberHideMargin() => height() * 0.009;
   double settingsButtonNumberFontSize() => height() * 0.03;
   double settingsButtonNumberMargin() => height() * 0.015;
   double settingsButtonNumberLockWidth() => height() * 0.20;
@@ -335,9 +358,7 @@ extension ContextExt on BuildContext {
   double settingsDividerThickness() => height() * 0.001;
 }
 
-// =============================
-// IntExt: Integer utilities for floor, button, and elevator logic
-// =============================
+// ===== IntExt: Integer utilities for floor, button, and elevator logic =====
 extension IntExt on int {
 
   // --- Floor/Rank String Generation ---
@@ -478,8 +499,7 @@ extension IntExt on int {
   }
 
   // --- Button Logic ---
-  // Comprehensive set of methods for managing floor button states and elevator navigation logic
-  /// Generate button display text (R for roof, G for ground, B+number for basement, number for floors)
+  /// Generate button text (R roof, G ground, B+number basement, number for floors)
   String buttonNumber() =>
       (this == max) ? "R":
       (this == 0) ? "G":
@@ -634,9 +654,7 @@ extension IntExt on int {
       roomImageFile(floorNumbers, rooms).roomImage();
 }
 
-// =============================
-// ListIntExt: List<int> helpers for floor and button matrix
-// =============================
+// ===== ListIntExt: List<int> helpers for floor and button matrix =====
 extension ListIntExt on List<int> {
 
   // --- Floor Matrix Helpers ---
@@ -651,19 +669,30 @@ extension ListIntExt on List<int> {
 
   // --- Floor Selection Helpers ---
   // Methods for calculating floor ranges and selections based on button matrix positions
-  int selectFirstFloor(int row, int col) =>
-      (row == 3 && col == 3) ? min: this[reversedButtonIndex[row][col] - 1] + 1;
-  int selectLastFloor(int row, int col) =>
-      (row == 0 && col == 3) ? max: this[reversedButtonIndex[row][col] + 1] - 1;
+  /// A button sits between its neighbours, except the two ends. The bottom one
+  /// runs down to min, and the top one up to max; their other limit comes from
+  /// how many buttons have to fit on the far side of the fixed 1F
+  /// The picker stops at the neighbouring buttons, so no other floor has to move
+  int selectFirstFloor(int row, int col) {
+    final i = reversedButtonIndex[row][col];
+    // this[i - 1] is never -1 unless i is 1F, which cannot be selected, so the
+    // result never lands on the floor 0 that does not exist
+    if (i == 0) return min;
+    return this[i - 1] + 1;
+  }
+  int selectLastFloor(int row, int col) {
+    final i = reversedButtonIndex[row][col];
+    if (i == floorButtonCount - 1) return max;
+    final last = this[i + 1] - 1;
+    return (last == 0) ? -1 : last;
+  }
   int selectDiffFloor(int row, int col) =>
       selectLastFloor(row, col) - selectFirstFloor(row, col) + 1;
   int selectedFloor(int index, int row, int col) =>
       index + selectFirstFloor(row, col);
 }
 
-// =============================
-// ListStringExt: List<String> helpers for room images and names
-// =============================
+// ===== ListStringExt: List<String> helpers for room images and names =====
 extension ListStringExt on List<String> {
 
   // --- Room Matrix Helpers ---
@@ -700,9 +729,7 @@ extension ListStringExt on List<String> {
       context.roomNameList()[floorImageList.indexOf(image)];
 }
 
-// =============================
-// BoolExt: Boolean helpers for UI and logic
-// =============================
+// ===== BoolExt: Boolean helpers for UI and logic =====
 extension BoolExt on bool {
 
   // --- Button State Helpers ---
@@ -717,19 +744,6 @@ extension BoolExt on bool {
   Color numberColor(int i) => this ? numberColorList[i]: whiteColor;
   Color floorButtonNumberColor(String buttonShape) => numberColor(buttonShape.buttonShapeIndex());
 
-  // --- Basement Floor Helpers ---
-  // Methods for handling basement floor logic and floor number calculations
-  int floorSymbol() => this ? -1: 1;
-  int selectedFloorNumber(int index) => floorSymbol() * (index + 1);
-  int selectFirstFloor(List<int> floorNumbers, int buttonIndex) =>
-      this ? 1: floorNumbers[buttonIndex - 1] + 1;
-  int selectLastFloor(List<int> floorNumbers, int buttonIndex)  =>
-      this ? 5: floorNumbers[buttonIndex + 1];
-  int selectDiffFloor(List<int> floorNumbers, int buttonIndex) =>
-      selectLastFloor(floorNumbers, buttonIndex) - selectFirstFloor(floorNumbers, buttonIndex);
-  int selectInitialIndex(List<int> floorNumbers, int buttonIndex) =>
-      this ? -1 * (floorNumbers[buttonIndex] + 1): (floorNumbers[buttonIndex] - selectFirstFloor(floorNumbers, buttonIndex));
-
   // --- Button Shape Factors ---
   // Methods for calculating UI scaling factors based on button shape configurations
   double floorButtonShapeFactor() => this ? 1.2: 1;
@@ -739,9 +753,7 @@ extension BoolExt on bool {
   double emergencyBottomMarginShapeFactor() => this ? 1.8: 0.8;
 }
 
-// =============================
-// ListBoolExt: List<bool> helpers for button images
-// =============================
+// ===== ListBoolExt: List<bool> helpers for button images =====
 extension ListBoolExt on List<bool> {
 
   // --- Operation Button Images ---
@@ -759,9 +771,7 @@ extension ListBoolExt on List<bool> {
   ];
 }
 
-// =============================
-// ListDynamicExt: Generic List<T> matrix helpers
-// =============================
+// ===== ListDynamicExt: Generic List<T> matrix helpers =====
 extension ListDynamicExt<T> on List<T> {
 
   // --- Matrix Conversion ---

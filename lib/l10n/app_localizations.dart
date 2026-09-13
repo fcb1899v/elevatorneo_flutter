@@ -649,25 +649,37 @@ abstract class AppLocalizations {
   /// No description provided for @premiumTitle.
   ///
   /// In en, this message translates to:
-  /// **'Unlock Everything\n'**
+  /// **'Premium Pack'**
   String get premiumTitle;
 
-  /// No description provided for @premiumDesc.
+  /// No description provided for @premiumNoAds.
   ///
   /// In en, this message translates to:
-  /// **'Remove ads and unlock every button, background and floor image right away, without collecting EV miles.'**
-  String get premiumDesc;
+  /// **'No more ads'**
+  String get premiumNoAds;
+
+  /// No description provided for @premiumUnlockAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Every design and feature,\nwith no EV miles to collect'**
+  String get premiumUnlockAll;
+
+  /// No description provided for @premiumOneTime.
+  ///
+  /// In en, this message translates to:
+  /// **'A one-time purchase'**
+  String get premiumOneTime;
 
   /// No description provided for @premiumPrice.
   ///
   /// In en, this message translates to:
-  /// **'Unlock for {PRICE}'**
+  /// **'Buy for {PRICE}'**
   String premiumPrice(Object PRICE);
 
   /// No description provided for @premiumBuy.
   ///
   /// In en, this message translates to:
-  /// **'Unlock'**
+  /// **'Buy'**
   String get premiumBuy;
 
   /// No description provided for @premiumRestore.
@@ -693,6 +705,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No purchase was found to restore.'**
   String get premiumRestoreFailed;
+
+  /// No description provided for @premiumUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Purchases are unavailable right now.\nPlease try again later.'**
+  String get premiumUnavailable;
 }
 
 class _AppLocalizationsDelegate

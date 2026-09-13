@@ -292,19 +292,24 @@ class AppLocalizationsJa extends AppLocalizations {
   String get ranking => 'ランキング';
 
   @override
-  String get premiumTitle => 'すべて解放\n';
+  String get premiumTitle => 'プレミアムパック';
 
   @override
-  String get premiumDesc =>
-      '広告が非表示になり、ボタン・背景・フロア画像のすべてがEVマイルを貯めずにすぐ使えるようになります。';
+  String get premiumNoAds => '広告表示がなくなります';
+
+  @override
+  String get premiumUnlockAll => 'EVマイルを貯めずに\n全てのデザインや機能が使えます';
+
+  @override
+  String get premiumOneTime => '1回だけの購入です';
 
   @override
   String premiumPrice(Object PRICE) {
-    return '$PRICEで解放する';
+    return '$PRICEで購入する';
   }
 
   @override
-  String get premiumBuy => '解放する';
+  String get premiumBuy => '購入する';
 
   @override
   String get premiumRestore => '購入を復元';
@@ -317,4 +322,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get premiumRestoreFailed => '復元できる購入が見つかりませんでした。';
+
+  @override
+  String get premiumUnavailable => 'いま購入手続きを開始できません。\n時間をおいてお試しください。';
 }

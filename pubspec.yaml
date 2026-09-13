@@ -1,7 +1,7 @@
 name: letselevatorneo
 description: elevatorsimulatorneo
 publish_to: 'none'
-version: 1.5.26+74
+version: 1.5.27+75
 
 environment:
   # 3.47 is the floor, not 3.3: Android Gradle Plugin 9 rejects the Kotlin
@@ -16,13 +16,13 @@ dependencies:
     sdk: flutter
   flutter_web_plugins:
     sdk: flutter
-  webview_flutter_android: ^4.14.0
+  webview_flutter_android: ^4.14.1
   webview_flutter: ^4.14.1
   # Firebase Analytics
-  firebase_core: ^4.13.0
-  firebase_core_web: ^3.10.0
-  firebase_analytics: ^12.4.6
-  firebase_analytics_web: ^0.6.1+12
+  firebase_core: ^4.14.0
+  firebase_core_web: ^3.11.0
+  firebase_analytics: ^12.5.0
+  firebase_analytics_web: ^0.6.1+13
   # App Icon
   cupertino_icons: ^1.0.9
   flutter_launcher_icons: ^0.14.4
@@ -41,7 +41,7 @@ dependencies:
   # Audio Player
   just_audio: ^0.10.6
   # Vibration
-  vibration: ^3.2.0
+  vibration: ^3.2.1
   # SharedPreference
   shared_preferences: ^2.5.5
   shared_preferences_web: ^2.4.3
@@ -51,9 +51,9 @@ dependencies:
   # Admob
   google_mobile_ads: ^9.1.0
   # In-App Purchase (RevenueCat)
-  purchases_flutter: ^10.10.0
+  purchases_flutter: ^10.12.0
   # Store Review
-  in_app_review: ^2.0.10
+  in_app_review: ^2.0.12
   #env
   flutter_dotenv: ^6.0.1
   # HyperLink
@@ -61,14 +61,14 @@ dependencies:
   url_launcher: ^6.3.2
   url_launcher_web: ^2.4.3
   #MVVM
-  hooks_riverpod: ^3.4.2
+  hooks_riverpod: ^3.4.3
   flutter_hooks: ^0.21.3+1
   # Image
   image_picker: ^1.2.3
   image_cropper: ^12.2.1
   path_provider: ^2.1.6
   # Permission
-  permission_handler: ^13.0.0
+  permission_handler: ^13.0.2
   # App Splash
   flutter_native_splash: ^2.4.8
 

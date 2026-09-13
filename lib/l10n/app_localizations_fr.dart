@@ -297,19 +297,25 @@ class AppLocalizationsFr extends AppLocalizations {
   String get ranking => 'Classement';
 
   @override
-  String get premiumTitle => 'Tout débloquer\n';
+  String get premiumTitle => 'Pack Premium';
 
   @override
-  String get premiumDesc =>
-      'Supprimez les publicités et débloquez immédiatement tous les boutons, arrière-plans et images d\'étage, sans accumuler de miles EV.';
+  String get premiumNoAds => 'Plus de publicité';
+
+  @override
+  String get premiumUnlockAll =>
+      'Tous les designs et fonctions,\nsans accumuler de Miles EV';
+
+  @override
+  String get premiumOneTime => 'Achat unique';
 
   @override
   String premiumPrice(Object PRICE) {
-    return 'Débloquer pour $PRICE';
+    return 'Acheter pour $PRICE';
   }
 
   @override
-  String get premiumBuy => 'Débloquer';
+  String get premiumBuy => 'Acheter';
 
   @override
   String get premiumRestore => 'Restaurer l\'achat';
@@ -322,4 +328,8 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get premiumRestoreFailed => 'Aucun achat à restaurer n\'a été trouvé.';
+
+  @override
+  String get premiumUnavailable =>
+      'Les achats sont indisponibles.\nRéessayez plus tard.';
 }

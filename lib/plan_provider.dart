@@ -1,13 +1,5 @@
-// =============================
-// PlanProvider: premium entitlement state
-//
-// The premium entitlement removes ads and unlocks every customization
-// without touching the EV mile balance, so Game Center rankings stay intact.
-//
-// This file holds state only. Everything that talks to the store lives in
-// purchase_manager.dart, which is NOT IN USE right now, so the entitlement
-// comes from the locally cached value main.dart reads at startup.
-// =============================
+// ===== PlanProvider: premium entitlement state (ads off, all customization) =====
+// State only; the store lives in purchase_manager.dart. Starts from main.dart's cache.
 
 import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -62,5 +54,10 @@ class PlanNotifier extends Notifier<PlanState> {
   /// Updates the purchasing state (loading indicator)
   void setPurchasing(bool isPurchasing) {
     state = state.copyWith(isPurchasing: isPurchasing);
+  }
+
+  /// Stores the localized price so every upgrade entry point shows the same one
+  void setPrice(String priceString) {
+    state = state.copyWith(priceString: priceString);
   }
 }
