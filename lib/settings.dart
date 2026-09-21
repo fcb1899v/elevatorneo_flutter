@@ -52,7 +52,7 @@ class SettingsPage extends HookConsumerWidget {
     final isLoadingData = useState(false);                            // Data loading state
     // The price the store returned, empty until it answers. Every purchase entry
     // point is drawn from this, never from "the SDK started", which may sell nothing
-    final storePrice = useState("");
+    final storePrice = ref.watch(planProvider).priceString;
     final animationController = useAnimationController(duration:Duration(milliseconds: flashTime))..repeat(reverse: true);
 
     // --- Widget and Manager Instances ---
@@ -60,7 +60,7 @@ class SettingsPage extends HookConsumerWidget {
     final common = CommonWidget(context);
 
     // --- Premium Purchase Functions ---
-    // Entry points: the lock overlays, and the app bar button for those who skip locks
+    // Entry point here: the lock overlays (the menu has its own purchase button)
 
     /// Run the purchase or restore flow and report the result to the user
     Future<void> runPurchase({required bool isRestore, required String source}) async {
@@ -92,21 +92,23 @@ class SettingsPage extends HookConsumerWidget {
       }
     }
 
-    /// Open the upgrade dialog, shared by the lock overlays and the app bar. The
+    /// Open the upgrade dialog, shared by the lock overlays. The
     /// price is fetched again since the offering or network can drop; empty is announced
     Future<void> openUpgrade(String source) async {
       isLoadingData.value = true;
       final price = await PurchaseManager.fetchPrice();
       if (!context.mounted) return;
       isLoadingData.value = false;
-      // An empty price still opens the page: the button says "Buy" without an
-      // amount, and pressing it reports why nothing happened
-      storePrice.value = price ?? "";
       ref.read(planProvider.notifier).setPrice(price ?? "");
+      // No price, no purchase page
+      if (price == null) {
+        common.commonSnackBar(context.premiumUnavailable());
+        return;
+      }
       await AnalyticsManager.upgradeOffered(source);
       if (!context.mounted) return;
       context.pushPage(PremiumPage(
-        price: price ?? "",
+        price: price,
         onBuy: () async {
           context.popPage();
           await runPurchase(isRestore: false, source: source);
@@ -126,6 +128,12 @@ class SettingsPage extends HookConsumerWidget {
         requiredPoint: requiredPoint,
         currentPoint: point,
       );
+      // No price, no purchase page: answer the tap like the menu does
+      if (!context.mounted) return;
+      if (storePrice.isEmpty) {
+        common.commonSnackBar(context.premiumUnavailable());
+        return;
+      }
       await openUpgrade(feature);
     }
 
@@ -185,14 +193,11 @@ class SettingsPage extends HookConsumerWidget {
         await initState();
         if (scrollController.hasClients) scrollController.jumpTo(scrollController.position.maxScrollExtent);
         hasScrolledOnce.value = false;
-        // Settings is a deliberate navigation long after the first frame, so starting
-        // the store SDK here costs launch nothing. The price decides the purchase UI
-        final price = await PurchaseManager.fetchPrice();
+        // Reuses the home screen's prefetch, or joins it. The price decides the purchase UI
+        if (!context.mounted || ref.read(planProvider).isPremium) return;
+        final price = await PurchaseManager.loadPrice();
         if (!context.mounted) return;
-        if (price != null) {
-          storePrice.value = price;
-          ref.read(planProvider.notifier).setPrice(price);
-        }
+        ref.read(planProvider.notifier).setPrice(price ?? "");
       });
 
       // Control scroll position tracking
@@ -620,9 +625,8 @@ class SettingsWidget {
         ),
       ),
     ),
-    // No purchase action here on purpose: a bare padlock in the bar reads as a
-    // status, the same "blocked" glyph the overlays use. The only offer on this
-    // screen is the lock overlay itself, which is what the user just tapped
+    // No purchase action here on purpose: a bare padlock in the bar reads as a status.
+    // The only offer on this screen is the lock overlay, which is what the user tapped
   );
 
   // --- Settings Tab Components ---
@@ -883,8 +887,8 @@ class SettingsWidget {
                       if (buttonShapeList[numberButtonColumnCount * row.key + col.key] != "") Image.asset((buttonShape == row.value[col.key]).numberBackground(buttonStyle, row.value[col.key]),),
                       Container(
                         margin: EdgeInsets.only(
-                          top: context.floorButtonNumberMarginTop(numberButtonColumnCount * row.key + col.key) * 2,
-                          bottom: context.floorButtonNumberMarginBottom(numberButtonColumnCount * row.key + col.key) * 2,
+                          top: context.floorButtonNumberMarginTop(numberButtonColumnCount * row.key + col.key, context.settingsButtonShapeSize()),
+                          bottom: context.floorButtonNumberMarginBottom(numberButtonColumnCount * row.key + col.key, context.settingsButtonShapeSize()),
                         ),
                         child: Text("99",
                           style: TextStyle(
@@ -926,9 +930,8 @@ class SettingsWidget {
                 height: context.settingsButtonNumberLockHeight(),
                 child: Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                  // 1F never moves and always stops. Fade the button and the
-                  // switch; the plate that used to cover the cell hid the floor
-                  // number too, and the Stop label stays readable
+                  // 1F never moves and always stops. Fade the button and the switch;
+                  // a plate over the cell would hide the floor number and Stop label
                   Opacity(
                     opacity: isNotSelectFloor(row.key, col.key) ? fixedFloorOpacity : 1.0,
                     child: GestureDetector(

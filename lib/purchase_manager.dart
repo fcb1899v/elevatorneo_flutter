@@ -1,5 +1,5 @@
-// ===== PurchaseManager: the premium unlock, bought once =====
-// SDK starts on first use, never at launch (1.5.24 launch-crash rejection; see 2026-09-06 note).
+// PurchaseManager: the premium unlock, bought once. The SDK starts with the home screen's
+// delayed price prefetch after launch work, never at launch, where it risks a crash.
 
 import 'dart:io';
 import 'package:flutter/foundation.dart';
@@ -12,9 +12,10 @@ import 'constant.dart';
 import 'extension.dart';
 import 'plan_provider.dart';
 
-/// The store answered, but there is nothing to sell: no offering, no package,
-/// or the SDK could not start. Distinct from a purchase that was attempted and
-/// failed, because the message the user reads is different
+/// The store answered, but there is nothing to sell: no offering,
+/// no package, or the SDK could not start.
+/// Distinct from a purchase that was attempted and failed,
+/// because the message the user reads is different.
 class StoreUnavailableException implements Exception {
   final String reason;
   const StoreUnavailableException(this.reason);
@@ -26,8 +27,6 @@ class PurchaseManager {
 
   /// Guards against a second purchase flow while one is still running
   static bool _isPurchasing = false;
-
-  // --- Setup ---
 
   /// The one configure() call, shared by everyone who needs the store.
   /// Held so a second caller joins the first instead of configuring twice
@@ -76,15 +75,48 @@ class PurchaseManager {
     premiumKey.setSharedPrefBool(prefs, isPremium);
   }
 
+  /// Whether the customer holds the active premium entitlement. Purchase and restore both read it
+  static bool isPremiumIn(CustomerInfo info) =>
+    info.entitlements.active[premiumEntitlementID]?.isActive ?? false;
+
   /// The store's localized price, or null when it has nothing to sell.
   ///
-  /// Null no longer hides the purchase entry points. An app's first In-App
-  /// Purchase has to be attached to the same submission as the binary, and
-  /// Apple documents that StoreKit can return no products in the App Review
-  /// sandbox in exactly that state. Hiding on null would show the reviewer an
-  /// app with no purchase at all, and the purchase would be rejected with it.
-  /// The button is drawn either way; pressing it with no price says so aloud
-  static Future<String?> fetchPrice() async {
+  /// Null hides every purchase entry point: the offer is drawn only from a real price.
+  /// Always a network round-trip; the answer, null included, replaces the known price
+  static Future<String?> fetchPrice() async => _knownPrice = await priceSource();
+
+  /// The store lookup behind fetchPrice. Tests replace it so a screen's own fetch cannot race their pumps
+  @visibleForTesting
+  static Future<String?> Function() priceSource = _fetchPrice;
+
+  /// Forgets the known price and any fetch, so each test starts from a fresh launch
+  @visibleForTesting
+  static void resetPrice() {
+    _knownPrice = null;
+    _pricing = null;
+    _prefetch = null;
+    priceSource = _fetchPrice;
+  }
+
+  // --- Price cache ---
+
+  /// The last answer fetchPrice got, so a screen opened later needs no round-trip
+  static String? _knownPrice;
+  static String? get knownPrice => _knownPrice;
+  /// The fetch in flight, joined by a second caller instead of starting another
+  static Future<String?>? _pricing;
+  /// The one prefetch per process, however often the home screen is rebuilt
+  static Future<String?>? _prefetch;
+
+  /// Fetches the price once, a few seconds after launch, so the menu opens with it
+  static Future<String?> prefetchPrice() =>
+    _prefetch ??= Future.delayed(pricePrefetchDelay, loadPrice);
+
+  /// The known price, else the fetch in flight, else a new fetch
+  static Future<String?> loadPrice() async =>
+    _knownPrice ?? await (_pricing ??= fetchPrice().whenComplete(() => _pricing = null));
+
+  static Future<String?> _fetchPrice() async {
     try {
       if (!await _ensureConfigured()) return null;
       final Offerings offerings = await Purchases.getOfferings();
@@ -106,10 +138,8 @@ class PurchaseManager {
     if (!await _ensureConfigured()) {
       throw const StoreUnavailableException("configure");
     }
-    // Only this call is wrapped. getOfferings throws when the dashboard has no
-    // product, which is "nothing to sell", not a purchase that failed. The
-    // purchase() below is deliberately left bare: buyPremium reads the error
-    // code off its PlatformException to tell a user-initiated cancel apart
+    // Only this call is wrapped: getOfferings throws when the dashboard has no product,
+    // which is not a failed purchase. purchase() stays bare so buyPremium reads its code
     final Offerings offerings;
     try {
       offerings = await Purchases.getOfferings();
@@ -124,7 +154,7 @@ class PurchaseManager {
       throw const StoreUnavailableException("no package");
     }
     final purchaseResult = await Purchases.purchase(PurchaseParams.package(package));
-    final isPremium = purchaseResult.customerInfo.entitlements.active[premiumEntitlementID]?.isActive ?? false;
+    final isPremium = isPremiumIn(purchaseResult.customerInfo);
     "purchased isPremium: $isPremium".debugPrint();
     return isPremium;
   }
@@ -136,7 +166,7 @@ class PurchaseManager {
       throw const StoreUnavailableException("configure");
     }
     final restoredInfo = await Purchases.restorePurchases();
-    final isPremium = restoredInfo.entitlements.active[premiumEntitlementID]?.isActive ?? false;
+    final isPremium = isPremiumIn(restoredInfo);
     "restored isPremium: $isPremium".debugPrint();
     return isPremium;
   }

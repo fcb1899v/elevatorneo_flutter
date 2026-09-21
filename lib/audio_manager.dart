@@ -29,12 +29,14 @@ class AudioManager {
     }
   }
 
-  /// Stop audio playback
+  /// Stop audio playback; safe before any sound has created the player
   Future<void> stopAudio() async {
+    final player = _audioPlayer;
+    if (player == null) return;
     try {
-      if (_audioPlayer!.playing) {
-        await _audioPlayer!.stop();
-        'Stop audio: ${_audioPlayer!.playerState}'.debugPrint();
+      if (player.playing) {
+        await player.stop();
+        'Stop audio: ${player.playerState}'.debugPrint();
       }
     } catch (e) {
       'Stop audio failed: $e'.debugPrint();

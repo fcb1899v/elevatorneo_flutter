@@ -41,9 +41,9 @@ class MenuPage extends HookConsumerWidget {
     final isLoadingAd = useState(false);                      // Guards against duplicate in-flight loads
     final cancelToken = useMemoized(() => Completer<void>(), []); // Cancellation token for cleanup
     final isLoadingData = useState(false);                    // Data loading state
-    // The price the store returned, empty until it answers. The purchase button
-    // is drawn from this, never from "the SDK started", which may have nothing to sell
-    final storePrice = useState("");
+    // The price the store returned, empty until it answers. The purchase button is drawn
+    // from this; watched, so a prefetch landing while the menu is open brings it in
+    final storePrice = ref.watch(planProvider).priceString;
     // Refs, not state: the consent forms resolve after this screen can be gone,
     // and writing to a disposed ValueNotifier asserts in debug
     final consentUpdated = useRef(false);                     // One consent update per screen
@@ -154,7 +154,7 @@ class MenuPage extends HookConsumerWidget {
       if (rejoined != null) return rejoined;
       final completer = Completer<RewardedAd?>();
       pendingLoad.value = completer;
-      // main.dart no longer starts the platform SDK at launch, so make sure it is
+      // main.dart does not start the platform SDK at launch, so make sure it is
       // up before the first rewarded request; the shared future makes this a no-op
       if (await initializeMobileAds() == null) {
         // The press is waiting on this completer. Returning without finishing
@@ -275,15 +275,11 @@ class MenuPage extends HookConsumerWidget {
     useEffect(() {
       WidgetsBinding.instance.addPostFrameCallback((_) async {
         await initState();
-        // Preload the price so the button can show an amount. The button itself
-        // exists either way; this only decides whether it carries a number
+        // Reuses the home screen's prefetch, or joins it if the menu opened first
         if (ref.read(planProvider).isPremium) return;
-        final price = await PurchaseManager.fetchPrice();
+        final price = await PurchaseManager.loadPrice();
         if (!context.mounted) return;
-        if (price != null) {
-          storePrice.value = price;
-          ref.read(planProvider.notifier).setPrice(price);
-        }
+        ref.read(planProvider.notifier).setPrice(price ?? "");
       });
       return null;
     }, []);
@@ -368,14 +364,16 @@ class MenuPage extends HookConsumerWidget {
       final price = await PurchaseManager.fetchPrice();
       if (!context.mounted) return;
       isLoadingData.value = false;
-      // An empty price still opens the page: the button says "Buy" without an
-      // amount, and pressing it reports why nothing happened
-      storePrice.value = price ?? "";
       ref.read(planProvider.notifier).setPrice(price ?? "");
+      // No price, no purchase page: the button goes and the tap is answered
+      if (price == null) {
+        common.commonSnackBar(context.premiumUnavailable());
+        return;
+      }
       await AnalyticsManager.upgradeOffered("menu");
       if (!context.mounted) return;
       context.pushPage(PremiumPage(
-        price: price ?? "",
+        price: price,
         onBuy: () async {
           context.popPage();
           await runPurchase(isRestore: false);
@@ -393,8 +391,8 @@ class MenuPage extends HookConsumerWidget {
         // Settings page navigation
         if (context.mounted) context.pushFadeReplacement(SettingsPage());
       } else if (i == 3) {
-        // Premium purchase. Placed before the connectivity check on purpose: the
-        // purchase page says why nothing happened, which a blocked tap cannot
+        // Premium purchase, drawn only with a price. Before the connectivity check: the
+        // refetch answers an offline tap with premiumUnavailable
         await openUpgrade();
       } else if (!isConnectedInternet) {
         // Internet connectivity check
@@ -450,11 +448,10 @@ class MenuPage extends HookConsumerWidget {
               children: [
                 Spacer(flex: 1),
                 /// Menu button grid, two per row. The fourth (purchase) is dropped
-                /// once premium is owned; with three, one is centred. It is shown
-                /// with or without a price, so App Review always has a way in
+                /// once premium is owned or while no price is known; with three, one is centred
                 ...menu.menuButtonRows(
                   onTap: pressedMenuLink,
-                  price: isPremium ? null: storePrice.value,
+                  price: (isPremium || storePrice.isEmpty) ? null: storePrice,
                 ),
                 Spacer(flex: 1),
                 /// Bottom navigation with external links
@@ -494,8 +491,8 @@ class MenuWidget {
   // --- Menu Button Components ---
   // UI components for main menu buttons
 
-  /// Lay the buttons out two per row. price is null once premium is owned; the
-  /// grid then holds three, one centred on the second row
+  /// Lay the buttons out two per row. price is null once premium is owned or with no
+  /// store price; the grid then holds three, one centred on the second row
   List<Widget> menuButtonRows({
     required Future<void> Function(int) onTap,
     String? price,
@@ -549,9 +546,8 @@ class MenuWidget {
   /// this row, which is the case once premium removes the banner
   Widget bottomMenuLink({required double bottomInset}) => Container(
     color: blackColor,
-    // The top keeps what the bar gave it: menuLinksMargin twice, plus the half
-    // font size the bar added itself. The underside matches it; what the bar
-    // added beyond that is gone, which is the gap this replacement was for
+    // The top keeps what the bar gave it: menuLinksMargin twice plus half the font size.
+    // The underside matches; the rest the bar added is gone, which was the gap
     padding: EdgeInsets.only(
       top: context.menuLinksMargin() * 2 + context.menuLinksTitleSize() / 2,
       bottom: context.menuLinksMargin() * 2 + context.menuLinksTitleSize() / 2

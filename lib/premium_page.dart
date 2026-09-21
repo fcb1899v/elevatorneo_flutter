@@ -1,23 +1,13 @@
-// ===== PremiumPage: the full-screen purchase page =====
-// Replaces the CupertinoAlertDialog every entry point used to open. The menu
-// button is pressed by people asking "what is this?", and a three-line alert
-// sells them nothing (08_Designer/ui/2026-09-11_premium_purchase_page.md).
-//
-// The page never names an individual feature. It draws one icon per entry in
-// premiumTabList, which is the settings tabs that hold something the unlock
-// opens, so adding a feature inside a tab leaves this file and its six
-// translations untouched.
+// PremiumPage: the full-screen purchase page, not a short alert, for people asking "what is this?".
+// It names no feature: one icon per premiumTabList entry, so a new feature needs no edit here.
 
 import 'package:flutter/material.dart';
-
 import 'common_widget.dart';
 import 'constant.dart';
 import 'extension.dart';
 
-// Every string here uses the platform font. context.font() hands Korean a
-// display face (bmDohyeon) that does not match the rest of the page, and the
-// owner asked for one plain font across all six. The PREMIUM board keeps
-// letsgo: that is the floor display's own alphabet, not body text.
+// Every string uses the platform font: context.font() gives Korean a display face
+// that breaks the one-plain-font rule. The PREMIUM board keeps letsgo, its own alphabet.
 class PremiumPage extends StatelessWidget {
   const PremiumPage({
     super.key,
@@ -59,9 +49,8 @@ class PremiumPage extends StatelessWidget {
                           ),
                         ),
                       ),
-                      // Centred in what the close button leaves. The scroll view never
-                      // scrolls on a phone; it is there so an unusually short screen
-                      // shows the page instead of an overflow stripe
+                      // Centred in what the close button leaves. The scroll view never scrolls
+                      // on a phone; it is there so a short screen shows the page, not a stripe
                       Expanded(
                         child: Center(
                           child: SingleChildScrollView(
@@ -98,13 +87,14 @@ class PremiumPage extends StatelessWidget {
                                 // Action
                                 Text(
                                   context.premiumOneTime(),
+                                  textAlign: TextAlign.center,
                                   style: TextStyle(
                                     color: whiteColor,
                                     fontSize: context.premiumNoteFontSize(),
                                   ),
                                 ),
                                 SizedBox(height: context.premiumGapInner()),
-                                _buyButton(context),
+                                price.isEmpty ? _unavailableNote(context): _buyButton(context),
                                 SizedBox(height: context.premiumGapInner()),
                                 TextButton(
                                   onPressed: onRestore,
@@ -197,6 +187,19 @@ class PremiumPage extends StatelessWidget {
           ),
         )
         .toList(),
+  );
+
+  // An empty price means the store has nothing to sell here (offline, not sold in this
+  // country, still in review), so the reason replaces the Buy button. Restore stays.
+  Widget _unavailableNote(BuildContext context) => Padding(
+    padding: EdgeInsets.symmetric(horizontal: context.premiumIconMargin()),
+    child: Text(context.premiumUnavailable(),
+      textAlign: TextAlign.center,
+      style: TextStyle(
+        color: whiteColor,
+        fontSize: context.premiumNoteFontSize(),
+      ),
+    ),
   );
 
   /// The only amber frame on the page, so the eye lands on it last and stays

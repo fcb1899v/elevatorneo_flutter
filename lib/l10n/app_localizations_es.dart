@@ -45,7 +45,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String floor(Object NUMBER) {
-    return 'Piso $NUMBER, ';
+    return '${NUMBER}piso, ';
   }
 
   @override
@@ -76,7 +76,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get return1st => 'Verificación completada. Regresando al primer piso.';
 
   @override
-  String get bypass => 'Omitir';
+  String get bypass => 'Restringido';
 
   @override
   String get stop => 'Detener';
@@ -121,61 +121,61 @@ class AppLocalizationsEs extends AppLocalizations {
   String get restaurant => 'Piso de restaurante, ';
 
   @override
-  String get spa => 'Piso de spa, ';
+  String get spa => 'Piso de aguas termales, ';
 
   @override
-  String get arcade => 'Piso de centro de juegos, ';
+  String get arcade => 'Piso de salón recreativo, ';
 
   @override
   String get foodCourt => 'Piso de patio de comidas, ';
 
   @override
-  String get indoorPark => 'Piso de parque interior, ';
+  String get indoorPark => 'Piso de parque infantil, ';
 
   @override
   String get supermarket => 'Piso de supermercado, ';
 
   @override
-  String get station => 'Piso de estación de metro, ';
+  String get station => 'Piso de acceso a andenes, ';
 
   @override
   String get parking => 'Piso de estacionamiento, ';
 
   @override
-  String get apparel => 'Piso de tienda de ropa, ';
+  String get apparel => 'Piso de ropa, ';
 
   @override
-  String get electronics => 'Piso de tienda de electrónicos, ';
+  String get electronics => 'Piso de electrónica, ';
 
   @override
-  String get outdoor => 'Piso de tienda de equipos al aire libre, ';
+  String get outdoor => 'Piso de aire libre, ';
 
   @override
   String get bookstore => 'Piso de librería, ';
 
   @override
-  String get candy => 'Piso de tienda de dulces, ';
+  String get candy => 'Piso de chucherías, ';
 
   @override
-  String get toy => 'Piso de tienda de juguetes, ';
+  String get toy => 'Piso de juguetería, ';
 
   @override
   String get luxury => 'Piso de boutique de lujo, ';
 
   @override
-  String get sports => 'Piso de tienda de artículos deportivos, ';
+  String get sports => 'Piso de artículos deportivos, ';
 
   @override
   String get gym => 'Piso de gimnasio, ';
 
   @override
-  String get sweets => 'Piso de tienda de postres, ';
+  String get sweets => 'Piso de pastelería, ';
 
   @override
-  String get furniture => 'Piso de tienda de muebles, ';
+  String get furniture => 'Piso de muebles, ';
 
   @override
-  String get cinema => 'Piso de multicines, ';
+  String get cinema => 'Piso de cine, ';
 
   @override
   String get nameRooftop => 'El Piso Superior';
@@ -187,61 +187,61 @@ class AppLocalizationsEs extends AppLocalizations {
   String get nameRestaurant => 'Restaurante';
 
   @override
-  String get nameSpa => 'Spa';
+  String get nameSpa => 'Aguas termales';
 
   @override
-  String get nameArcade => 'Arcade';
+  String get nameArcade => 'Salón recreativo';
 
   @override
   String get nameFoodCourt => 'Patio de comidas';
 
   @override
-  String get nameIndoorPark => 'Parque interior';
+  String get nameIndoorPark => 'Parque infantil';
 
   @override
   String get nameSupermarket => 'Supermercado';
 
   @override
-  String get nameStation => 'Estación de metro';
+  String get nameStation => 'Acceso a andenes';
 
   @override
   String get nameParking => 'Estacionamiento';
 
   @override
-  String get nameApparel => 'Tienda de ropa';
+  String get nameApparel => 'Ropa';
 
   @override
-  String get nameElectronics => 'Tienda de electrónicos';
+  String get nameElectronics => 'Electrónica';
 
   @override
-  String get nameOutdoor => 'Tienda de equipos al aire libre';
+  String get nameOutdoor => 'Aire libre';
 
   @override
   String get nameBookstore => 'Librería';
 
   @override
-  String get nameCandy => 'Tienda de dulces';
+  String get nameCandy => 'Chucherías';
 
   @override
-  String get nameToy => 'Tienda de juguetes';
+  String get nameToy => 'Juguetería';
 
   @override
   String get nameLuxury => 'Boutique de lujo';
 
   @override
-  String get nameSports => 'Tienda de artículos deportivos';
+  String get nameSports => 'Artículos deportivos';
 
   @override
   String get nameGym => 'Gimnasio';
 
   @override
-  String get nameSweets => 'Tienda de postres';
+  String get nameSweets => 'Pastelería';
 
   @override
-  String get nameFurniture => 'Tienda de muebles';
+  String get nameFurniture => 'Muebles';
 
   @override
-  String get nameCinema => 'Multicines';
+  String get nameCinema => 'Cine';
 
   @override
   String get movingElevator => 'Ascensor en uso, por favor espere un momento.';
@@ -301,7 +301,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get premiumUnlockAll =>
-      'Todos los diseños y funciones,\nsin acumular millas EV';
+      'Todos los diseños y funciones,\ntuyos ahora mismo\nsin acumular millas EV';
 
   @override
   String get premiumOneTime => 'Una compra única';
@@ -315,7 +315,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get premiumBuy => 'Comprar';
 
   @override
-  String get premiumRestore => 'Restaurar compra';
+  String get premiumRestore => 'Restaurar compras';
 
   @override
   String get premiumThanks => '¡Gracias! Todo está desbloqueado.';
@@ -330,4 +330,10 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get premiumUnavailable =>
       'Las compras no están disponibles.\nInténtalo de nuevo más tarde.';
+
+  @override
+  String get nameAppliance => 'Electrodomésticos';
+
+  @override
+  String get appliance => 'Piso de electrodomésticos, ';
 }

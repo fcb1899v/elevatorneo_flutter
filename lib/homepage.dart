@@ -21,6 +21,8 @@ import 'constant.dart';
 import 'image_manager.dart';
 import 'main.dart';
 import 'menu.dart';
+import 'plan_provider.dart';
+import 'purchase_manager.dart';
 
 class HomePage extends HookConsumerWidget {
   const HomePage({super.key});
@@ -153,7 +155,15 @@ class HomePage extends HookConsumerWidget {
         if (!isGamesSignIn) unawaited(gamesInit());
       }
 
-      WidgetsBinding.instance.addPostFrameCallback((_) async => await initState(),);
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        await initState();
+        // Price prefetch once launch work is done and the splash is gone, plus a delay; never
+        // in the launch path, where it risks a crash. The menu then opens with it
+        if (!context.mounted || ref.read(planProvider).isPremium) return;
+        await PurchaseManager.prefetchPrice();
+        // The latest answer, not the prefetch's: a refetch since may have changed it
+        if (context.mounted) ref.read(planProvider.notifier).setPrice(PurchaseManager.knownPrice ?? "");
+      });
       return null;
     }, []);
 
@@ -1107,8 +1117,8 @@ class HomeWidget {
         Image.asset(isSelected.numberBackground(buttonStyle, buttonShape)),
         Container(
           margin: EdgeInsets.only(
-            top: context.floorButtonNumberMarginTop(buttonShape.buttonShapeIndex()),
-            bottom: context.floorButtonNumberMarginBottom(buttonShape.buttonShapeIndex())
+            top: context.floorButtonNumberMarginTop(buttonShape.buttonShapeIndex(), context.buttonSize()),
+            bottom: context.floorButtonNumberMarginBottom(buttonShape.buttonShapeIndex(), context.buttonSize())
           ),
           child:Text(floorNumber.buttonNumber(),
             style: TextStyle(

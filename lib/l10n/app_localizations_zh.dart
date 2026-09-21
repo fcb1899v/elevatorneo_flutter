@@ -75,7 +75,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get return1st => '检查已完成。返回一楼。';
 
   @override
-  String get bypass => '跳过层';
+  String get bypass => '限制层';
 
   @override
   String get stop => '停靠层';
@@ -129,13 +129,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get foodCourt => '美食广场层。';
 
   @override
-  String get indoorPark => '室内公园层。';
+  String get indoorPark => '室内儿童乐园层。';
 
   @override
   String get supermarket => '超市层。';
 
   @override
-  String get station => '地铁站层。';
+  String get station => '检票口层。';
 
   @override
   String get parking => '停车场层。';
@@ -144,7 +144,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get apparel => '服装店层。';
 
   @override
-  String get electronics => '电器店层。';
+  String get electronics => '数码店层。';
 
   @override
   String get outdoor => '户外用品店层。';
@@ -153,7 +153,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get bookstore => '书店层。';
 
   @override
-  String get candy => '糖果店。';
+  String get candy => '零食店层。';
 
   @override
   String get toy => '玩具店层。';
@@ -168,7 +168,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get gym => '健身房层。';
 
   @override
-  String get sweets => '甜品店层。';
+  String get sweets => '法式甜点店层。';
 
   @override
   String get furniture => '家具店层。';
@@ -195,13 +195,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get nameFoodCourt => '美食广场';
 
   @override
-  String get nameIndoorPark => '室内公园';
+  String get nameIndoorPark => '室内儿童乐园';
 
   @override
   String get nameSupermarket => '超市';
 
   @override
-  String get nameStation => '地铁站';
+  String get nameStation => '检票口';
 
   @override
   String get nameParking => '停车场';
@@ -210,7 +210,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get nameApparel => '服装店';
 
   @override
-  String get nameElectronics => '电器店';
+  String get nameElectronics => '数码店';
 
   @override
   String get nameOutdoor => '户外用品店';
@@ -219,7 +219,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get nameBookstore => '书店';
 
   @override
-  String get nameCandy => '糖果店';
+  String get nameCandy => '零食店';
 
   @override
   String get nameToy => '玩具店';
@@ -234,7 +234,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get nameGym => '健身房';
 
   @override
-  String get nameSweets => '甜品店';
+  String get nameSweets => '法式甜点店';
 
   @override
   String get nameFurniture => '家具店';
@@ -291,13 +291,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get ranking => '排名';
 
   @override
-  String get premiumTitle => '高级版';
+  String get premiumTitle => '完整版';
 
   @override
   String get premiumNoAds => '不再显示广告';
 
   @override
-  String get premiumUnlockAll => '无需累积电梯里程，\n即可使用所有设计和功能';
+  String get premiumUnlockAll => '所有设计和功能立即可用\n无需累积电梯里程';
 
   @override
   String get premiumOneTime => '一次性购买';
@@ -324,4 +324,10 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get premiumUnavailable => '目前无法进行购买。\n请稍后再试。';
+
+  @override
+  String get nameAppliance => '家电卖场';
+
+  @override
+  String get appliance => '家电卖场层。';
 }

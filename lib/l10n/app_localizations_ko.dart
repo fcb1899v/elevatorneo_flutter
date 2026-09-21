@@ -75,7 +75,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get return1st => '점검이 완료되었습니다. 1층으로 돌아갑니다. ';
 
   @override
-  String get bypass => '통과 층';
+  String get bypass => '제한 층';
 
   @override
   String get stop => '정차 층';
@@ -96,14 +96,14 @@ class AppLocalizationsKo extends AppLocalizations {
   String get cropPhoto => '이미지 자르기';
 
   @override
-  String get eVMile => 'EV마일';
+  String get eVMile => 'EV 마일';
 
   @override
-  String get eVMileRanking => 'EV마일\n순위';
+  String get eVMileRanking => 'EV 마일\n순위';
 
   @override
   String earnMile(Object NUMBER) {
-    return '$NUMBER\nEV마일\n획득!';
+    return '$NUMBER\nEV 마일\n획득!';
   }
 
   @override
@@ -129,13 +129,13 @@ class AppLocalizationsKo extends AppLocalizations {
   String get foodCourt => '푸드 코트 층에 도착하셨습니다. ';
 
   @override
-  String get indoorPark => '실내 공원 층에 도착하셨습니다. ';
+  String get indoorPark => '실내놀이터 층에 도착하셨습니다. ';
 
   @override
   String get supermarket => '슈퍼마켓 층에 도착하셨습니다. ';
 
   @override
-  String get station => '지하철 역 층에 도착하셨습니다. ';
+  String get station => '개찰구 층에 도착하셨습니다. ';
 
   @override
   String get parking => '주차장 층에 도착하셨습니다. ';
@@ -144,7 +144,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get apparel => '의류 매장 층에 도착하셨습니다. ';
 
   @override
-  String get electronics => '가전제품 매장 층에 도착하셨습니다. ';
+  String get electronics => '디지털 매장 층에 도착하셨습니다. ';
 
   @override
   String get outdoor => '아웃도어 용품점 층에 도착하셨습니다. ';
@@ -153,7 +153,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get bookstore => '서점 층에 도착하셨습니다. ';
 
   @override
-  String get candy => '사탕 가게 층에 도착하셨습니다. ';
+  String get candy => '과자 가게 층에 도착하셨습니다. ';
 
   @override
   String get toy => '장난감 가게 층에 도착하셨습니다. ';
@@ -165,10 +165,10 @@ class AppLocalizationsKo extends AppLocalizations {
   String get sports => '스포츠 용품점 층에 도착하셨습니다. ';
 
   @override
-  String get gym => '피트니스 짐 층에 도착하셨습니다. ';
+  String get gym => '헬스장 층에 도착하셨습니다. ';
 
   @override
-  String get sweets => '디저트 매장 층에 도착하셨습니다. ';
+  String get sweets => '베이커리 카페 층에 도착하셨습니다. ';
 
   @override
   String get furniture => '가구 매장 층에 도착하셨습니다. ';
@@ -195,13 +195,13 @@ class AppLocalizationsKo extends AppLocalizations {
   String get nameFoodCourt => '푸드 코트';
 
   @override
-  String get nameIndoorPark => '실내 공원';
+  String get nameIndoorPark => '실내놀이터';
 
   @override
   String get nameSupermarket => '슈퍼마켓';
 
   @override
-  String get nameStation => '지하철 역';
+  String get nameStation => '개찰구';
 
   @override
   String get nameParking => '주차장';
@@ -210,7 +210,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get nameApparel => '의류 매장';
 
   @override
-  String get nameElectronics => '가전제품 매장';
+  String get nameElectronics => '디지털 매장';
 
   @override
   String get nameOutdoor => '아웃도어 용품점';
@@ -219,7 +219,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get nameBookstore => '서점';
 
   @override
-  String get nameCandy => '사탕 가게';
+  String get nameCandy => '과자 가게';
 
   @override
   String get nameToy => '장난감 가게';
@@ -231,10 +231,10 @@ class AppLocalizationsKo extends AppLocalizations {
   String get nameSports => '스포츠 용품점';
 
   @override
-  String get nameGym => '피트니스 짐';
+  String get nameGym => '헬스장';
 
   @override
-  String get nameSweets => '디저트 매장';
+  String get nameSweets => '베이커리 카페';
 
   @override
   String get nameFurniture => '가구 매장';
@@ -253,12 +253,12 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String earnMilesAfterAdTitle(Object NUMBER) {
-    return '광고를 보고\n${NUMBER}EV마일\n얻자!\n';
+    return '광고를 보고\n$NUMBER EV 마일\n얻자!\n';
   }
 
   @override
   String earnMilesAfterAdDesc(Object NUMBER) {
-    return '지정된 시간 동안 광고를 보시면 ${NUMBER}EV마일을 획득할 수 있습니다.';
+    return '지정된 시간 동안 광고를 보시면 $NUMBER EV 마일을 획득할 수 있습니다.';
   }
 
   @override
@@ -295,10 +295,10 @@ class AppLocalizationsKo extends AppLocalizations {
   String get premiumTitle => '프리미엄 팩';
 
   @override
-  String get premiumNoAds => '광고가 표시되지 않습니다';
+  String get premiumNoAds => '광고가 제거됩니다';
 
   @override
-  String get premiumUnlockAll => 'EV 마일 없이\n모든 디자인과 기능을 사용할 수 있습니다';
+  String get premiumUnlockAll => '모든 디자인과 기능을\nEV 마일 없이\n지금 바로 사용할 수 있습니다';
 
   @override
   String get premiumOneTime => '한 번만 결제합니다';
@@ -325,4 +325,10 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get premiumUnavailable => '지금은 구매를 진행할 수 없습니다.\n잠시 후 다시 시도해 주세요.';
+
+  @override
+  String get nameAppliance => '생활가전 매장';
+
+  @override
+  String get appliance => '생활가전 매장 층에 도착하셨습니다. ';
 }

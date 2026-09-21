@@ -75,7 +75,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get return1st => '確認が完了しました。一階に戻ります。 ';
 
   @override
-  String get bypass => '通過階';
+  String get bypass => '制限階';
 
   @override
   String get stop => '停止階';
@@ -129,49 +129,49 @@ class AppLocalizationsJa extends AppLocalizations {
   String get foodCourt => 'フードコート階です。　';
 
   @override
-  String get indoorPark => '屋内パーク階です。　';
+  String get indoorPark => '屋内あそび場階です。　';
 
   @override
-  String get supermarket => 'スーパーマーケット階です。　';
+  String get supermarket => 'スーパー階です。　';
 
   @override
-  String get station => '地下鉄駅階です。　';
+  String get station => '駅改札階です。　';
 
   @override
   String get parking => '駐車場階です。　';
 
   @override
-  String get apparel => '洋服売り場階です。　';
+  String get apparel => '洋服階です。　';
 
   @override
-  String get electronics => '家電売り場階です。 ';
+  String get electronics => 'デジタル家電階です。　';
 
   @override
-  String get outdoor => 'アウトドア用品売り場階です。　';
+  String get outdoor => 'アウトドア用品階です。　';
 
   @override
-  String get bookstore => '書籍売り場階です。　';
+  String get bookstore => '本屋階です。　';
 
   @override
-  String get candy => 'お菓子売り場階です。　';
+  String get candy => '駄菓子屋階です。　';
 
   @override
-  String get toy => 'おもちゃ売り場階です。　';
+  String get toy => 'おもちゃ階です。　';
 
   @override
-  String get luxury => '高級ブティック売り場階です。　';
+  String get luxury => '高級ブティック階です。　';
 
   @override
-  String get sports => 'スポーツ用品売り場階です。　';
+  String get sports => 'スポーツ用品階です。　';
 
   @override
-  String get gym => 'フィットネスジム階です。　';
+  String get gym => 'ジム階です。　';
 
   @override
-  String get sweets => 'スイーツ売り場階です。　';
+  String get sweets => 'パティスリー階です。　';
 
   @override
-  String get furniture => '家具売り場階です。　';
+  String get furniture => '家具階です。　';
 
   @override
   String get cinema => '映画館階です。　';
@@ -195,49 +195,49 @@ class AppLocalizationsJa extends AppLocalizations {
   String get nameFoodCourt => 'フードコート';
 
   @override
-  String get nameIndoorPark => '屋内公園';
+  String get nameIndoorPark => '屋内あそび場';
 
   @override
-  String get nameSupermarket => 'スーパーマーケット';
+  String get nameSupermarket => 'スーパー';
 
   @override
-  String get nameStation => '地下鉄駅';
+  String get nameStation => '駅改札';
 
   @override
   String get nameParking => '駐車場';
 
   @override
-  String get nameApparel => '洋服売り場';
+  String get nameApparel => '洋服';
 
   @override
-  String get nameElectronics => '家電売り場';
+  String get nameElectronics => 'デジタル家電';
 
   @override
-  String get nameOutdoor => 'アウトドア用品売り場';
+  String get nameOutdoor => 'アウトドア用品';
 
   @override
-  String get nameBookstore => '書籍売り場';
+  String get nameBookstore => '本屋';
 
   @override
-  String get nameCandy => 'お菓子売り場';
+  String get nameCandy => '駄菓子屋';
 
   @override
-  String get nameToy => 'おもちゃ売り場';
+  String get nameToy => 'おもちゃ';
 
   @override
-  String get nameLuxury => '高級ブティック売り場';
+  String get nameLuxury => '高級ブティック';
 
   @override
-  String get nameSports => 'スポーツ用品売り場';
+  String get nameSports => 'スポーツ用品';
 
   @override
-  String get nameGym => 'フィットネスジム';
+  String get nameGym => 'ジム';
 
   @override
-  String get nameSweets => 'スイーツ売り場';
+  String get nameSweets => 'パティスリー';
 
   @override
-  String get nameFurniture => '家具売り場';
+  String get nameFurniture => '家具';
 
   @override
   String get nameCinema => '映画館';
@@ -298,7 +298,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get premiumNoAds => '広告表示がなくなります';
 
   @override
-  String get premiumUnlockAll => 'EVマイルを貯めずに\n全てのデザインや機能が使えます';
+  String get premiumUnlockAll => '全てのデザインと機能が\n今すぐ使えます\nEVマイルを貯める必要はありません';
 
   @override
   String get premiumOneTime => '1回だけの購入です';
@@ -324,5 +324,11 @@ class AppLocalizationsJa extends AppLocalizations {
   String get premiumRestoreFailed => '復元できる購入が見つかりませんでした。';
 
   @override
-  String get premiumUnavailable => 'いま購入手続きを開始できません。\n時間をおいてお試しください。';
+  String get premiumUnavailable => 'いま購入手続きを開始できません。\n時間をおいてもう一度お試しください。';
+
+  @override
+  String get nameAppliance => '生活家電';
+
+  @override
+  String get appliance => '生活家電階です。　';
 }

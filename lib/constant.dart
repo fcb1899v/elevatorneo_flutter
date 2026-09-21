@@ -2,7 +2,6 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-
 import 'main.dart';
 
 // ===== APPLICATION CONFIGURATION =====
@@ -44,11 +43,14 @@ const int interstitialMaxPerSession = 3;   // Upper bound within a single sessio
 const int interstitialMinRides = 5;        // Rides required before the first interstitial
 
 /// RevenueCat configuration
-/// Keys are looked up in assets/.env, entitlement is defined in the RevenueCat dashboard
+/// Keys are looked up in assets/.env. The entitlement id must equal the dashboard's;
+/// "premium" is taken by another app in the shared project, so this one is prefixed
 String revenueCatApiKey = (Platform.isIOS || Platform.isMacOS) ?
   "REVENUE_CAT_IOS_API_KEY":
   "REVENUE_CAT_ANDROID_API_KEY";
-const String premiumEntitlementID = "premium";
+const String premiumEntitlementID = "elevatorneo_premium";
+/// Wait after the home screen's launch work (splash removed) before fetching the price
+const Duration pricePrefetchDelay = Duration(seconds: 3);
 
 /// Store review request
 /// Minimum rides before asking the user for a store review
@@ -72,7 +74,7 @@ const int consentFormTimeoutSec = 15;
 
 /// Floor configuration
 /// Minimum and maximum floor numbers, and initial floor position
-const int min = -6;
+const int min = -12;
 const int max = 163;
 int initialFloor = isTest ? max: 2;
 int initialCurrent = isTest ? max: 1;
@@ -281,10 +283,11 @@ const List<double> floorButtonNumberSizeFactor = [
   1.0, 1.0, 1.0,
   0.9, 0.9, 1.0,
 ];
-const List<double> floorButtonNumberMarginFactor = [
+/// Star, heart and cat sit off their geometric centre. Fraction of button size
+const List<double> floorButtonNumberOffset = [
   0.0, 0.0, 0.0,
   0.0, 0.0, 0.0,
-  0.006, -0.01, 0.002,
+  0.047, -0.050, 0.016,
 ];
 
 /// Elevator frame images
@@ -326,6 +329,7 @@ const String imageGym     = "${assetsRoom}19gym.jpg";
 const String imageSweets  = "${assetsRoom}20sweets.jpg";
 const String imageFurnit  = "${assetsRoom}21furniture.jpg";
 const String imageCinema  = "${assetsRoom}22cinema.jpg";
+const String imageApplian = "${assetsRoom}23appliance.jpg";
 
 /// Floor image lists
 /// Initial and additional floor images for different building types
@@ -336,7 +340,7 @@ const List<String> initialFloorImages = [
 const List<String> addFloorImages = [
   imageApparel, imageElectro, imagePark, imageOutdoor, imageCandy,
   imageToy, imageLuxury, imageSports, imageGym, imageSweets,
-  imageFurnit, imageCinema
+  imageFurnit, imageCinema, imageApplian
 ];
 const List<String> floorImageList = [...initialFloorImages, ...addFloorImages];
 

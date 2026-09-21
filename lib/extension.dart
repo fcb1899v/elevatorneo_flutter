@@ -220,12 +220,11 @@ extension ContextExt on BuildContext {
   double floorButtonMargin() => widthResponsible() * 0.02;
   double floorButtonNumberFontSize(int i) =>
       widthResponsible() * floorButtonNumberSizeFactor[i] * 0.03;
-  double floorButtonNumberBottomMargin(int i) =>
-      widthResponsible() * floorButtonNumberMarginFactor[i] * 0.01;
-  double floorButtonNumberMarginTop(int i) =>
-      floorButtonNumberMarginFactor[i] < 0 ? 0: widthResponsible() * (0.002 + floorButtonNumberMarginFactor[i]);
-  double floorButtonNumberMarginBottom(int i) =>
-      floorButtonNumberMarginFactor[i] > 0 ? 0: -1 * widthResponsible() * floorButtonNumberMarginFactor[i];
+  // A one-sided margin is halved by centring, so double it
+  double floorButtonNumberMarginTop(int i, double size) =>
+      floorButtonNumberOffset[i] > 0 ? 2 * size * floorButtonNumberOffset[i]: 0;
+  double floorButtonNumberMarginBottom(int i, double size) =>
+      floorButtonNumberOffset[i] < 0 ? -2 * size * floorButtonNumberOffset[i]: 0;
   double changeViewMarginTop() => widthResponsible() * 0.028;
   double changeViewMarginLeft() => widthResponsible() * 0.32;
   // AdMob
@@ -236,12 +235,11 @@ extension ContextExt on BuildContext {
   double menuButtonMargin() => widthResponsible() * 0.06;
 
   // --- Premium purchase page ---
-  // 08_Designer/ui/2026-09-11_premium_purchase_page.md の案5A。
-  // 基準は iPhone 430dp 幅。内容幅 382dp = 0.888、左右の余白 24dp = 0.056
+  // Sized against a 430dp-wide iPhone: content 382dp = 0.888, side margins 24dp = 0.056
   double premiumContentWidth() => widthResponsible() * 0.888;
   double premiumSignHeight() => widthResponsible() * 0.242;      // 104dp
   double premiumSignFontSize() => widthResponsible() * 0.163;    // 70dp
-  // 商品名と説明の大小は入れ替えてある（オーナー指定）。商品名が主、説明が従
+  // The product name outranks its description, so it is set larger
   double premiumNameFontSize() => widthResponsible() * 0.065;    // 28dp
   double premiumPlateFontSize() => widthResponsible() * 0.051;   // 22dp
   double premiumBodyFontSize() => widthResponsible() * 0.044;    // 19dp
@@ -249,15 +247,15 @@ extension ContextExt on BuildContext {
   double premiumBuyFontSize() => widthResponsible() * 0.051;     // 22dp
   double premiumRestoreFontSize() => widthResponsible() * 0.037; // 16dp
   double premiumIconSize() => widthResponsible() * 0.172;        // 74dp
-  double premiumIconMargin() => widthResponsible() * 0.019;      // 8dp（間隔 16dp）
+  double premiumIconMargin() => widthResponsible() * 0.019;      // 8dp (16dp apart)
   double premiumCloseSize() => widthResponsible() * 0.065;       // 28dp
   double premiumBuyHeight() => widthResponsible() * 0.167;       // 72dp
-  double premiumPlatePadding() => widthResponsible() * 0.030;    // 13dp（高さ 60dp）
+  double premiumPlatePadding() => widthResponsible() * 0.030;    // 13dp (60dp tall)
   double premiumPlateRadius() => widthResponsible() * 0.019;     // 8dp
   double premiumBuyRadius() => widthResponsible() * 0.033;       // 14dp
   double premiumBorderWidth() => widthResponsible() * 0.005;     // 2dp
   double premiumBuyBorderWidth() => widthResponsible() * 0.012;  // 5dp
-  // 塊の中は詰め、塊の間を空ける。余りは下に残す（埋めない）
+  // Tight within a block, loose between blocks; leftover space stays at the bottom
   double premiumGapInner() => widthResponsible() * 0.033;        // 14dp
   double premiumGapBlock() => widthResponsible() * 0.084;        // 36dp
   double menuMarginTop() => height() * 0.02;
@@ -406,7 +404,8 @@ extension IntExt on int {
       } ${(this % 10).esRankNumber()} ":
       esRankNumberOver100();
   String esRankNumberOver100() =>
-      'centésimo ${(this % 100).esRankNumberOver20()} ';
+      (this % 100 == 0) ? 'centésimo ':
+      'centésimo ${(this % 100).esRankNumber()} ';
   // French ordinal number generation for floor announcements
   String frRankNumber() => //1~199
     (this == 0) ? '':
@@ -445,7 +444,8 @@ extension IntExt on int {
     } ${(this % 10).frRankNumber()} ":
     frRankNumberOver100();
   String frRankNumberOver100() =>
-    'centième ${(this % 100).frRankNumberOver20()} ';
+    (this % 100 == 0) ? 'centième ':
+    'centième ${(this % 100).frRankNumber()} ';
 
   // --- Settings & Button Helpers ---
   // Methods for managing settings UI and button image paths based on style configurations
@@ -465,7 +465,7 @@ extension IntExt on int {
   // --- Elevator Inside Image Generation ---
   // Methods for generating elevator interior images for all floor levels
   List<Image> insideImages(String elevatorStyle) =>
-      [for (int i = -6; i <= 163; i++) if (i != 0) ((this == i) ? elevatorStyle.insideElevator(): imageDark).fittedAssetImage()];
+      [for (int i = min; i <= max; i++) if (i != 0) ((this == i) ? elevatorStyle.insideElevator(): imageDark).fittedAssetImage()];
 
   // --- Display Helpers ---
   // Methods for formatting display text and symbols for elevator status
@@ -667,8 +667,6 @@ extension ListIntExt on List<int> {
     [this[1], this[0]],
   ];
 
-  // --- Floor Selection Helpers ---
-  // Methods for calculating floor ranges and selections based on button matrix positions
   /// A button sits between its neighbours, except the two ends. The bottom one
   /// runs down to min, and the top one up to max; their other limit comes from
   /// how many buttons have to fit on the far side of the fixed 1F
@@ -706,7 +704,7 @@ extension ListStringExt on List<String> {
   ];
   // Methods for generating floor images and managing room image selections
   List<Image> floorImages(List<int> floorNumbers) =>
-      [for (int i = -6; i <= 163; i++) if (i != 0) i.roomImage(floorNumbers, this)];
+      [for (int i = min; i <= max; i++) if (i != 0) i.roomImage(floorNumbers, this)];
 
   // --- Room Image Selection ---
   // Methods for managing room image availability and selection logic

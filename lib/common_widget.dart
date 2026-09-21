@@ -64,9 +64,6 @@ class CommonWidget {
     ),
   );
 
-  // --- Premium Upgrade Components ---
-  /// Offer the premium unlock, with a restore option required by both stores
-  // --- Loading and Feedback Components ---
   /// Show a floating notification using the shared app styling
   void commonSnackBar(String text) {
     final snackBar = SnackBar(

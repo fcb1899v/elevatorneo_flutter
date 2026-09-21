@@ -51,6 +51,7 @@ extension L10nContextExt on BuildContext {
   String sweets() => AppLocalizations.of(this)!.sweets;
   String furniture() => AppLocalizations.of(this)!.furniture;
   String cinema() => AppLocalizations.of(this)!.cinema;
+  String applian() => AppLocalizations.of(this)!.appliance;
   // Room image names
   String nameParking() => AppLocalizations.of(this)!.nameParking;
   String nameStation() => AppLocalizations.of(this)!.nameStation;
@@ -74,6 +75,7 @@ extension L10nContextExt on BuildContext {
   String nameSweets() => AppLocalizations.of(this)!.nameSweets;
   String nameFurniture() => AppLocalizations.of(this)!.nameFurniture;
   String nameCinema() => AppLocalizations.of(this)!.nameCinema;
+  String nameApplian() => AppLocalizations.of(this)!.nameAppliance;
   // Sound and audio helpers
   String soundPlace(String room) =>
       (room == imageParking) ? parking():
@@ -98,12 +100,15 @@ extension L10nContextExt on BuildContext {
       (room == imageSweets) ? sweets():
       (room == imageFurnit) ? furniture():
       (room == imageCinema) ? cinema():
+      (room == imageApplian) ? applian():
       "";
   String soundFloor(int counter) =>
       (counter == max) ? "":
       (lang() == "en") ? floor("${counter.enRankNumber()}${basement(counter)}"):
-      (lang() == "es") ? "${counter.esRankNumber()}${basement(counter)}":
-      (lang() == "fr") ? "${counter.frRankNumber()}${basement(counter)}":
+      // es / fr put the ordinal before the noun. A basement already carries its
+      // own noun (Sotano / Sous-sol), so the floor noun is added above ground only
+      (lang() == "es") ? (counter < 0) ? "${counter.abs().esRankNumber()}${basement(counter).trim()}, ": floor(counter.esRankNumber()):
+      (lang() == "fr") ? (counter < 0) ? "${counter.abs().frRankNumber()}${basement(counter).trim()}, ": floor(counter.frRankNumber()):
       floor("${basement(counter)}${counter.abs()}");
   String openingSound(int counter, String room) =>
       "${soundFloor(counter)}${soundPlace(room)}${openDoor()}";
@@ -115,7 +120,7 @@ extension L10nContextExt on BuildContext {
   List<String> addRoomName() => [
     nameApparel(), nameElectronics(), nameIndoorPark(), nameOutdoor(), nameCandy(),
     nameToy(), nameLuxury(), nameSports(), nameGym(), nameSweets(),
-    nameFurniture(), nameCinema()
+    nameFurniture(), nameCinema(), nameApplian()
   ];
   List<String> roomNameList() => [...initialRoomName(), ...addRoomName()];
   // Menu and settings

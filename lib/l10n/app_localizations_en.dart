@@ -77,7 +77,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Elevator status check complete. Returning to the first floor. ';
 
   @override
-  String get bypass => 'Bypass';
+  String get bypass => 'Restricted';
 
   @override
   String get stop => 'Stop';
@@ -116,13 +116,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get rooftop => 'The top floor, ';
 
   @override
-  String get vip => 'VIP room floor, ';
+  String get vip => 'VIP lounge floor, ';
 
   @override
   String get restaurant => 'Restaurant floor, ';
 
   @override
-  String get spa => 'Spa floor, ';
+  String get spa => 'Hot spring floor, ';
 
   @override
   String get arcade => 'Game center floor, ';
@@ -131,25 +131,25 @@ class AppLocalizationsEn extends AppLocalizations {
   String get foodCourt => 'Food court floor, ';
 
   @override
-  String get indoorPark => 'Indoor park floor, ';
+  String get indoorPark => 'Playground floor, ';
 
   @override
   String get supermarket => 'Supermarket floor, ';
 
   @override
-  String get station => 'Subway station floor, ';
+  String get station => 'Ticket gate floor, ';
 
   @override
   String get parking => 'Parking floor, ';
 
   @override
-  String get apparel => 'Apparel store floor, ';
+  String get apparel => 'Apparel floor, ';
 
   @override
-  String get electronics => 'Electronics store floor, ';
+  String get electronics => 'Electronics floor, ';
 
   @override
-  String get outdoor => 'Outdoor gear store floor, ';
+  String get outdoor => 'Outdoor gear floor, ';
 
   @override
   String get bookstore => 'Bookstore floor, ';
@@ -164,31 +164,31 @@ class AppLocalizationsEn extends AppLocalizations {
   String get luxury => 'Luxury boutique floor, ';
 
   @override
-  String get sports => 'Sporting goods store floor, ';
+  String get sports => 'Sporting goods floor, ';
 
   @override
-  String get gym => 'Fitness gym floor, ';
+  String get gym => 'Gym floor, ';
 
   @override
-  String get sweets => 'Dessert shop floor, ';
+  String get sweets => 'Patisserie floor, ';
 
   @override
-  String get furniture => 'Furniture store floor, ';
+  String get furniture => 'Furniture floor, ';
 
   @override
-  String get cinema => 'Multiplex floor, ';
+  String get cinema => 'Cinema floor, ';
 
   @override
   String get nameRooftop => 'The Top Floor';
 
   @override
-  String get nameVip => 'VIP room';
+  String get nameVip => 'VIP lounge';
 
   @override
   String get nameRestaurant => 'Restaurant';
 
   @override
-  String get nameSpa => 'Spa';
+  String get nameSpa => 'Hot spring';
 
   @override
   String get nameArcade => 'Arcade';
@@ -197,25 +197,25 @@ class AppLocalizationsEn extends AppLocalizations {
   String get nameFoodCourt => 'Food court';
 
   @override
-  String get nameIndoorPark => 'Indoor park';
+  String get nameIndoorPark => 'Playground';
 
   @override
   String get nameSupermarket => 'Supermarket';
 
   @override
-  String get nameStation => 'Subway station';
+  String get nameStation => 'Ticket gate';
 
   @override
   String get nameParking => 'Parking';
 
   @override
-  String get nameApparel => 'Apparel store';
+  String get nameApparel => 'Apparel';
 
   @override
-  String get nameElectronics => 'Electronics store';
+  String get nameElectronics => 'Electronics';
 
   @override
-  String get nameOutdoor => 'Outdoor gear store';
+  String get nameOutdoor => 'Outdoor gear';
 
   @override
   String get nameBookstore => 'Bookstore';
@@ -230,19 +230,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get nameLuxury => 'Luxury boutique';
 
   @override
-  String get nameSports => 'Sporting goods store';
+  String get nameSports => 'Sporting goods';
 
   @override
-  String get nameGym => 'Fitness gym';
+  String get nameGym => 'Gym';
 
   @override
-  String get nameSweets => 'Dessert shop';
+  String get nameSweets => 'Patisserie';
 
   @override
-  String get nameFurniture => 'Furniture store';
+  String get nameFurniture => 'Furniture';
 
   @override
-  String get nameCinema => 'Multiplex';
+  String get nameCinema => 'Cinema';
 
   @override
   String get movingElevator => 'Elevator in use, please wait a moment.';
@@ -302,7 +302,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get premiumUnlockAll =>
-      'Every design and feature,\nwith no EV miles to collect';
+      'Every design and feature,\nyours right now\nno EV miles to collect';
 
   @override
   String get premiumOneTime => 'A one-time purchase';
@@ -330,4 +330,10 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get premiumUnavailable =>
       'Purchases are unavailable right now.\nPlease try again later.';
+
+  @override
+  String get nameAppliance => 'Appliances';
+
+  @override
+  String get appliance => 'Appliances floor, ';
 }

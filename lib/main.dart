@@ -188,7 +188,7 @@ Future<void> main() async {
     ],
     child: const MyApp()
   ));
-  /// --- Post-Launch Services --- MobileAds.initialize is no longer started here.
+  /// --- Post-Launch Services --- MobileAds.initialize is not started here.
   // Banner and rewarded menu start the SDK via admob_banner.dart when an ad is wanted
 }
 

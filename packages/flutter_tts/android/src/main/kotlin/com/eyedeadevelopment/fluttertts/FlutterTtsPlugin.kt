@@ -236,11 +236,8 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
 
             if (status == TextToSpeech.SUCCESS) {
                 tts!!.setOnUtteranceProgressListener(utteranceProgressListener)
-                // The default-locale probe that used to run here (defaultVoice,
-                // then isLanguageAvailable) is two synchronous binder calls on
-                // the main thread, and it overwrote whatever language a queued
-                // setLanguage had just applied. The app sets its language from
-                // tts_manager.dart, so the engine keeps its own default until then
+                // No default-locale probe: it costs two binder calls on the main thread and overwrites
+                // a queued setLanguage. The app sets its language in tts_manager.dart instead
 
                 engineResult!!.success(1)
             } else {
@@ -262,11 +259,8 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
 
             if (status == TextToSpeech.SUCCESS) {
                 tts!!.setOnUtteranceProgressListener(utteranceProgressListener)
-                // The default-locale probe that used to run here (defaultVoice,
-                // then isLanguageAvailable) is two synchronous binder calls on
-                // the main thread, and it overwrote whatever language a queued
-                // setLanguage had just applied. The app sets its language from
-                // tts_manager.dart, so the engine keeps its own default until then
+                // No default-locale probe: it costs two binder calls on the main thread and overwrites
+                // a queued setLanguage. The app sets its language in tts_manager.dart instead
             } else {
                 Log.e(tag, "Failed to initialize TextToSpeech with status: $status")
             }

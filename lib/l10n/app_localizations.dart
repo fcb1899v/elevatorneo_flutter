@@ -235,7 +235,7 @@ abstract class AppLocalizations {
   /// No description provided for @bypass.
   ///
   /// In en, this message translates to:
-  /// **'Bypass'**
+  /// **'Restricted'**
   String get bypass;
 
   /// No description provided for @stop.
@@ -307,7 +307,7 @@ abstract class AppLocalizations {
   /// No description provided for @vip.
   ///
   /// In en, this message translates to:
-  /// **'VIP room floor, '**
+  /// **'VIP lounge floor, '**
   String get vip;
 
   /// No description provided for @restaurant.
@@ -319,7 +319,7 @@ abstract class AppLocalizations {
   /// No description provided for @spa.
   ///
   /// In en, this message translates to:
-  /// **'Spa floor, '**
+  /// **'Hot spring floor, '**
   String get spa;
 
   /// No description provided for @arcade.
@@ -337,7 +337,7 @@ abstract class AppLocalizations {
   /// No description provided for @indoorPark.
   ///
   /// In en, this message translates to:
-  /// **'Indoor park floor, '**
+  /// **'Playground floor, '**
   String get indoorPark;
 
   /// No description provided for @supermarket.
@@ -349,7 +349,7 @@ abstract class AppLocalizations {
   /// No description provided for @station.
   ///
   /// In en, this message translates to:
-  /// **'Subway station floor, '**
+  /// **'Ticket gate floor, '**
   String get station;
 
   /// No description provided for @parking.
@@ -361,19 +361,19 @@ abstract class AppLocalizations {
   /// No description provided for @apparel.
   ///
   /// In en, this message translates to:
-  /// **'Apparel store floor, '**
+  /// **'Apparel floor, '**
   String get apparel;
 
   /// No description provided for @electronics.
   ///
   /// In en, this message translates to:
-  /// **'Electronics store floor, '**
+  /// **'Electronics floor, '**
   String get electronics;
 
   /// No description provided for @outdoor.
   ///
   /// In en, this message translates to:
-  /// **'Outdoor gear store floor, '**
+  /// **'Outdoor gear floor, '**
   String get outdoor;
 
   /// No description provided for @bookstore.
@@ -403,31 +403,31 @@ abstract class AppLocalizations {
   /// No description provided for @sports.
   ///
   /// In en, this message translates to:
-  /// **'Sporting goods store floor, '**
+  /// **'Sporting goods floor, '**
   String get sports;
 
   /// No description provided for @gym.
   ///
   /// In en, this message translates to:
-  /// **'Fitness gym floor, '**
+  /// **'Gym floor, '**
   String get gym;
 
   /// No description provided for @sweets.
   ///
   /// In en, this message translates to:
-  /// **'Dessert shop floor, '**
+  /// **'Patisserie floor, '**
   String get sweets;
 
   /// No description provided for @furniture.
   ///
   /// In en, this message translates to:
-  /// **'Furniture store floor, '**
+  /// **'Furniture floor, '**
   String get furniture;
 
   /// No description provided for @cinema.
   ///
   /// In en, this message translates to:
-  /// **'Multiplex floor, '**
+  /// **'Cinema floor, '**
   String get cinema;
 
   /// No description provided for @nameRooftop.
@@ -439,7 +439,7 @@ abstract class AppLocalizations {
   /// No description provided for @nameVip.
   ///
   /// In en, this message translates to:
-  /// **'VIP room'**
+  /// **'VIP lounge'**
   String get nameVip;
 
   /// No description provided for @nameRestaurant.
@@ -451,7 +451,7 @@ abstract class AppLocalizations {
   /// No description provided for @nameSpa.
   ///
   /// In en, this message translates to:
-  /// **'Spa'**
+  /// **'Hot spring'**
   String get nameSpa;
 
   /// No description provided for @nameArcade.
@@ -469,7 +469,7 @@ abstract class AppLocalizations {
   /// No description provided for @nameIndoorPark.
   ///
   /// In en, this message translates to:
-  /// **'Indoor park'**
+  /// **'Playground'**
   String get nameIndoorPark;
 
   /// No description provided for @nameSupermarket.
@@ -481,7 +481,7 @@ abstract class AppLocalizations {
   /// No description provided for @nameStation.
   ///
   /// In en, this message translates to:
-  /// **'Subway station'**
+  /// **'Ticket gate'**
   String get nameStation;
 
   /// No description provided for @nameParking.
@@ -493,19 +493,19 @@ abstract class AppLocalizations {
   /// No description provided for @nameApparel.
   ///
   /// In en, this message translates to:
-  /// **'Apparel store'**
+  /// **'Apparel'**
   String get nameApparel;
 
   /// No description provided for @nameElectronics.
   ///
   /// In en, this message translates to:
-  /// **'Electronics store'**
+  /// **'Electronics'**
   String get nameElectronics;
 
   /// No description provided for @nameOutdoor.
   ///
   /// In en, this message translates to:
-  /// **'Outdoor gear store'**
+  /// **'Outdoor gear'**
   String get nameOutdoor;
 
   /// No description provided for @nameBookstore.
@@ -535,31 +535,31 @@ abstract class AppLocalizations {
   /// No description provided for @nameSports.
   ///
   /// In en, this message translates to:
-  /// **'Sporting goods store'**
+  /// **'Sporting goods'**
   String get nameSports;
 
   /// No description provided for @nameGym.
   ///
   /// In en, this message translates to:
-  /// **'Fitness gym'**
+  /// **'Gym'**
   String get nameGym;
 
   /// No description provided for @nameSweets.
   ///
   /// In en, this message translates to:
-  /// **'Dessert shop'**
+  /// **'Patisserie'**
   String get nameSweets;
 
   /// No description provided for @nameFurniture.
   ///
   /// In en, this message translates to:
-  /// **'Furniture store'**
+  /// **'Furniture'**
   String get nameFurniture;
 
   /// No description provided for @nameCinema.
   ///
   /// In en, this message translates to:
-  /// **'Multiplex'**
+  /// **'Cinema'**
   String get nameCinema;
 
   /// No description provided for @movingElevator.
@@ -661,7 +661,7 @@ abstract class AppLocalizations {
   /// No description provided for @premiumUnlockAll.
   ///
   /// In en, this message translates to:
-  /// **'Every design and feature,\nwith no EV miles to collect'**
+  /// **'Every design and feature,\nyours right now\nno EV miles to collect'**
   String get premiumUnlockAll;
 
   /// No description provided for @premiumOneTime.
@@ -711,6 +711,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Purchases are unavailable right now.\nPlease try again later.'**
   String get premiumUnavailable;
+
+  /// No description provided for @nameAppliance.
+  ///
+  /// In en, this message translates to:
+  /// **'Appliances'**
+  String get nameAppliance;
+
+  /// No description provided for @appliance.
+  ///
+  /// In en, this message translates to:
+  /// **'Appliances floor, '**
+  String get appliance;
 }
 
 class _AppLocalizationsDelegate

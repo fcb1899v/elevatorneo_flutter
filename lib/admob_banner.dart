@@ -12,7 +12,7 @@ import 'plan_provider.dart';
 // ===== AdBannerWidget: bottom anchored adaptive banner, skipped for premium =====
 // The UMP flow below owns the ATT prompt; ad requests never wait on that decision.
 
-// Shared one-shot start of the Mobile Ads SDK; main() no longer starts it at launch.
+// Shared one-shot start of the Mobile Ads SDK; main() does not start it at launch.
 // Dropped on failure so a later request can retry; returns null, never throws.
 Future<InitializationStatus?>? _mobileAdsInitialization;
 
@@ -47,7 +47,7 @@ class AdBannerWidget extends HookConsumerWidget {
     final isAdRequested = useRef(false);
     // final testIdentifiers = ['2793ca2a-5956-45a2-96c0-16fafddc1a15'];
 
-    // バナー広告ID
+    // Banner ad unit id
     String bannerUnitId() => bannerAdUnitID;
 
     Future<void> loadAdBanner() async {
@@ -172,7 +172,7 @@ class AdBannerWidget extends HookConsumerWidget {
         await requestAdIfAllowed();
       });
       "bannerAd: ${bannerAd.value}".debugPrint();
-      return () => bannerAd.value?.dispose();      // unmount時に広告を破棄する
+      return () => bannerAd.value?.dispose();      // Drop the ad on unmount
     }, [isPremium]);
 
     if (isPremium) return const SizedBox.shrink();
