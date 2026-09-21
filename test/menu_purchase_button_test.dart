@@ -1,5 +1,5 @@
-// The purchase button is drawn only from a real store price, and appears as soon as one
-// arrives. No pumpAndSettle: the spinner animates while initState's network checks pend.
+// The purchase button is drawn only from a real store price, as soon as one arrives.
+// No pumpAndSettle: the spinner animates while initState's network checks pend.
 
 import 'dart:async';
 import 'package:flutter/material.dart';

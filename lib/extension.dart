@@ -133,8 +133,8 @@ extension ContextExt on BuildContext {
   void pushPage(Widget page) {
     AudioManager().playEffectSound(asset: changeSound, volume: 1.0);
     Navigator.push(this, PageRouteBuilder(
-      // Not opaque: HomePage stays painted underneath, and the banner it draws
-      // on top of its own Stack keeps showing through the strip the page leaves
+      // Not opaque: HomePage stays painted underneath.
+      // Its banner, on HomePage's own Stack, keeps showing through the strip the page leaves.
       opaque: false,
       pageBuilder: (_, animation, _) => page,
       transitionsBuilder: (_, animation, _, child) => FadeTransition(
@@ -673,8 +673,8 @@ extension ListIntExt on List<int> {
   /// The picker stops at the neighbouring buttons, so no other floor has to move
   int selectFirstFloor(int row, int col) {
     final i = reversedButtonIndex[row][col];
-    // this[i - 1] is never -1 unless i is 1F, which cannot be selected, so the
-    // result never lands on the floor 0 that does not exist
+    // this[i - 1] is never -1 unless i is 1F, which cannot be selected.
+    // So the result never lands on floor 0, which does not exist.
     if (i == 0) return min;
     return this[i - 1] + 1;
   }

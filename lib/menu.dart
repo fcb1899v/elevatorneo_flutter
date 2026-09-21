@@ -41,11 +41,11 @@ class MenuPage extends HookConsumerWidget {
     final isLoadingAd = useState(false);                      // Guards against duplicate in-flight loads
     final cancelToken = useMemoized(() => Completer<void>(), []); // Cancellation token for cleanup
     final isLoadingData = useState(false);                    // Data loading state
-    // The price the store returned, empty until it answers. The purchase button is drawn
-    // from this; watched, so a prefetch landing while the menu is open brings it in
+    // The price the store returned, empty until it answers.
+    // The purchase button is drawn from it, and watching brings it in when a prefetch lands.
     final storePrice = ref.watch(planProvider).priceString;
-    // Refs, not state: the consent forms resolve after this screen can be gone,
-    // and writing to a disposed ValueNotifier asserts in debug
+    // Refs, not state: the consent forms resolve after this screen can be gone.
+    // Writing to a disposed ValueNotifier asserts in debug.
     final consentUpdated = useRef(false);                     // One consent update per screen
     final pendingLoad = useRef<Completer<RewardedAd?>?>(null); // Lets a press await the load
 
@@ -85,8 +85,8 @@ class MenuPage extends HookConsumerWidget {
       // A second load while one is in flight only burns an ad request
       if (cancelToken.isCompleted || isLoadingAd.value || rewardedAd.value != null) return;
       isLoadingAd.value = true;
-      // No ATT gate here: the menu opens long after launch, so the status is
-      // settled, and holding the request would only leave the reward button dead
+      // No ATT gate here: the menu opens long after launch, so the status is settled.
+      // Holding the request would only leave the reward button dead.
       RewardedAd.load(
         adUnitId: rewardAdUnitID,
         request: const AdRequest(),
@@ -119,14 +119,14 @@ class MenuPage extends HookConsumerWidget {
               return;
             }
             isLoadingAd.value = false;
-            // Answer a waiting press now rather than holding it behind the
-            // backoff. The retry below keeps running for the next press
+            // Answer a waiting press now rather than holding it behind the backoff.
+            // The retry below keeps running for the next press.
             finishPendingLoad(null);
-            // Back off from 2s upward; the counter must grow before the delay
-            // is computed, otherwise the first retry fires instantly
+            // Back off from 2s upward.
+            // Grow the counter before computing the delay, or the first retry fires instantly.
             retryAttempt.value += 1;
-            // Retrying forever would only pile up requests that never become
-            // impressions. The button press reloads on demand anyway
+            // Retrying forever would only pile up requests that never become impressions.
+            // The button press reloads on demand anyway.
             if (retryAttempt.value > rewardedMaxRetry) return;
             Future.delayed(Duration(seconds: 2 * retryAttempt.value), () {
               if (!cancelToken.isCompleted) loadRewardedAd();
@@ -146,25 +146,25 @@ class MenuPage extends HookConsumerWidget {
       final joined = joinLoadInFlight();
       if (joined != null) return joined;
       if (!await ConsentInformation.instance.canRequestAds()) return null;
-      // Callers race across that await. The checks below run again because the
-      // state can have moved while this one was suspended
+      // Callers race across that await.
+      // The checks below run again because the state can move while this one is suspended.
       if (cancelToken.isCompleted) return null;
       if (rewardedAd.value != null) return rewardedAd.value;
       final rejoined = joinLoadInFlight();
       if (rejoined != null) return rejoined;
       final completer = Completer<RewardedAd?>();
       pendingLoad.value = completer;
-      // main.dart does not start the platform SDK at launch, so make sure it is
-      // up before the first rewarded request; the shared future makes this a no-op
+      // main.dart does not start the SDK at launch, so start it before the first request.
+      // The shared future makes a repeat call a no-op.
       if (await initializeMobileAds() == null) {
-        // The press is waiting on this completer. Returning without finishing
-        // it leaves the button spinning with no ad and no message
+        // The press is waiting on this completer.
+        // Returning without finishing it leaves the button spinning with no ad and no message.
         finishPendingLoad(null);
         return null;
       }
       loadRewardedAd();
-      // loadRewardedAd returns without a callback when its own guards stop it,
-      // and then nothing would ever complete the completer
+      // loadRewardedAd returns without a callback when its own guards stop it.
+      // Then nothing would ever complete the completer.
       if (!isLoadingAd.value) finishPendingLoad(null);
       return completer.future;
     }
@@ -191,8 +191,8 @@ class MenuPage extends HookConsumerWidget {
           done();
         });
       }, (FormError error) {
-        // The update failed, but earlier consent still stands and canRequestAds
-        // can still say yes, so the request is worth trying anyway
+        // The update failed, but earlier consent stands and canRequestAds may still say yes.
+        // So the request is worth trying anyway.
         "error: ${error.errorCode}: ${error.message}".debugPrint();
         done();
       });
@@ -215,8 +215,8 @@ class MenuPage extends HookConsumerWidget {
       final requested = await requestAdIfAllowed();
       if (requested != null) return requested;
       if (cancelToken.isCompleted) return null;
-      // Still not allowed: canRequestAds is false only while the consent flow is
-      // incomplete (declining still permits NPA), so offer the privacy options form
+      // Still not allowed: canRequestAds is false only while the consent flow is incomplete.
+      // Declining still permits NPA, so offer the privacy options form.
       if (!await ConsentInformation.instance.canRequestAds()) {
         final status =
           await ConsentInformation.instance.getPrivacyOptionsRequirementStatus();
@@ -233,11 +233,11 @@ class MenuPage extends HookConsumerWidget {
       return null;
     }
 
-    // --- Ad Loading Effect --- must run only on mount and unmount: the cancel token
-    // means "the menu is gone", and keying on retryAttempt discarded every filled ad
+    // --- Ad Loading Effect --- mount and unmount only: the token means "the menu is gone".
+    // Keying on retryAttempt discarded every filled ad.
     useEffect(() {
-      // Preload only when the SDK already says yes from an earlier session;
-      // otherwise the button press runs the consent form instead
+      // Preload only when the SDK already says yes from an earlier session.
+      // Otherwise the button press runs the consent form instead.
       requestAdIfAllowed();
       return () {
         if (!cancelToken.isCompleted) {
@@ -292,8 +292,8 @@ class MenuPage extends HookConsumerWidget {
     showRewardedAd() {
       final ad = rewardedAd.value;
       if (ad == null) return;
-      // A rewarded instance is single use: drop the reference before showing so
-      // the consumed ad cannot block the next preload
+      // A rewarded instance is single use, so drop the reference before showing.
+      // Otherwise the consumed ad blocks the next preload.
       rewardedAd.value = null;
       ad.fullScreenContentCallback = FullScreenContentCallback(
         onAdDismissedFullScreenContent: (RewardedAd ad) {
@@ -319,8 +319,8 @@ class MenuPage extends HookConsumerWidget {
           await AnalyticsManager.rewardAdEarned(addPoint);
         }
       );
-      // Preload the next ad while this one is on screen, or the button stays dead
-      // while it fills. Separate instances, and it still goes through the consent gate
+      // Preload the next ad while this one shows, or the button stays dead while it fills.
+      // Separate instances, and it still goes through the consent gate.
       requestAdIfAllowed();
     }
 
@@ -345,8 +345,8 @@ class MenuPage extends HookConsumerWidget {
         }
       } catch (e) {
         "Purchase error: $e".debugPrint();
-        // Nothing to sell is not a failed purchase. The reviewer sees this one
-        // while the product is still attached to the submission
+        // Nothing to sell is not a failed purchase.
+        // The reviewer sees this one while the product is still attached to the submission.
         if (context.mounted) {
           common.commonSnackBar((e is StoreUnavailableException)
             ? context.premiumUnavailable()
@@ -391,18 +391,17 @@ class MenuPage extends HookConsumerWidget {
         // Settings page navigation
         if (context.mounted) context.pushFadeReplacement(SettingsPage());
       } else if (i == 3) {
-        // Premium purchase, drawn only with a price. Before the connectivity check: the
-        // refetch answers an offline tap with premiumUnavailable
+        // Premium purchase, drawn only with a price.
+        // Sits before the connectivity check: an offline tap is answered by premiumUnavailable.
         await openUpgrade();
       } else if (!isConnectedInternet) {
         // Internet connectivity check
         menu.showSnackBar(context.notConnectedInternet());
       } else if (i == 1) {
-        // Rewarded ad handling. The press must answer every time: it runs the consent
-        // flow itself, offers the privacy options form, and only then says there is no ad
+        // Rewarded ad handling: the press must answer every time.
+        // It runs consent, offers the privacy options form, and only then says there is no ad.
         if (rewardedAd.value == null) {
-          // The consent form and the ad request both take a round trip, and the
-          // button looks dead while they run
+          // The consent form and ad request take a round trip, so the button looks dead.
           isLoadingData.value = true;
           final prepared = await prepareRewardedAd();
           // The menu can be gone by now, and the token is what says so
@@ -433,40 +432,40 @@ class MenuPage extends HookConsumerWidget {
     // --- UI Rendering ---
     // Main menu interface structure
     return Scaffold(
-      // bottom: false so the ad reservation below reaches the true bottom; the
-      // banner is drawn by HomePage outside its SafeArea
+      // bottom: false so the ad reservation below reaches the true bottom.
+      // The banner is drawn by HomePage outside its SafeArea.
       body: SafeArea(
         bottom: false,
         child: Stack(alignment: Alignment.topCenter,
           children: [
-            /// Background image for menu
+            // Background image for menu
             common.commonBackground(menuBackGroundImage),
-            /// Main menu content layout
+            // Main menu content layout
             Column(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Spacer(flex: 1),
-                /// Menu button grid, two per row. The fourth (purchase) is dropped
-                /// once premium is owned or while no price is known; with three, one is centred
+                // Menu button grid, two per row.
+                // The fourth (purchase) is dropped once premium is owned or while no price is known; with three, one is centred.
                 ...menu.menuButtonRows(
                   onTap: pressedMenuLink,
                   price: (isPremium || storePrice.isEmpty) ? null: storePrice,
                 ),
                 Spacer(flex: 1),
-                /// Bottom navigation with external links
+                // Bottom navigation with external links
                 // Premium drops the banner below, so the row takes the system inset
                 menu.bottomMenuLink(
                   bottomInset: isPremium ? MediaQuery.viewPaddingOf(context).bottom : 0,
                 ),
-                /// AdMob banner space reservation (the banner itself is drawn by HomePage)
+                // AdMob banner space reservation (the banner itself is drawn by HomePage)
                 if (!isPremium) Container(
                   height: context.admobHeight(),
                   color: blackColor,
                 )
               ]
             ),
-            /// Loading indicator during data initialization
+            // Loading indicator during data initialization
             if (isLoadingData.value) common.commonCircularProgressIndicator(),
           ]
         ),
@@ -525,8 +524,8 @@ class MenuWidget {
         vertical: context.menuButtonMargin(),
         horizontal: context.menuButtonMargin(),
       ),
-      // The purchase button carries its own PREMIUM caption, baked into the PNG
-      // like adReward's +1000, so no text is drawn over the image here
+      // The purchase button's PREMIUM caption is baked into the PNG, like adReward's +1000.
+      // So no text is drawn over the image here.
       child: Image.asset(
         (i == 0) ? settingsButton:
         (i == 1) ? adRewardButton:
@@ -553,8 +552,8 @@ class MenuWidget {
       bottom: context.menuLinksMargin() * 2 + context.menuLinksTitleSize() / 2
         + bottomInset,
     ),
-    // The bar clamped text scaling and ellipsized; without both, a large system
-    // font setting overflows the row
+    // The bar clamped text scaling and ellipsized.
+    // Without both, a large system font setting overflows the row.
     child: MediaQuery.withClampedTextScaling(
       maxScaleFactor: 1.0,
       child: Row(

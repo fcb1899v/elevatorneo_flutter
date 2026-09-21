@@ -38,8 +38,7 @@ class AdBannerWidget extends HookConsumerWidget {
     final adLoaded = useState(false);
     final adHeight = useState(context.admobHeight());
     final bannerAd = useState<BannerAd?>(null);
-    // Refs, not state: the SDK calls back after unmount, and writing to a
-    // disposed ValueNotifier asserts in debug and is a silent no-op in release
+    // Refs, not state: the SDK calls back after unmount, and a disposed notifier asserts.
     final retryAttempt = useRef(0);
     final isLoadingAd = useRef(false);
     // Three callers can ask for the first ad; only one may own a request.
@@ -51,14 +50,13 @@ class AdBannerWidget extends HookConsumerWidget {
     String bannerUnitId() => bannerAdUnitID;
 
     Future<void> loadAdBanner() async {
-      // Every caller sits behind the consent round trip or a retry timer, so
-      // the screen can already be gone by the time this runs
+      // Callers wait on consent or a retry timer, so the screen may already be gone.
       if (!context.mounted) return;
-      // Re-read the plan: isPremium was captured at build time, and a premium
-      // user must never get a request (nothing would dispose that BannerAd)
+      // Re-read the plan, because isPremium was captured at build time.
+      // A premium user must never get a request, since nothing would dispose that BannerAd.
       if (ref.read(planProvider).isPremium) return;
-      // A pending retry and a fresh consent callback can both land here; a
-      // second BannerAd would orphan the first
+      // A pending retry and a fresh consent callback can both land here.
+      // A second BannerAd would orphan the first.
       if (isLoadingAd.value) return;
       isLoadingAd.value = true;
       final adWidth = context.width().truncate();
@@ -71,8 +69,8 @@ class AdBannerWidget extends HookConsumerWidget {
           onAdLoaded: (Ad ad) async {
             'Ad: $ad loaded.'.debugPrint();
             isLoadingAd.value = false;
-            // Mount the AdWidget first: awaiting the size call delays the
-            // impression, and a screen change meanwhile drops a filled ad
+            // Mount the AdWidget first, because awaiting the size call delays the impression.
+            // A screen change during that wait would drop an ad that already filled.
             adLoaded.value = true;
             // Then fit the container to the size the server actually returned.
             // The request caps the height, so this only ever shrinks the slot
@@ -85,13 +83,13 @@ class AdBannerWidget extends HookConsumerWidget {
           onAdFailedToLoad: (ad, error) {
             'Ad: $ad failed to load: $error'.debugPrint();
             isLoadingAd.value = false;
-            // A failed auto refresh reports on the live AdView too; the SDK keeps
-            // refreshing, so an ad that reached the screen is left alone
+            // A failed auto refresh reports here too while the SDK keeps refreshing.
+            // So an ad that already reached the screen is left alone.
             if (adLoaded.value) return;
             ad.dispose();
             retryAttempt.value += 1;
-            // Capped retry: this widget lives for the whole screen, and unfilled
-            // requests never match, so they pollute the match rate
+            // Capped retry: unfilled requests never match, and they pollute the match rate.
+            // This widget lives as long as the screen, so an uncapped retry never stops.
             if (retryAttempt.value > bannerMaxRetry) return;
             final backoffSec = math.min(
               bannerRetryBaseSec * (1 << (retryAttempt.value - 1)),
@@ -116,18 +114,18 @@ class AdBannerWidget extends HookConsumerWidget {
       bannerAd.value = adBanner;
     }
 
-    // The single gate for the first request. canRequestAds is the SDK's own
-    // verdict (region, TCF string, Additional Consent); unsure means no
+    // The single gate for the first request.
+    // canRequestAds is the SDK's verdict (region, TCF, Additional Consent); unsure means no.
     Future<void> requestAdIfAllowed() async {
       if (isAdRequested.value) return;
       if (!await ConsentInformation.instance.canRequestAds()) return;
-      // Callers race across that await; claiming the request with no await in
-      // between means no second BannerAd is ever created for the same slot
+      // Callers race across that await, so claim the request with no await in between.
+      // Then no second BannerAd is ever created for the same slot.
       if (isAdRequested.value) return;
       isAdRequested.value = true;
       if (await initializeMobileAds() == null) {
-        // Release the claim. Holding it would keep this slot empty for the rest
-        // of the screen's life over a start that a later request may well win
+        // Release the claim, or this slot stays empty for the rest of the screen's life.
+        // A later request may well win the start that failed here.
         isAdRequested.value = false;
         return;
       }
@@ -137,18 +135,17 @@ class AdBannerWidget extends HookConsumerWidget {
     useEffect(() {
       // Premium users never see ads, so no consent form and no ad request
       if (isPremium) return null;
-      // Coming back from premium leaves the previous ad disposed while adLoaded
-      // is still true, so the slot starts empty until the new ad is ready
+      // Coming back from premium leaves the old ad disposed while adLoaded is still true.
+      // Resetting it keeps the slot empty until the new ad is ready.
       adLoaded.value = false;
       retryAttempt.value = 0;
-      // Coming back from premium has to be able to request again. The flag only
-      // guards duplicate requests within one run of this effect
+      // Coming back from premium has to be able to request again.
+      // The flag only guards duplicates within one run of this effect.
       isAdRequested.value = false;
-      // isLoadingAd is not reset: a request in flight still owes a callback,
-      // and clearing it would let a second request start and orphan the first
+      // isLoadingAd is not reset: a request in flight still owes a callback.
+      // Clearing it would let a second request start and orphan the first.
 
-      // Last session's consent is already on the device, so this runs in parallel
-      // with the update below and proceeds only if the SDK already says yes
+      // Last session's consent is on the device, so this runs alongside the update below.
       requestAdIfAllowed();
 
       ConsentInformation.instance.requestConsentInfoUpdate(ConsentRequestParameters(
@@ -157,8 +154,7 @@ class AdBannerWidget extends HookConsumerWidget {
         //   testIdentifiers: testIdentifiers,
         // ),
       ), () async {
-        // The SDK decides whether a form is needed, loads and presents it; it
-        // does nothing when no form is required
+        // The SDK decides whether a form is needed and shows it only then.
         await ConsentForm.loadAndShowConsentFormIfRequired((formError) async {
           if (formError != null) {
             "formError: ${formError.errorCode}: ${formError.message}".debugPrint();
@@ -166,8 +162,8 @@ class AdBannerWidget extends HookConsumerWidget {
           await requestAdIfAllowed();
         });
       }, (FormError error) async {
-        // The update failed, but earlier consent still stands and canRequestAds
-        // can still say yes, so do not throw away those impressions
+        // The update failed, but earlier consent stands and canRequestAds may still say yes.
+        // Do not throw away those impressions.
         "error: ${error.errorCode}: ${error.message}".debugPrint();
         await requestAdIfAllowed();
       });

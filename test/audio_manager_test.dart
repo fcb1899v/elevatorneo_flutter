@@ -1,5 +1,5 @@
-// stopAudio before any player exists: a lifecycle pause can arrive before the first
-// sound, and it must neither throw nor log a failure.
+// stopAudio before any player exists: a lifecycle pause can arrive before the first sound.
+// It must neither throw nor log a failure.
 
 import 'dart:async';
 import 'package:flutter_test/flutter_test.dart';

@@ -10,34 +10,34 @@ import 'main.dart';
 const String appTitle = "LETS ELEVATOR NEO";
 
 
-/// Ad unit ID configuration
-/// Platform-specific ad unit IDs for different build modes
+// Ad unit ID configuration
+// Platform-specific ad unit IDs for different build modes
 String rewardAdUnitID =
-  // Production units resolve through .env at the call site; the demo units
-  // are Google's published constants and are returned directly
+  // Production units resolve through .env at the call site.
+  // The demo units are Google's published constants, returned directly.
   (!kDebugMode && (Platform.isIOS || Platform.isMacOS)) ? dotenv.get("IOS_REWARDED_UNIT_ID"):
   (!kDebugMode) ? dotenv.get("ANDROID_REWARDED_UNIT_ID"):
   (Platform.isIOS || Platform.isMacOS) ? iosRewardedTestId:
   androidRewardedTestId;
 
 String bannerAdUnitID =
-  // Production units resolve through .env at the call site; the demo units
-  // are Google's published constants and are returned directly
+  // Production units resolve through .env at the call site.
+  // The demo units are Google's published constants, returned directly.
   (!kDebugMode && (Platform.isIOS || Platform.isMacOS)) ? dotenv.get("IOS_BANNER_UNIT_ID"):
   (!kDebugMode) ? dotenv.get("ANDROID_BANNER_UNIT_ID"):
   (Platform.isIOS || Platform.isMacOS) ? iosBannerTestId:
   androidBannerTestId;
 
 String interstitialAdUnitID =
-  // Production units resolve through .env at the call site; the demo units
-  // are Google's published constants and are returned directly
+  // Production units resolve through .env at the call site.
+  // The demo units are Google's published constants, returned directly.
   (!kDebugMode && (Platform.isIOS || Platform.isMacOS)) ? dotenv.get("IOS_INTERSTITIAL_UNIT_ID"):
   (!kDebugMode) ? dotenv.get("ANDROID_INTERSTITIAL_UNIT_ID"):
   (Platform.isIOS || Platform.isMacOS) ? iosInterstitialTestId:
   androidInterstitialTestId;
 
-/// Interstitial frequency capping
-/// Keeps interstitials from interrupting the elevator experience too often
+// Interstitial frequency capping
+// Keeps interstitials from interrupting the elevator experience too often
 const int interstitialIntervalSec = 180;   // Minimum gap between two interstitials
 const int interstitialMaxPerSession = 3;   // Upper bound within a single session
 const int interstitialMinRides = 5;        // Rides required before the first interstitial
@@ -56,8 +56,8 @@ const Duration pricePrefetchDelay = Duration(seconds: 3);
 /// Minimum rides before asking the user for a store review
 const int reviewRequestRides = 30;
 
-// No ATT constants or code in this app: the UMP flow in admob_banner.dart shows
-// the IDFA explainer and the system ATT dialog itself, and ads never wait on it
+// No ATT constants or code in this app: the UMP flow in admob_banner.dart owns the prompt.
+// It shows the IDFA explainer and the ATT dialog itself, and ads never wait on it.
 
 /// Ad retry limits: unfilled requests never match, so retrying needs a ceiling.
 /// Not symmetric on purpose: nobody waits on a banner, but the user waits on a reward
@@ -72,8 +72,8 @@ const int consentFormTimeoutSec = 15;
 
 // ===== FLOOR CONFIGURATION =====
 
-/// Floor configuration
-/// Minimum and maximum floor numbers, and initial floor position
+// Floor configuration
+// Minimum and maximum floor numbers, and initial floor position
 const int min = -12;
 const int max = 163;
 int initialFloor = isTest ? max: 2;
@@ -105,8 +105,8 @@ const List<List<int>> reversedButtonIndex = [
   [1, 0],
 ];
 
-/// Button Index calculation functions
-/// Helper functions to determine button positions and states
+// Button Index calculation functions
+// Helper functions to determine button positions and states
 bool isBasement(int row, int col) => (row == 4);
 int buttonCol(int row, int col) => isBasement(row, col) ? (1 - col) : col;
 int buttonIndex(int row, int col) => 2 * (4 - row) + buttonCol(row, col);
@@ -190,16 +190,16 @@ const int earnMilesInt = 1000;
 
 // ===== TIMING & ANIMATION =====
 
-/// Vibration settings
-/// Duration and amplitude for haptic feedback
+// Vibration settings
+// Duration and amplitude for haptic feedback
 const int vibTime = 200;
 const int vibAmp = 128;
 
 /// Tooltip display duration
 const int toolTipTime = 10000; //[msec]
 
-/// Elevator door timing configuration
-/// Various timing settings for door operations and UI elements
+// Elevator door timing configuration
+// Various timing settings for door operations and UI elements
 const int initialOpenTime = 10; //[sec]
 const int initialWaitTime =  2; //[sec]
 const int flashTime = 700;      //[msec]
@@ -207,15 +207,15 @@ const int operationTime = 300;  //[msec]
 
 // ===== ELEVATOR STATE MANAGEMENT =====
 
-/// Elevator door states
-/// Boolean arrays representing different door states: [opened, closed, opening, closing]
+// Elevator door states
+// Boolean arrays representing different door states: [opened, closed, opening, closing]
 final List<bool> openedState = [true, false, false, false];
 final List<bool> closedState = [false, true, false, false];
 final List<bool> openingState = [false, false, true, false];
 final List<bool> closingState = [false, false, false, true];
 
-/// Elevator button states
-/// Boolean arrays representing different button press states: [open, close, call]
+// Elevator button states
+// Boolean arrays representing different button press states: [open, close, call]
 final List<bool> noPressed = [false, false, false];
 final List<bool> pressedOpen = [true, false, false];
 final List<bool> pressedClose = [false, true, false];
@@ -224,8 +224,8 @@ final List<bool> allPressed = [true, true, true];
 
 // ===== AUDIO CONFIGURATION =====
 
-/// Audio configuration
-/// Sound file paths for various elevator operations
+// Audio configuration
+// Sound file paths for various elevator operations
 const String selectSound = "assets/audios/kako.mp3";
 const String cancelSound = "assets/audios/hi.mp3";
 const String changeSound = "assets/audios/popi.mp3";
@@ -235,15 +235,15 @@ const String closeSound  = "assets/audios/ping.mp3";
 
 // ===== FONT CONFIGURATION =====
 
-/// Font configuration
-/// Font families for numbers and alphabets
+// Font configuration
+// Font families for numbers and alphabets
 const List<String> numberFont = ["lcd", "dseg", "dseg"];
 const List<String> alphabetFont = ["lcd", "letsgo", "letsgo"];
 
 // ===== ASSET PATHS =====
 
-/// Asset folder paths
-/// Base paths for different asset categories
+// Asset folder paths
+// Base paths for different asset categories
 const String assetsButton = "assets/images/button/";
 const String assetsElevator = "assets/images/elevator/";
 const String assetsMenu = "assets/images/menu/";
@@ -252,8 +252,8 @@ const String assetsSettings = "assets/images/settings/";
 
 // ===== ELEVATOR UI CONFIGURATION =====
 
-/// Elevator image configuration
-/// Button styles, shapes, and visual themes
+// Elevator image configuration
+// Button styles, shapes, and visual themes
 const int operationButtonCount = 3;
 const int initialButtonStyle = 0;
 String initialButtonShape = buttonShapeList[1];
@@ -261,7 +261,7 @@ String initialBackgroundStyle = backgroundStyleList[0];
 String initialGlassStyle = glassStyleList[0];
 const int numberButtonColumnCount = 3;
 
-/// Settings and style lists
+// Settings and style lists
 const List<String> settingsItemList = ["floor", "number", "button", "style"];
 
 /// Settings tabs that hold something the premium unlock opens.
@@ -290,12 +290,12 @@ const List<double> floorButtonNumberOffset = [
   0.047, -0.050, 0.016,
 ];
 
-/// Elevator frame images
+// Elevator frame images
 const String leftSideFrame = "${assetsElevator}sideFrameLeft.png";
 const String rightSideFrame = "${assetsElevator}sideFrameRight.png";
 const String pointImage = "${assetsElevator}elevatorPoint.png";
 
-/// Hall lamp images
+// Hall lamp images
 const String hallLampUp = "${assetsElevator}hallLamp_up.jpg";
 const String hallLampDown = "${assetsElevator}hallLamp_down.jpg";
 const String hallLampOn = "${assetsElevator}hallLamp_on.jpg";
@@ -303,8 +303,8 @@ const String hallLampOff = "${assetsElevator}hallLamp_off.jpg";
 
 // ===== ROOM BACKGROUND IMAGES =====
 
-/// Room background images
-/// Floor-specific background images for different locations
+// Room background images
+// Floor-specific background images for different locations
 const String imageFloor   = "${assetsRoom}00floor.png";
 const String imageDark    = "${assetsRoom}00dark.png";
 const String imageParking = "${assetsRoom}01parking.jpg";
@@ -331,8 +331,8 @@ const String imageFurnit  = "${assetsRoom}21furniture.jpg";
 const String imageCinema  = "${assetsRoom}22cinema.jpg";
 const String imageApplian = "${assetsRoom}23appliance.jpg";
 
-/// Floor image lists
-/// Initial and additional floor images for different building types
+// Floor image lists
+// Initial and additional floor images for different building types
 const List<String> initialFloorImages = [
   imageParking, imageStation, imageSuper, imageArcade, imageFood,
   imageBook, imageSpa, imageRest, imageVip, imageTop
@@ -346,19 +346,19 @@ const List<String> floorImageList = [...initialFloorImages, ...addFloorImages];
 
 // ===== BUTTON & MENU ASSETS =====
 
-/// Button images
-/// Transparent and default button images
+// Button images
+// Transparent and default button images
 const String transpImage = "${assetsButton}transparent.png";
 const String squareButton = "${assetsButton}normal1.png";
 
-/// Menu asset images
-/// UI elements for menu screens and social media links
+// Menu asset images
+// UI elements for menu screens and social media links
 const String menuBackGroundImage = "${assetsMenu}metal.png";
 const String settingsButton = "${assetsMenu}settings.png";
 const String rankingButton = "${assetsMenu}ranking.png";
 const String adRewardButton = "${assetsMenu}adReward.png";
-// Baked from square1.png and purchase.svg by purchase_bake.sh, which sits next
-// to them. Edit the SVG and re-run the script; do not retouch the PNG by hand
+// Baked from square1.png and purchase.svg by the purchase_bake.sh next to them.
+// Edit the SVG and re-run the script; do not retouch the PNG by hand.
 const String purchaseButton = "${assetsMenu}purchase.png";
 const String landingPageLogo = "${assetsMenu}web.png";
 const String shopPageLogo = "${assetsMenu}cart.png";
@@ -368,8 +368,8 @@ const String privacyPolicyLogo = "${assetsMenu}privacyPolicy.png";
 
 // ===== WEB LINKS & EXTERNAL URLs =====
 
-/// Web page URLs
-/// Landing pages, privacy policy, and social media links
+// Web page URLs
+// Landing pages, privacy policy, and social media links
 const String landingPageJa = "https://nakajimamasao-appstudio.web.app/elevatorneo/ja/";
 const String landingPageEn = "https://nakajimamasao-appstudio.web.app/elevatorneo/";
 const String privacyPolicyJa = "https://nakajimamasao-appstudio.web.app/terms/ja/";
@@ -380,14 +380,14 @@ const String elevatorInstagram = "https://www.instagram.com/letselevator/";
 
 // ===== COLOR DEFINITIONS =====
 
-/// Primary colors
+// Primary colors
 const Color lampColor = Color.fromRGBO(247, 178, 73, 1); //#f7b249
 const Color transpLampColor = Color.fromRGBO(247, 178, 73, 0.7);
 const Color blackColor = Color.fromRGBO(56, 54, 53, 1);
 const Color whiteColor = Colors.white;
 const Color transpColor = Colors.transparent;
 
-/// Light colors for various UI elements
+// Light colors for various UI elements
 const Color lightBlueColor = Colors.lightBlue;
 const Color goldLightColor = Color.fromRGBO(212, 175, 55, 1);
 const Color pinkLightColor = Color.fromRGBO(255, 128, 192, 1);
@@ -397,19 +397,19 @@ const Color purpleLightColor = Color.fromRGBO(192, 128, 255, 1);
 const Color greenLightColor = Color.fromRGBO(64, 255, 64, 1);
 const Color lightGrayColor = Color.fromRGBO(192, 192, 192, 1);
 
-/// Standard colors
+// Standard colors
 const Color yellowColor = Color.fromRGBO(255, 234, 0, 1); //#ffea00
 const Color greenColor = Color.fromRGBO(105, 184, 0, 1); //#69b800
 const Color redColor = Color.fromRGBO(255, 0, 0, 1);
 const Color grayColor = Colors.grey;
 
-/// Transparent colors
+// Transparent colors
 const Color transpBlackColor = Color.fromRGBO(0, 0, 0, 0.6);
 const Color darkBlackColor = Colors.black;
 const Color transpWhiteColor = Color.fromRGBO(255, 255, 255, 0.95);
 
-/// Display color schemes
-/// Background and text colors for different display themes
+// Display color schemes
+// Background and text colors for different display themes
 const List<Color> displayBackgroundColor = [
   darkBlackColor, darkBlackColor, lightBlueColor
 ];
@@ -425,8 +425,8 @@ const List<Color> numberColorList = [
 // Color calculation notes. Shimada's lamp: F7B249 (R 247, G 178, B 73)
 // 3000 K -> FFB16E: G = 99.47080*Ln(30)-161.11957 = B1, B = 138.51773*Ln(20)-305.04480 = 6E
 
-// --- AdMob demo ad units --- Google publishes these, so they are not secret and
-// live here rather than in .env. Adaptive banners need their own unit, not 320x50
+// --- AdMob demo ad units --- Published by Google, so not secret; they live here, not in .env.
+// Adaptive banners need their own unit, not the 320x50 one.
 const String androidBannerTestId = "ca-app-pub-3940256099942544/9214589741";
 const String iosBannerTestId = "ca-app-pub-3940256099942544/2435281174";
 const String androidRewardedTestId = "ca-app-pub-3940256099942544/5224354917";

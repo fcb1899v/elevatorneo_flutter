@@ -6,8 +6,8 @@ import 'common_widget.dart';
 import 'constant.dart';
 import 'extension.dart';
 
-// Every string uses the platform font: context.font() gives Korean a display face
-// that breaks the one-plain-font rule. The PREMIUM board keeps letsgo, its own alphabet.
+// One plain platform font throughout, since context.font() gives Korean a display face.
+// The PREMIUM board keeps letsgo, its own alphabet.
 class PremiumPage extends StatelessWidget {
   const PremiumPage({
     super.key,
@@ -31,8 +31,8 @@ class PremiumPage extends StatelessWidget {
           Expanded(
             child: Stack(
               children: [
-                // The menu's own metal, darkened: its centre highlight is the same
-                // luminance as the white body text and swallows it
+                // The menu's metal, darkened: its centre highlight matches the white text.
+                // Undarkened, it swallows the text.
                 common.commonBackground(menuBackGroundImage),
                 Container(color: transpBlackColor),
                 SafeArea(
@@ -49,8 +49,8 @@ class PremiumPage extends StatelessWidget {
                           ),
                         ),
                       ),
-                      // Centred in what the close button leaves. The scroll view never scrolls
-                      // on a phone; it is there so a short screen shows the page, not a stripe
+                      // Centred in what the close button leaves.
+                      // Scrolls only on a short screen, which then shows the page, not a stripe.
                       Expanded(
                         child: Center(
                           child: SingleChildScrollView(
@@ -120,8 +120,8 @@ class PremiumPage extends StatelessWidget {
               ],
             ),
           ),
-          // The ad goes on showing while the page is open: it is the thing the
-          // purchase removes, and it keeps earning until it does
+          // The ad keeps showing while the page is open: it is what the purchase removes.
+          // It keeps earning until then.
           SizedBox(height: context.admobHeight()),
         ],
       ),
@@ -189,8 +189,8 @@ class PremiumPage extends StatelessWidget {
         .toList(),
   );
 
-  // An empty price means the store has nothing to sell here (offline, not sold in this
-  // country, still in review), so the reason replaces the Buy button. Restore stays.
+  // No price means the store has nothing to sell (offline, unsold here, in review).
+  // The reason replaces the Buy button, and Restore stays.
   Widget _unavailableNote(BuildContext context) => Padding(
     padding: EdgeInsets.symmetric(horizontal: context.premiumIconMargin()),
     child: Text(context.premiumUnavailable(),

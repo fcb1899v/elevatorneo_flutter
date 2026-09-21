@@ -130,13 +130,11 @@ class PointNotifier extends Notifier<int> {
   void add(int n) => state = state + n;
 }
 
-/// --- Application Initialization ---
 // Sets up UI, loads preferences, initializes Firebase and launches the app
 Future<void> main() async {
   final widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
-  /// --- UI Configuration ---
-  // Configure system UI, orientation, and platform-specific styling  
+  // Configure system UI, orientation, and platform-specific styling
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
   if (Platform.isAndroid) {
@@ -152,7 +150,6 @@ Future<void> main() async {
       systemNavigationBarIconBrightness: Brightness.light,
     ));
   }
-  /// --- Environment and Data Loading ---
   // Load environment variables and restore user preferences from SharedPreferences
   await dotenv.load(fileName: "assets/.env");
   final prefs = await SharedPreferences.getInstance();
@@ -165,13 +162,12 @@ Future<void> main() async {
   final savedButtonStyle = "buttonStyleKey".getSharedPrefInt(prefs, initialButtonStyle);
   final savedBackgroundStyle = "backgroundStyleKey".getSharedPrefString(prefs, initialBackgroundStyle);
   final savedGlassStyle = "glassStyleKey".getSharedPrefString(prefs, initialGlassStyle);
-  /// --- Firebase Initialization --- must finish before runApp:
-  // MyApp.build reads FirebaseAnalytics.instance, which throws until initializeApp
+  // Firebase must finish before runApp.
+  // MyApp.build reads FirebaseAnalytics.instance, which throws until initializeApp.
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  /// --- Premium Entitlement --- read from the local cache, not the store.
-  // PurchaseManager configures RevenueCat on first use; see purchase_manager.dart
+  // Premium is read from the local cache, not the store.
+  // PurchaseManager configures RevenueCat on first use; see purchase_manager.dart.
   final initialPremium = premiumKey.getSharedPrefBool(prefs, false);
-  /// --- App Launch ---
   // Launch the app with saved preferences and initial state overrides
   runApp(ProviderScope(
     overrides: [
@@ -188,11 +184,10 @@ Future<void> main() async {
     ],
     child: const MyApp()
   ));
-  /// --- Post-Launch Services --- MobileAds.initialize is not started here.
-  // Banner and rewarded menu start the SDK via admob_banner.dart when an ad is wanted
+  // MobileAds.initialize is not started here.
+  // The banner and the rewarded menu start the SDK via admob_banner.dart when an ad is wanted.
 }
 
-/// --- Main Application Widget ---
 // Root MaterialApp: localization, routing, theme, and navigation tracking
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -202,16 +197,13 @@ class MyApp extends StatelessWidget {
       data: MediaQuery.of(context).copyWith(textScaler: const TextScaler.linear(1)),
       child: child!,
     ),
-    /// --- Localization ---
     // Multi-language support configuration
     localizationsDelegates: AppLocalizations.localizationsDelegates,
     supportedLocales: AppLocalizations.supportedLocales,
-    /// --- App Configuration ---
     // Basic app settings and theme
     title: appTitle,
     theme: ThemeData(primarySwatch: Colors.grey),
     debugShowCheckedModeBanner: false,
-    /// --- Routing ---
     // Navigation routes to different app screens
     initialRoute: "/h",
     routes: {
@@ -219,7 +211,6 @@ class MyApp extends StatelessWidget {
       "/m": (context) => const MenuPage(),    // Menu
       "/s": (context) => const SettingsPage(), // Settings
     },
-    /// --- Navigation Observers ---
     // Track navigation for analytics and debugging
     navigatorObservers: <NavigatorObserver>[
       FirebaseAnalyticsObserver(analytics: FirebaseAnalytics.instance),
@@ -227,5 +218,4 @@ class MyApp extends StatelessWidget {
     ],
   );
 }
-/// --- Privacy and Tracking ---
 // No ATT code here: the UMP flow in admob_banner.dart shows the explainer and dialog

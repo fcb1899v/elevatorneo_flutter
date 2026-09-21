@@ -103,8 +103,8 @@ class HomePage extends HookConsumerWidget {
       Future<void> gamesInit() async {
         final hasInternet = await gamesManager.checkInternetConnection();
         if (!context.mounted) return;
-        // Publish each result as soon as it is known: the menu refuses the
-        // rewarded ad while isConnectedInternet is still the startup default
+        // Publish each result as soon as it is known.
+        // The menu refuses the rewarded ad while isConnectedInternet is the startup default.
         ref.read(internetProvider.notifier).setValue(hasInternet);
         final updatedGamesManager = GamesManager(
             isGamesSignIn: false,
@@ -119,8 +119,8 @@ class HomePage extends HookConsumerWidget {
         );
         final bestScore = await reUpdatedGamesManager.getBestScore();
         if (!context.mounted) return;
-        // The elevator is already usable while this runs, so a plain setValue
-        // would throw away the miles earned in the meantime. Only ever raise
+        // The elevator is usable meanwhile, so a plain setValue would drop the miles earned.
+        // Only ever raise the value.
         ref.read(pointProvider.notifier).setValue(
           (bestScore > ref.read(pointProvider)) ? bestScore: ref.read(pointProvider)
         );
@@ -130,12 +130,12 @@ class HomePage extends HookConsumerWidget {
       Future<void> initState() async {
         isLoadingData.value = true;
         try {
-          // Show the cached mileage straight away; the app bar must not show 0
-          // to a returning player until the leaderboard answers
+          // Show the cached mileage straight away.
+          // The app bar must not show 0 to a returning player until the leaderboard answers.
           final prefs = await SharedPreferences.getInstance();
           ref.read(pointProvider.notifier).setValue("pointKey".getSharedPrefInt(prefs, 0));
-          // Stays ahead of the splash: removing it first would show the bundled
-          // rooms and then swap in the user's photos
+          // Stays ahead of the splash, or the bundled rooms show first.
+          // They would then be swapped for the user's photos.
           final images = await imageManager.getImagesList();
           ref.read(floorImagesProvider.notifier).setValue(images);
           if (context.mounted) {
@@ -147,18 +147,18 @@ class HomePage extends HookConsumerWidget {
         } finally {
           isLoadingData.value = false;
           FlutterNativeSplash.remove();
-          // Nothing tracking related runs here: the UMP flow in admob_banner.dart
-          // shows the IDFA explainer and the system ATT dialog on its own
+          // No tracking code runs here: the UMP flow in admob_banner.dart owns the prompt.
+          // It shows the IDFA explainer and the system ATT dialog on its own.
         }
-        // Not awaited, and after the splash: awaiting it held the splash for
-        // the full connectivity timeout whenever sign-in failed
+        // Not awaited, and after the splash.
+        // Awaiting it held the splash for the whole connectivity timeout when sign-in failed.
         if (!isGamesSignIn) unawaited(gamesInit());
       }
 
       WidgetsBinding.instance.addPostFrameCallback((_) async {
         await initState();
-        // Price prefetch once launch work is done and the splash is gone, plus a delay; never
-        // in the launch path, where it risks a crash. The menu then opens with it
+        // Prefetch the price once launch work and the splash are done, plus a delay.
+        // Never in the launch path, where it risks a crash; the menu then opens with it.
         if (!context.mounted || ref.read(planProvider).isPremium) return;
         await PurchaseManager.prefetchPrice();
         // The latest answer, not the prefetch's: a refetch since may have changed it
@@ -550,10 +550,10 @@ class HomePage extends HookConsumerWidget {
     // Main UI structure with all elevator components and interactions
     return Scaffold(
       backgroundColor: blackColor,
-      /// App bar with menu button and point display
+      // App bar with menu button and point display
       appBar: home.homeAppBar(onPressed: () => pressedMenu()),
-      /// Main body. Banner, menu overlay and spinner sit outside the SafeArea on
-      /// purpose: inside it the ad would float above the gesture bar with a gap under
+      // Banner, menu overlay and spinner sit outside the SafeArea on purpose.
+      // Inside it the ad would float above the gesture bar with a gap under.
       body: Stack(children: [
         SafeArea(
           top: true,
@@ -563,32 +563,32 @@ class HomePage extends HookConsumerWidget {
             minScale: 1.0,
             maxScale: 1.5,
             child: Stack(children: [
-              /// Background room images with elevator movement animation
+              // Background room images with elevator movement animation
               home.floorImagesWidget(
                 currentFloorNumber: currentFloor.value,
                 isOutside: isOutside.value,
                 margin: imageTopMargin.value,
                 duration: imageDurationTime.value,
               ),
-              /// Black overlay for hiding elevator during emergency
+              // Black overlay for hiding elevator during emergency
               home.blackHideWidget(isEmergency.value),
-              /// Main elevator structure with doors and buttons
+              // Main elevator structure with doors and buttons
               Row(children: [
                 SizedBox(width: context.sideSpacerWidth()),
                 Stack(children: [
-                  /// Door frame images for visual structure
+                  // Door frame images for visual structure
                   home.upAndDownDoorFrame(),
-                  /// Left door frame with conditional visibility
+                  // Left door frame with conditional visibility
                   home.leftDoorFrame(isDoorState.value == closedState || (isDoorState.value != closedState && isOutside.value && currentFloor.value != counter.value)),
-                  /// Right door frame with conditional visibility
+                  // Right door frame with conditional visibility
                   home.rightDoorFrame(isDoorState.value == closedState || (isDoorState.value != closedState && isOutside.value && currentFloor.value != counter.value)),
-                  /// Left door image with animation states
+                  // Left door image with animation states
                   home.leftDoorImage(isDoorState.value == closedState || (isDoorState.value != closedState && isOutside.value && currentFloor.value != counter.value)),
-                  /// Right door image with animation states
+                  // Right door image with animation states
                   home.rightDoorImage(isDoorState.value == closedState || (isDoorState.value != closedState && isOutside.value && currentFloor.value != counter.value)),
-                  /// Main elevator frame image
+                  // Main elevator frame image
                   home.elevatorFrameImage(isOutside.value),
-                  /// Button panel with display and controls
+                  // Button panel with display and controls
                   Container(
                     width: context.buttonPanelWidth(),
                     height: context.buttonPanelHeight(),
@@ -599,12 +599,12 @@ class HomePage extends HookConsumerWidget {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
-                        /// Floor display with movement indicators
+                        // Floor display with movement indicators
                         (!isOutside.value) ? home.displayNumberWidget(
                           number: counter.value,
                           next: nextFloor.value,
                           isMoving: isMoving.value,
-                        /// Hall lamp indicating elevator direction
+                        // Hall lamp indicating elevator direction
                         ): (counter.value != currentFloor.value) ? home.hallLampLightingWidget(
                           number: counter.value,
                           current: currentFloor.value,
@@ -615,7 +615,7 @@ class HomePage extends HookConsumerWidget {
                           nextDirection: nextDirection.value,
                         ),
                         Spacer(),
-                        /// Emergency button (style 2 configuration)
+                        // Emergency button (style 2 configuration)
                         if (!isOutside.value && buttonStyle != 2) GestureDetector(
                           onTap: () => pressedAlertAction(false),
                           onLongPress: () => pressedAlertAction(true),
@@ -623,7 +623,7 @@ class HomePage extends HookConsumerWidget {
                           onLongPressEnd: (_) => isPressedOperationButtons.value = isPressedOperationButtons.value.setOperationButtonLamp(false, 2),
                           child: home.operationButton(isPressedOperationButtons.value, 2)
                         ),
-                        /// Floor button matrix with selection handling
+                        // Floor button matrix with selection handling
                         if (!isOutside.value) Column(children: floorNumbers.floorNumbersList().asMap().entries.map((row) => Column(children: [
                           SizedBox(height: (row.key != 0) ? context.floorButtonMargin(): context.operationButtonMargin()),
                           Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -639,7 +639,7 @@ class HomePage extends HookConsumerWidget {
                         ])).toList()),
                         if (!isOutside.value) Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
-                            /// Open Button (style 0 configuration)
+                            // Open Button (style 0 configuration)
                             GestureDetector(
                               onTap: () => pressedOpenAction(false),
                               onLongPress: () => pressedOpenAction(true),
@@ -647,7 +647,7 @@ class HomePage extends HookConsumerWidget {
                               onLongPressEnd: (_) => isPressedOperationButtons.value = isPressedOperationButtons.value.setOperationButtonLamp(false, 0),
                               child: home.operationButton(isPressedOperationButtons.value, 0),
                             ),
-                            /// Close Button (style 1 configuration)
+                            // Close Button (style 1 configuration)
                             GestureDetector(
                               onTap: () => pressedCloseAction(false),
                               onLongPress: () => pressedCloseAction(true),
@@ -657,7 +657,7 @@ class HomePage extends HookConsumerWidget {
                             ),
                           ]
                         ),
-                        /// Emergency button (style 2 configuration - alternative position)
+                        // Emergency button (style 2 configuration - alternative position)
                         if (!isOutside.value && buttonStyle == 2) GestureDetector(
                           onTap: () => pressedAlertAction(false),
                           onLongPress: () => pressedAlertAction(true),
@@ -665,7 +665,7 @@ class HomePage extends HookConsumerWidget {
                           onLongPressEnd: (_) => isPressedOperationButtons.value = isPressedOperationButtons.value.setOperationButtonLamp(false, 0),
                           child: home.operationButton(isPressedOperationButtons.value, 2)
                         ),
-                        /// Up and down buttons for outside view
+                        // Up and down buttons for outside view
                         if (isOutside.value) home.upDownButtons(
                           currentFloor: currentFloor.value,
                           onTapUp: () => pressedWaitUp(),
@@ -676,7 +676,7 @@ class HomePage extends HookConsumerWidget {
                       ]
                     ),
                   ),
-                  /// View change button (flashing indicator)
+                  // View change button (flashing indicator)
                   if (isDoorState.value == openedState && currentFloor.value == counter.value) GestureDetector(
                     onTap: changeView,
                     child: Container(
@@ -692,18 +692,18 @@ class HomePage extends HookConsumerWidget {
                   )
                 ])
               ]),
-              /// Door cover for visual effects
+              // Door cover for visual effects
               home.doorCover()
             ]),
             ),
           ]),
         ),
-        /// Menu overlay when menu is active. It runs its own Scaffold and its
-        /// own SafeArea, so it must not be nested inside this one
+        // Menu overlay when the menu is active.
+        // It runs its own Scaffold and SafeArea, so it must not be nested inside this one.
         if (isMenu) const MenuPage(),
-        /// AdMob banner, flush with the bottom of the screen
+        // AdMob banner, flush with the bottom of the screen
         if (!isTest) const AdBannerWidget(),
-        /// Loading indicator during data initialization
+        // Loading indicator during data initialization
         if (isLoadingData.value) common.commonCircularProgressIndicator(),
       ]),
     );
@@ -1046,14 +1046,14 @@ class HomeWidget {
     color: displayBackgroundColor[buttonStyle],
     child: Column(mainAxisAlignment: MainAxisAlignment.start,
       children: [
-        ///Arrow
+        // Arrow
         Container(
           height: context.displayArrowHeight(buttonStyle),
           alignment: Alignment.topCenter,
           margin: EdgeInsets.only(top: context.displayArrowMarginTop(buttonStyle)),
           child: Image.asset(number.arrowImage(isMoving, next, buttonStyle)),
         ),
-        ///Floor number
+        // Floor number
         displayNumber(number),
       ]
     )

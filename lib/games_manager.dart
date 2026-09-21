@@ -22,8 +22,8 @@ class GamesManager {
 
   /// Check internet connectivity with timeout and fallback
   Future<bool> checkInternetConnection() async {
-    // 3 seconds, not 10: a reachable resolver answers well under a second, and
-    // the menu awaits this inline. A false "offline" is recoverable; callers re-check
+    // 3 seconds, not 10: a reachable resolver answers well under a second.
+    // The menu awaits this inline, and a false "offline" is recoverable since callers re-check.
     final Duration timeout = const Duration(seconds: 3);
     // Log connectivity result but don't rely on it for decision
     try {

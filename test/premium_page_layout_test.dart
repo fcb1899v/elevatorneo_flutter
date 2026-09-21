@@ -1,5 +1,5 @@
-// The purchase page in all six languages with the app's own fonts: the default test font
-// draws every glyph a full em wide. premiumUnlockAll breaks first, wrapping into a fourth line.
+// The purchase page in six languages with the app's own fonts, not the full-em test font.
+// premiumUnlockAll breaks first, wrapping into a fourth line.
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';

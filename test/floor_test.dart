@@ -1,5 +1,5 @@
-// Floor panel rules: the picker range, the save guard, and the stop toggles. Pure functions
-// in constant.dart / extension.dart, so they are checked exhaustively, not through widgets.
+// Floor panel rules: the picker range, the save guard, and the stop toggles.
+// Pure functions in constant.dart / extension.dart, tested directly, not through widgets.
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -52,8 +52,8 @@ void main() {
   });
 
   test("a value meant for another button is refused", () {
-    // The picker reports an index, not a floor, so a stale selection can reach
-    // the save and push the panel past max unless the save refuses it
+    // The picker reports an index, not a floor, so a stale selection can reach the save.
+    // It would push the panel past max unless the save refuses it.
     final list = List<int>.from(initialFloorNumbers);
     for (final cell in selectableCells()) {
       final row = cell[0], col = cell[1];

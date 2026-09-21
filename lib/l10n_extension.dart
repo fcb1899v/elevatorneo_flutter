@@ -105,8 +105,8 @@ extension L10nContextExt on BuildContext {
   String soundFloor(int counter) =>
       (counter == max) ? "":
       (lang() == "en") ? floor("${counter.enRankNumber()}${basement(counter)}"):
-      // es / fr put the ordinal before the noun. A basement already carries its
-      // own noun (Sotano / Sous-sol), so the floor noun is added above ground only
+      // es / fr put the ordinal before the noun.
+      // A basement has its own noun (Sotano / Sous-sol), so only above-ground floors add one.
       (lang() == "es") ? (counter < 0) ? "${counter.abs().esRankNumber()}${basement(counter).trim()}, ": floor(counter.esRankNumber()):
       (lang() == "fr") ? (counter < 0) ? "${counter.abs().frRankNumber()}${basement(counter).trim()}, ": floor(counter.frRankNumber()):
       floor("${basement(counter)}${counter.abs()}");
@@ -164,8 +164,8 @@ extension L10nContextExt on BuildContext {
   String premiumThanks() => AppLocalizations.of(this)!.premiumThanks;
   String premiumFailed() => AppLocalizations.of(this)!.premiumFailed;
   String premiumRestoreFailed() => AppLocalizations.of(this)!.premiumRestoreFailed;
-  // Shown when the offer cannot be made at all (no offering, unapproved product,
-  // no network). Distinct from premiumFailed(): nobody has tried to buy yet
+  // Shown when no offer can be made at all (no offering, unapproved product, no network).
+  // Distinct from premiumFailed(): nobody has tried to buy yet.
   String premiumUnavailable() => AppLocalizations.of(this)!.premiumUnavailable;
   String notSignedInGameCenter() => AppLocalizations.of(this)!.notSignedInGameCenter(
     (Platform.isIOS || Platform.isMacOS) ? "Game Center": "Play Games"

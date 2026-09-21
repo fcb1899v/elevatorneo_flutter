@@ -67,8 +67,8 @@ class CommonWidget {
   /// Show a floating notification using the shared app styling
   void commonSnackBar(String text) {
     final snackBar = SnackBar(
-      // Shrunk rather than wrapped: the text carries its own line breaks, and a
-      // language that overruns should keep them instead of folding a third line
+      // Shrunk rather than wrapped: the text carries its own line breaks.
+      // A language that overruns keeps them instead of folding a third line.
       content: FittedBox(fit: BoxFit.scaleDown,
         child: Text(text,
           style: TextStyle(

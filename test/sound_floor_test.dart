@@ -1,5 +1,5 @@
-// What the arrival announcement actually says, per language. es and fr must not skip
-// floor(): without it they speak a bare ordinal, which nothing on screen would show.
+// What the arrival announcement actually says, per language.
+// es and fr must not skip floor(), or they speak a bare ordinal the screen never shows.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -36,17 +36,16 @@ void main() {
   });
 
   testWidgets("the basement keeps its own noun, not the floor noun", (tester) async {
-    // Sótano / Sous-sol already mean "basement floor"; adding piso / étage
-    // after them would be wrong, so the floor noun must not reach the basement branch
+    // Sótano / Sous-sol already mean "basement floor", so piso / étage after them would be wrong.
+    // The floor noun must not reach the basement branch.
     expect(await _spoken(tester, "es", -2), contains("ótano"));
     expect(await _spoken(tester, "es", -2), isNot(contains("piso")));
     expect(await _spoken(tester, "fr", -2), contains("ous-sol"));
     expect(await _spoken(tester, "fr", -2), isNot(contains("étage")));
   });
 
-  // Whole strings, not fragments: the earlier "contains" pair passed while
-  // es spoke B2 as the 28th, because the ordinal was built from the signed
-  // floor and no branch matched it
+  // Whole strings, not fragments: a "contains" pair passed while es spoke B2 as the 28th.
+  // The ordinal was built from the signed floor, and no branch matched it.
   testWidgets("es and fr count the basement from one", (tester) async {
     const said = {
       -1: ["primer Sótano, ", "premier Sous-sol, "],
@@ -59,8 +58,8 @@ void main() {
     }
   });
 
-  // The remainder above a hundred is 1..99 and needs the whole ordinal, not the
-  // tens-only helper: 100 spoke as the 120th, and 101 as the 121st
+  // The remainder above 100 is 1..99 and needs the whole ordinal, not the tens-only helper.
+  // Otherwise 100 spoke as the 120th and 101 as the 121st.
   testWidgets("the hundreds carry their remainder", (tester) async {
     const es = {100: "centésimo ", 101: "centésimo primer ",
                 110: "centésimo décimo ", 119: "centésimo decimonoveno "};
@@ -76,6 +75,6 @@ void main() {
     }
   });
 
-  // NEO has no floor 0 (initialFloorNumbers: min, -1, 1, 2, 4, 6, 14, 100, 154, max),
-  // so there is no ground-floor branch to test here. LETS covers that case.
+  // NEO has no floor 0, so there is no ground-floor branch to test here.
+  // LETS covers that case.
 }

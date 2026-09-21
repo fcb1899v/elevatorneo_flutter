@@ -1,5 +1,5 @@
-// PurchaseManager: the premium unlock, bought once. The SDK starts with the home screen's
-// delayed price prefetch after launch work, never at launch, where it risks a crash.
+// PurchaseManager: the premium unlock, bought once.
+// The SDK starts with the home screen's delayed price prefetch, never at launch (crash risk).
 
 import 'dart:io';
 import 'package:flutter/foundation.dart';
@@ -51,8 +51,8 @@ class PurchaseManager {
       }
       return true;
     } catch (e) {
-      // Clear the shared future so a later attempt can try again: a failure
-      // here is usually the network, and the user may well tap the lock twice
+      // Clear the shared future so a later attempt can try again.
+      // A failure here is usually the network, and the user may well tap the lock twice.
       _configuring = null;
       "RevenueCat configure failed: $e".debugPrint();
       return false;
@@ -138,8 +138,8 @@ class PurchaseManager {
     if (!await _ensureConfigured()) {
       throw const StoreUnavailableException("configure");
     }
-    // Only this call is wrapped: getOfferings throws when the dashboard has no product,
-    // which is not a failed purchase. purchase() stays bare so buyPremium reads its code
+    // Only this call is wrapped: getOfferings throws when the dashboard has no product.
+    // That is not a failed purchase, and purchase() stays bare so buyPremium reads its code.
     final Offerings offerings;
     try {
       offerings = await Purchases.getOfferings();
@@ -186,8 +186,8 @@ class PurchaseManager {
         isPremium = await _purchasePremium();
         if (isPremium) await AnalyticsManager.upgradePurchased(source);
       }
-      // Cache only an upgrade: a restore that finds nothing is not proof of no
-      // premium, and writing false would show ads to a paying user next launch
+      // Cache only an upgrade: a restore that finds nothing does not prove there is no premium.
+      // Writing false would show ads to a paying user next launch.
       if (isPremium) await _cachePremium(true);
       _isPurchasing = false;
       return isPremium;

@@ -50,8 +50,8 @@ class SettingsPage extends HookConsumerWidget {
     final showSettingNumber = useState(0);                            // Active settings tab index
     final hasScrolledOnce = useState(false);                          // Scroll state tracking
     final isLoadingData = useState(false);                            // Data loading state
-    // The price the store returned, empty until it answers. Every purchase entry
-    // point is drawn from this, never from "the SDK started", which may sell nothing
+    // The price the store returned, empty until it answers.
+    // Every purchase entry is drawn from it, not from "the SDK started" (may sell nothing).
     final storePrice = ref.watch(planProvider).priceString;
     final animationController = useAnimationController(duration:Duration(milliseconds: flashTime))..repeat(reverse: true);
 
@@ -80,8 +80,8 @@ class SettingsPage extends HookConsumerWidget {
         }
       } catch (e) {
         "Purchase error: $e".debugPrint();
-        // Nothing to sell is not a failed purchase. The reviewer sees this one
-        // while the product is still attached to the submission
+        // Nothing to sell is not a failed purchase.
+        // The reviewer sees this one while the product is still attached to the submission.
         if (context.mounted) {
           common.commonSnackBar((e is StoreUnavailableException)
             ? context.premiumUnavailable()
@@ -150,7 +150,6 @@ class SettingsPage extends HookConsumerWidget {
       onLockTap: showUpgrade,
     );
 
-    /// --- Initialization Effect ---
     // Connectivity checks, initial settings data and loading states
     useEffect(() {
 
@@ -172,8 +171,8 @@ class SettingsPage extends HookConsumerWidget {
         final bestScore = await reUpdatedGamesManager.getBestScore();
         ref.read(internetProvider.notifier).setValue(hasInternet);
         ref.read(gamesSignInProvider.notifier).setValue(signedIn);
-        // Runs unawaited so the user can keep earning meanwhile; a plain setValue
-        // would drop what arrived in flight. Mileage only ever goes up
+        // Runs unawaited while the user keeps earning, so a plain setValue would drop miles.
+        // Mileage only ever goes up.
         ref.read(pointProvider.notifier).setValue(
           (bestScore > ref.read(pointProvider)) ? bestScore: ref.read(pointProvider)
         );
@@ -210,7 +209,6 @@ class SettingsPage extends HookConsumerWidget {
       };
     }, []);
 
-    /// --- Scroll Management Functions ---
     // Animate scroll view to top with smooth transition
     void scrollToTop() {
       scrollController.animateTo(0.0,
@@ -219,7 +217,6 @@ class SettingsPage extends HookConsumerWidget {
       );
     }
 
-    /// --- Settings Tab Management Effect ---
     // Handle settings tab changes and scroll behavior
     useEffect(() {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -229,7 +226,6 @@ class SettingsPage extends HookConsumerWidget {
       return null;
     }, [showSettingNumber.value]);
 
-    /// --- Settings Configuration Functions ---
     // Change active settings tab with vibration feedback
     void changeSelectButton(int i) {
       Vibration.vibrate(duration: vibTime, amplitude: vibAmp);
@@ -277,8 +273,8 @@ class SettingsPage extends HookConsumerWidget {
         Vibration.vibrate(duration: vibTime, amplitude: vibAmp);
         isButtonOn.value[row][col] = true;
         isButtonOn.value = List.from(isButtonOn.value);
-        // The picker does not report the row it opens on, so seed it here or OK
-        // would save whatever the previous dialog left behind
+        // The picker does not report the row it opens on, so seed it here.
+        // Otherwise OK would save whatever the previous dialog left behind.
         selectedNumber.value = floorNumbers[reversedButtonIndex[row][col]];
         settings.floorNumberSelectDialog(row, col,
           select: (int index) {
@@ -366,26 +362,25 @@ class SettingsPage extends HookConsumerWidget {
       void backToHome() {
         if (context.mounted) context.pushFadeReplacement(HomePage());
       }
-      // No interstitial here: a full screen ad on the way back to the elevator was
-      // judged not worth the retention cost; rewarded is the only full screen format
+      // No interstitial: a full screen ad on the way back was judged not worth the retention cost.
+      // Rewarded is the only full screen format.
       backToHome();
     }
 
-    /// --- UI Rendering ---
     // Main settings interface structure with conditional content
     return Scaffold(
-      /// App bar with animated back button and title
+      // App bar with animated back button and title
       appBar: settings.settingsAppBar(
         animation: animationController,
         onPressed: () => pressedBack(),
       ),
-      /// Main body with settings content
+      // Main body with settings content
       body: Stack(children: [
-        /// Background image for settings
+        // Background image for settings
         common.commonBackground(menuBackGroundImage),
-        /// Settings content layout
+        // Settings content layout
         Column(children: [
-          /// Settings tab selection buttons
+          // Settings tab selection buttons
           Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: List.generate(settingsItemList.length, (i) =>
               settings.selectButtonWidget(
@@ -395,7 +390,7 @@ class SettingsPage extends HookConsumerWidget {
             ),
           ),
           settings.settingsDivider(),
-          /// Floor image customization section
+          // Floor image customization section
           (showSettingNumber.value == 0) ? Expanded(
             child: Stack(children: [
               SingleChildScrollView(
@@ -405,24 +400,24 @@ class SettingsPage extends HookConsumerWidget {
                   onTap: openChangeImageDialog
                 )
               ),
-              /// Scroll to top button when content is scrollable
+              // Scroll to top button when content is scrollable
               if (!hasScrolledOnce.value) settings.scroolUpButton(
                 animation: animationController,
                 onTap: scrollToTop
               ),
             ])
           ):
-          /// Floor number configuration section
+          // Floor number configuration section
           (showSettingNumber.value == 1) ? settings.settingsFloorNumberWidget(
             isButtonOn: isButtonOn.value,
             changeButtonNumber: changeButtonNumber,
             changeFloorStopFlag: changeFloorStop,
           ):
-          /// Button style selection section with lock overlay
+          // Button style selection section with lock overlay
           (showSettingNumber.value == 2) ? Stack(alignment: Alignment.center,
             children: [
               settings.settingsButtonStyleWidget(onTap: changeButtonStyle),
-              /// Lock overlay for premium features
+              // Lock overlay for premium features
               if (settings.isLocked(buttonStyleLockPoint)) settings.settingsLockContainer(
                 margin: EdgeInsets.only(top: context.settingsButtonStyleLockMargin()),
                 width: context.settingsButtonStyleLockWidth(),
@@ -433,14 +428,14 @@ class SettingsPage extends HookConsumerWidget {
               ),
             ]
           ):
-          /// Glass panel toggle section
+          // Glass panel toggle section
           settings.settingsGlassToggleWidget(onChanged: changeGlassStyle),
 
-          /// Button shape selection section with lock overlay
+          // Button shape selection section with lock overlay
           (showSettingNumber.value == 2) ? Stack(alignment: Alignment.topCenter,
             children: [
               settings.settingsButtonShapeWidget(onTap: changeButtonShape),
-              /// Lock overlay for premium features
+              // Lock overlay for premium features
               if (settings.isLocked(buttonShapeLockPoint)) settings.settingsLockContainer(
                 width: context.settingsButtonShapeLockWidth(),
                 height: context.settingsButtonShapeLockHeight(),
@@ -451,11 +446,11 @@ class SettingsPage extends HookConsumerWidget {
               ),
             ]
           ):
-          /// Background selection section with lock overlay
+          // Background selection section with lock overlay
           (showSettingNumber.value == 3) ? Stack(alignment: Alignment.topCenter,
             children: [
               settings.settingsBackgroundSelectWidget(onTap: changeBackground),
-              /// Lock overlay for premium features
+              // Lock overlay for premium features
               if (settings.isLocked(backgroundLockPoint)) settings.settingsLockContainer(
                 width: context.settingsBackgroundLockWidth(),
                 height: context.settingsBackgroundLockHeight(),
@@ -466,15 +461,15 @@ class SettingsPage extends HookConsumerWidget {
               ),
             ]
           ): SizedBox(),
-          /// AdMob banner space reservation
+          // AdMob banner space reservation
           if (!isPremium) Container(
             height: context.admobHeight(),
             color: blackColor,
           )
         ]),
-        /// AdMob banner at bottom of screen
+        // AdMob banner at bottom of screen
         if (!isTest) const AdBannerWidget(),
-        /// Loading indicator during data initialization
+        // Loading indicator during data initialization
         if (isLoadingData.value) common.commonCircularProgressIndicator(),
       ])
     );
@@ -513,7 +508,6 @@ class SettingsWidget {
   /// Premium unlocks everything without changing the EV mile balance
   bool isLocked(int requiredPoint) => !isPremium && point < requiredPoint && !isTest;
 
-  /// --- Common UI Components ---
   // Create divider with consistent styling
   Divider settingsDivider() => Divider(
     height: context.settingsDividerHeight(),
@@ -583,7 +577,7 @@ class SettingsWidget {
         ),
       )),
       SizedBox(width: context.settingsAlertCloseIconSpace()),
-      /// Close button for dialog dismissal
+      // Close button for dialog dismissal
       GestureDetector(
         onTap: () => context.popPage(),
         child: Icon(Icons.close,
@@ -670,7 +664,7 @@ class SettingsWidget {
           ),
           child: Stack(alignment: Alignment.center,
             children: [
-              /// Room image with selection overlay
+              // Room image with selection overlay
               GestureDetector(
                 onTap: () => onTap(row.key, col.key),
                 child: SizedBox(
@@ -682,7 +676,7 @@ class SettingsWidget {
                   ]),
                 ),
               ),
-              /// Lock overlay for premium features
+              // Lock overlay for premium features
               if (isLocked(changePointList[row.key][col.key])) settingsLockContainer(
                 width: context.settingsFloorImageLockWidth(),
                 height: context.settingsFloorImageLockHeight(),
@@ -731,7 +725,7 @@ class SettingsWidget {
           const Spacer(flex: 1),
           Stack(children: [
             floorImageFromMyAlbumButton(onTap: () => onChangedMyPhoto(row, col)),
-            /// Lock overlay for photo selection feature
+            // Lock overlay for photo selection feature
             if (isLocked(albumImagePoint)) GestureDetector(
               onTap: () => onLockTap("album_photo", albumImagePoint),
               child: alertLockWidget(),
@@ -879,7 +873,7 @@ class SettingsWidget {
             ),
             child: Stack(alignment: Alignment.center,
               children: [
-                /// Button shape preview with number display
+                // Button shape preview with number display
                 GestureDetector(
                   onTap: () => onTap(row.value[col.key]),
                   child: Stack(alignment: Alignment.center,
@@ -911,7 +905,6 @@ class SettingsWidget {
     ),
   ]);
 
-  /// --- Floor Number Configuration Components ---
   // Create floor number configuration grid with stop toggles
   Widget settingsFloorNumberWidget({
     required List<List<bool>> isButtonOn,
@@ -930,8 +923,8 @@ class SettingsWidget {
                 height: context.settingsButtonNumberLockHeight(),
                 child: Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                  // 1F never moves and always stops. Fade the button and the switch;
-                  // a plate over the cell would hide the floor number and Stop label
+                  // 1F never moves and always stops, so fade the button and the switch.
+                  // A plate over the cell would hide the floor number and Stop label.
                   Opacity(
                     opacity: isNotSelectFloor(row.key, col.key) ? fixedFloorOpacity : 1.0,
                     child: GestureDetector(
@@ -945,9 +938,8 @@ class SettingsWidget {
                   settingsFloorStopToggleWidget(row.key, col.key, changeFloorStopFlag: changeFloorStopFlag)
                 ]),
               ),
-              /// Lock overlay for premium features. The top and the bottom used
-              /// to be exempt because they could not be changed at all; they can
-              /// now, so they cost what the table always said they would
+              // Lock overlay for premium features.
+              // The top and bottom buttons are locked like the rest, since they can now be changed.
               if (isLocked(changePointList[row.key][col.key])) settingsLockContainer(
                 width: context.settingsButtonNumberLockWidth(),
                 height: context.settingsButtonNumberLockHeight(),
@@ -1033,8 +1025,8 @@ class SettingsWidget {
         initialItem: floorNumbers[reversedButtonIndex[row][col]] - floorNumbers.selectFirstFloor(row, col),
       ),
       onSelectedItemChanged: (int index) => onSelectedItemChanged(index),
-      // No filtering here: the range never contains floor 0, so dropping an item
-      // would only make the index disagree with the value it reports
+      // No filtering here: the range never contains floor 0.
+      // Dropping an item would only make the index disagree with the value it reports.
       children: List.generate(floorNumbers.selectDiffFloor(row, col), (int index) =>
         Container(
           alignment: Alignment.center,
@@ -1087,7 +1079,6 @@ class SettingsWidget {
     ),
   );
 
-  /// --- Background and Glass Components ---
   // Create background selection grid with preview
   Widget settingsBackgroundSelectWidget({
     required void Function(String) onTap
@@ -1104,7 +1095,7 @@ class SettingsWidget {
               onTap: () => onTap(row.value[col.key]),
               child: Image.asset(row.value[col.key].backGroundImage(glassStyle)),
             ),
-            /// Selection indicator for current background
+            // Selection indicator for current background
             if (backgroundStyleList.toMatrix(2)[row.key][col.key] == backgroundStyle) Container(
               decoration: BoxDecoration(
                 border: Border.all(

@@ -112,6 +112,6 @@ class AnalyticsManager {
   /// Log that the in-app store review prompt was requested
   static Future<void> reviewRequested() => _log("review_requested");
 
-  // No ATT event on purpose: UMP owns the prompt, so there is no answer callback
-  // and reading the status at launch would record notDetermined
+  // No ATT event on purpose: UMP owns the prompt, so there is no answer callback.
+  // Reading the status at launch would only record notDetermined.
 }
