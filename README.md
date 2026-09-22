@@ -45,7 +45,6 @@ Buttons, floors and room images are customizable, and the floor images can be re
 - **Storage**: shared_preferences
 - **Images**: image_picker, image_cropper, path_provider
 - **Permissions**: permission_handler
-- **WebView**: webview_flutter
 - **Links**: url_launcher
 - **Store Review**: in_app_review
 
@@ -235,7 +234,7 @@ This app uses the following third-party components:
 - in_app_review (MIT License)
 - hooks_riverpod, flutter_hooks (MIT License)
 - url_launcher (BSD 3-Clause License)
-- webview_flutter (BSD 3-Clause License)
+- webview_flutter (BSD 3-Clause License), pulled in by google_mobile_ads
 - cupertino_icons (MIT License)
 - flutter_launcher_icons (MIT License)
 - flutter_native_splash (MIT License)
