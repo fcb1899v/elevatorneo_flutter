@@ -124,9 +124,9 @@ lib/
 ├── admob_interstitial.dart      # Interstitial advertisements (not in use)
 ├── common_widget.dart           # Common widgets
 ├── constant.dart                # Constant definitions
-├── CLAUDE.md                    # Implementation notes for this directory
 ├── extension.dart               # Extension functions
 ├── l10n_extension.dart          # Localization helpers, part of extension.dart
+├── size_extension.dart          # Responsive sizing helpers, part of extension.dart
 └── l10n/                        # Localization
     ├── app_en.arb
     ├── app_es.arb
