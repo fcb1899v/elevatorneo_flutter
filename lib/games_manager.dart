@@ -3,6 +3,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:games_services/games_services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -17,6 +18,13 @@ class GamesManager {
     required this.isGamesSignIn,
     required this.isConnectedInternet
   });
+
+  /// One native sign-in at a time, shared by every caller: on Android a second
+  /// call replaces the first, whose result then never arrives (Auth.kt:61-62)
+  static Future<bool>? _signInInFlight;
+
+  /// Longest any caller waits on a sign-in; the shared attempt itself goes on
+  static const Duration gamesSignInWait = Duration(seconds: 10);
 
   // --- Connectivity Management ---
 
@@ -74,7 +82,8 @@ class GamesManager {
 
   // --- Game Services Authentication ---
 
-  /// Sign in to Game Services if not already signed in
+  /// Sign in to Game Services if not already signed in.
+  /// A concurrent caller joins the shared attempt instead of starting a second one
   Future<bool> gamesSignIn() async {
     if (!isConnectedInternet) {
       "Not connected Internet".debugPrint();
@@ -82,22 +91,34 @@ class GamesManager {
     } else if (isGamesSignIn) {
       "Already signed in to games services: true".debugPrint();
       return true;
-    } else {
-      "gamesSignIn".debugPrint();
-      try {
-        await GameAuth.signIn();
-        final isSignedIn = await GameAuth.isSignedIn;
-        if (isSignedIn) {
-          'Success to sign in to games services: $isSignedIn'.debugPrint();
-          return true;
-        } else {
-          'Fail to sign in to games services: $isSignedIn'.debugPrint();
-          return false;
-        }
-      } catch (e) {
-        'Fail to sign in to games services: $e'.debugPrint();
-        return false;
-      }
+    }
+    final shared = _signInInFlight ??= nativeGamesSignIn().whenComplete(() => _signInInFlight = null);
+    return shared.timeout(gamesSignInWait, onTimeout: () {
+      "Games sign-in still pending after ${gamesSignInWait.inSeconds} s".debugPrint();
+      return false;
+    });
+  }
+
+  /// The platform sign-in; tests have no Game Center and swap it
+  @visibleForTesting
+  static Future<bool> Function() nativeGamesSignIn = _nativeSignIn;
+
+  /// Tests run each case in its own zone, where an attempt left by the last one never ends
+  @visibleForTesting
+  static void resetGamesSignIn() => _signInInFlight = null;
+
+  static Future<bool> _nativeSignIn() async {
+    "gamesSignIn".debugPrint();
+    try {
+      await GameAuth.signIn();
+      final isSignedIn = await GameAuth.isSignedIn;
+      isSignedIn
+        ? 'Success to sign in to games services: $isSignedIn'.debugPrint()
+        : 'Fail to sign in to games services: $isSignedIn'.debugPrint();
+      return isSignedIn;
+    } catch (e) {
+      'Fail to sign in to games services: $e'.debugPrint();
+      return false;
     }
   }
 
