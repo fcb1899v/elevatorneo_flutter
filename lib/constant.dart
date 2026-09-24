@@ -51,6 +51,13 @@ String revenueCatApiKey = (Platform.isIOS || Platform.isMacOS) ?
 const String premiumEntitlementID = "elevatorneo_premium";
 /// Wait after the home screen's launch work (splash removed) before fetching the price
 const Duration pricePrefetchDelay = Duration(seconds: 3);
+/// Lifecycle states in which the app is not visible: no new sound, and playing ones stop.
+/// Inactive is still visible (split screen, notification shade), so it is not here
+const Set<AppLifecycleState> notVisibleStates = {
+  AppLifecycleState.hidden, AppLifecycleState.paused, AppLifecycleState.detached,
+};
+/// Wait after the splash is removed before TTS init and the first sound's load
+const Duration soundWarmUpDelay = Duration(seconds: 3);
 
 /// Store review request
 /// Minimum rides before asking the user for a store review

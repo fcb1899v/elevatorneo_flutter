@@ -66,7 +66,6 @@ class HomePage extends HookConsumerWidget {
     final waitTime = useState(initialWaitTime);                // Wait time between actions
     final openTime = useState(initialOpenTime);                // Door open duration
     final animationController = useAnimationController(duration: Duration(milliseconds: flashTime))..repeat(reverse: true);
-    final lifecycle = useAppLifecycleState();                  // App lifecycle state
     final orientation = context.orientation();                 // Screen orientation
 
     // --- Manager Instances ---
@@ -141,7 +140,6 @@ class HomePage extends HookConsumerWidget {
           if (context.mounted) {
             imageTopMargin.value = context.imageMarginTop(isOutside.value, counter.value, max);
           }
-          await ttsManager.initTts();
         } catch (e) {
           "Error: $e".debugPrint();
         } finally {
@@ -155,8 +153,20 @@ class HomePage extends HookConsumerWidget {
         if (!isGamesSignIn) unawaited(gamesInit());
       }
 
+      /// TTS init, in the background a moment after the splash is gone
+      Future<void> warmUpTts() async {
+        await Future.delayed(soundWarmUpDelay);
+        if (!context.mounted) return;
+        try {
+          await ttsManager.warmUp();
+        } catch (e) {
+          "TTS warm-up error: $e".debugPrint();
+        }
+      }
+
       WidgetsBinding.instance.addPostFrameCallback((_) async {
         await initState();
+        unawaited(warmUpTts());
         // Prefetch the price once launch work and the splash are done, plus a delay.
         // Never in the launch path, where it risks a crash; the menu then opens with it.
         if (!context.mounted || ref.read(planProvider).isPremium) return;
@@ -182,17 +192,22 @@ class HomePage extends HookConsumerWidget {
       return null;
     }, [orientation]);
 
-    // --- App Lifecycle Effect ---
-    // Handle app lifecycle changes (pause, resume) to stop audio and TTS
-    useEffect(() {
-      if (lifecycle == AppLifecycleState.inactive || lifecycle == AppLifecycleState.paused) {
-        if (context.mounted) {
-          audioManager.stopAudio();
-          ttsManager.stopTts();
-        }
+    // Stop audio and TTS once the app is not visible; inactive (split screen, shade) keeps playing.
+    // Called on the change itself: hidden and paused draw no frame, so an effect would not run
+    useOnAppLifecycleStateChange((_, state) async {
+      if (!context.mounted || !notVisibleStates.contains(state)) return;
+      // Separately, so a failure in one cannot leave the other playing
+      try {
+        await audioManager.stopAudio();
+      } catch (e) {
+        'Error stopping audio: $e'.debugPrint();
       }
-      return null;
-    }, [lifecycle]);
+      try {
+        await ttsManager.stopTts();
+      } catch (e) {
+        'Error stopping TTS: $e'.debugPrint();
+      }
+    });
 
     // --- Elevator Movement Functions ---
     // Functions for controlling elevator movement and navigation logic
