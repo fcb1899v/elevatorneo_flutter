@@ -7,14 +7,14 @@ import 'package:letselevatorneo/extension.dart';
 import 'package:letselevatorneo/l10n/app_localizations.dart';
 
 /// The announcement for [floor] as the app would speak it in [lang]
-Future<String> _spoken(WidgetTester tester, String lang, int floor) async {
+Future<String> _spoken(WidgetTester tester, String lang, int floor, {bool isTop = false}) async {
   late String said;
   await tester.pumpWidget(MaterialApp(
     localizationsDelegates: AppLocalizations.localizationsDelegates,
     supportedLocales: AppLocalizations.supportedLocales,
     locale: Locale(lang),
     home: Builder(builder: (context) {
-      said = context.soundFloor(floor);
+      said = context.soundFloor(floor, isTop);
       return const SizedBox.shrink();
     }),
   ));
@@ -77,4 +77,11 @@ void main() {
 
   // NEO has no floor 0, so there is no ground-floor branch to test here.
   // LETS covers that case.
+
+  testWidgets("a top floor below 163 speaks no floor number", (tester) async {
+    // The top button can be renumbered below the structural 163F, so the
+    // roof announcement must key off isTop, not the floor number itself.
+    expect(await _spoken(tester, "en", 120, isTop: true), "");
+    expect(await _spoken(tester, "en", 120, isTop: false), isNot(""));
+  });
 }

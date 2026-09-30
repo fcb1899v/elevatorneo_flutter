@@ -24,6 +24,8 @@ Buttons, floors and room images are customizable, and the floor images can be re
 - **Firebase Integration**: Analytics
 - **Audio & Vibration Feedback**: Sounds, spoken announcements and haptics
 - **Customizable Settings**: Floors, floor numbers, button shapes and styles
+- **Top Floor Display**: The top floor always displays as R, whatever floor number it is set to
+- **Top Floor Announcement**: Arriving at the top floor speaks only the room name, not a floor number, for the same reason
 
 ## 🚀 Technology Stack
 

@@ -262,12 +262,12 @@ extension IntExt on int {
 
   // --- Display Helpers ---
   // Methods for formatting display text and symbols for elevator status
-  String displayNumber() =>
-      (this == max || this == 0) ? "":
+  String displayNumber(bool isTop) =>
+      (isTop || this == 0) ? "":
       (this < 0) ? "${abs()}":
       "$this";
-  String displayAlphabet() =>
-      (this == max) ? "R":
+  String displayAlphabet(bool isTop) =>
+      isTop ? "R":
       (this == 0) ? "G":
       (this < 0) ? "B":
       "";
@@ -293,8 +293,8 @@ extension IntExt on int {
 
   // --- Button Logic ---
   /// Generate button text (R roof, G ground, B+number basement, number for floors)
-  String buttonNumber() =>
-      (this == max) ? "R":
+  String buttonNumber(bool isTop) =>
+      isTop ? "R":
       (this == 0) ? "G":
       (this < 0) ? "B${abs()}":
       "$this";

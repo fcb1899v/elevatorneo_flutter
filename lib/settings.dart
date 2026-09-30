@@ -930,7 +930,7 @@ class SettingsWidget {
                     child: GestureDetector(
                       child: settingsFloorButtonImage(
                         image: isButtonOn[row.key][col.key].numberBackground(1, "normal"),
-                        number: col.value.buttonNumber()
+                        number: col.value.buttonNumber(col.value == floorNumbers.last)
                       ),
                       onTap: () => changeButtonNumber(row.key, col.key) ,
                     ),

@@ -259,7 +259,7 @@ class HomePage extends HookConsumerWidget {
                     if (isEmergency.value) await Future.delayed(Duration(seconds: waitTime.value)).then((_) => isEmergency.value = false);
                     isMoving.value = false;
                     if (!isOutside.value || currentFloor.value == counter.value || isEmergency.value) await audioManager.playEffectSound(asset: openSound, volume: 0.6);
-                    if (context.mounted) await ttsManager.speakText(context.openingSound(counter.value, counter.value.roomImageFile(floorNumbers, floorImages)), !isOutside.value || currentFloor.value == counter.value);
+                    if (context.mounted) await ttsManager.speakText(context.openingSound(counter.value, counter.value.roomImageFile(floorNumbers, floorImages), counter.value == floorNumbers.last), !isOutside.value || currentFloor.value == counter.value);
                     isDoorState.value = openingState;
                     "isDoorState: ${isDoorState.value}".debugPrint();
                     await onArrived();
@@ -310,7 +310,7 @@ class HomePage extends HookConsumerWidget {
                       if (isEmergency.value) await Future.delayed(Duration(seconds: waitTime.value)).then((_) => isEmergency.value = false);
                       isMoving.value = false;
                       if (!isOutside.value || currentFloor.value == counter.value) await audioManager.playEffectSound(asset: openSound, volume: 0.6);
-                      if (context.mounted) await ttsManager.speakText(context.openingSound(counter.value, counter.value.roomImageFile(floorNumbers, floorImages)), !isOutside.value || currentFloor.value == counter.value);
+                      if (context.mounted) await ttsManager.speakText(context.openingSound(counter.value, counter.value.roomImageFile(floorNumbers, floorImages), counter.value == floorNumbers.last), !isOutside.value || currentFloor.value == counter.value);
                       isDoorState.value = openingState;
                       "isDoorState: ${isDoorState.value}".debugPrint();
                       await onArrived();
@@ -1084,7 +1084,7 @@ class HomeWidget {
     child: useMemoized(() => HookBuilder(
       builder: (context) => Text.rich(
         TextSpan(children: [
-          TextSpan(text: number.displayAlphabet(),
+          TextSpan(text: number.displayAlphabet(number == floorNumbers.last),
             style: TextStyle(
               color: displayNumberColor[buttonStyle],
               fontSize: context.displayAlphabetFontSize(buttonStyle),
@@ -1097,7 +1097,7 @@ class HomeWidget {
               fontSize: context.displayMarginFontSize(buttonStyle),
             ),
           ),
-          TextSpan(text: number.displayNumber(),
+          TextSpan(text: number.displayNumber(number == floorNumbers.last),
             style: TextStyle(
               color: displayNumberColor[buttonStyle],
               fontSize: context.displayNumberFontSize(buttonStyle),
@@ -1135,7 +1135,7 @@ class HomeWidget {
             top: context.floorButtonNumberMarginTop(buttonShape.buttonShapeIndex(), context.buttonSize()),
             bottom: context.floorButtonNumberMarginBottom(buttonShape.buttonShapeIndex(), context.buttonSize())
           ),
-          child:Text(floorNumber.buttonNumber(),
+          child:Text(floorNumber.buttonNumber(floorNumber == floorNumbers.last),
             style: TextStyle(
               color: (buttonStyle != 0) ? blackColor: isSelected.floorButtonNumberColor(buttonShape),
               fontSize: context.floorButtonNumberFontSize(buttonShape.buttonShapeIndex()),

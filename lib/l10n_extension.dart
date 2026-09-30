@@ -102,16 +102,16 @@ extension L10nContextExt on BuildContext {
       (room == imageCinema) ? cinema():
       (room == imageApplian) ? applian():
       "";
-  String soundFloor(int counter) =>
-      (counter == max) ? "":
+  String soundFloor(int counter, bool isTop) =>
+      isTop ? "":
       (lang() == "en") ? floor("${counter.enRankNumber()}${basement(counter)}"):
       // es / fr put the ordinal before the noun.
       // A basement has its own noun (Sotano / Sous-sol), so only above-ground floors add one.
       (lang() == "es") ? (counter < 0) ? "${counter.abs().esRankNumber()}${basement(counter).trim()}, ": floor(counter.esRankNumber()):
       (lang() == "fr") ? (counter < 0) ? "${counter.abs().frRankNumber()}${basement(counter).trim()}, ": floor(counter.frRankNumber()):
       floor("${basement(counter)}${counter.abs()}");
-  String openingSound(int counter, String room) =>
-      "${soundFloor(counter)}${soundPlace(room)}${openDoor()}";
+  String openingSound(int counter, String room, bool isTop) =>
+      "${soundFloor(counter, isTop)}${soundPlace(room)}${openDoor()}";
   // Room name lists
   List<String> initialRoomName() => [
     nameParking(), nameStation(), nameSupermarket(), nameArcade(), nameFoodCourt(),
