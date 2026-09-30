@@ -224,3 +224,8 @@ ios/Flutter/flutter_export_environment.sh
 
 # Editor-generated DevTools state
 devtools_options.yaml
+
+# Regenerable files: Xcode workspace state
+**/xcshareddata/IDEWorkspaceChecks.plist
+**/xcshareddata/WorkspaceSettings.xcsettings
+**/xcshareddata/WorkspaceSettings.xcsettings.xml
