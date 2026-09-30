@@ -77,8 +77,6 @@
   "nameFurniture": "Meubles",
   "nameCinema": "Cinéma",
   "movingElevator": "Ascenseur en cours d'utilisation, veuillez patienter.",
-  "photoAccessRequired": "Autorisation d'accès aux photos requise\n",
-  "photoAccessPermission": "Pour sélectionner votre photo, veuillez autoriser l'accès complet aux photos depuis les paramètres.",
   "earnMilesAfterAdTitle": "Gagnez\n{NUMBER} Miles EV\nen regardant des publicités\n",
   "earnMilesAfterAdDesc": "Pour gagner {NUMBER} Miles EV, veuillez regarder les publicités pendant la durée spécifiée.",
   "notConnectedInternet": "Pas de connexion Internet",

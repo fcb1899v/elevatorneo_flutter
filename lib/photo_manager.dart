@@ -1,13 +1,11 @@
-// ===== PhotoManager: gallery selection, cropping and permission handling =====
+// ===== PhotoManager: gallery selection and cropping =====
 
 import 'dart:io';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:path/path.dart' as path;
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'constant.dart';
 import 'extension.dart';
 import 'image_manager.dart';
@@ -61,84 +59,21 @@ class PhotoManager {
     return null;
   }
 
-  // --- Permission Management ---
-
-  /// Show permission alert dialog for photo access
-  void photoPermissionAlert() => showDialog(
-    context: context,
-    builder: (context) => CupertinoAlertDialog(
-      title: Text(context.photoAccessRequired(),
-        style: TextStyle(
-          color: blackColor,
-          fontSize: context.settingsAlertTitleFontSize(),
-          fontFamily: context.font(),
-        ),
-      ),
-      content: Text(context.photoAccessPermission(),
-        style: TextStyle(
-          color: blackColor,
-          fontSize: context.settingsAlertFontSize(),
-          fontFamily: context.font(),
-        ),
-      ),
-      actions: [
-        TextButton(
-          child: Text(context.ok(),
-            style: TextStyle(
-              color: blackColor,
-              fontSize: context.settingsAlertSelectFontSize(),
-              fontFamily: context.font(),
-            ),
-          ),
-          onPressed: () => openAppSettings(),
-        ),
-        TextButton(
-          child: Text(context.cancel(),
-            style: TextStyle(
-              color: blackColor,
-              fontSize: context.settingsAlertSelectFontSize(),
-              fontFamily: context.font(),
-            ),
-          ),
-          onPressed: () => context.popPage(),
-        ),
-      ],
-    ),
-  );
-
   // --- Photo Selection Workflow ---
 
-  /// Complete photo selection workflow. Android uses the system Photo Picker and
-  /// must not request READ_MEDIA_IMAGES / _VIDEO; iOS still needs photos permission
+  /// Complete photo selection workflow. Both platforms use an out-of-process
+  /// system picker (PHPickerViewController on iOS 14+, Android Photo Picker)
+  /// that never requires photo library permission.
   Future<List<String>> selectMyPhoto({
     required int row,
     required int col,
     required List<String> currentList
   }) async {
-    if (Platform.isAndroid) {
-      final String? savedImagePath = await pickAndCropImage(row, col);
-      return ImageManager().saveImagePath(
-        currentList: currentList,
-        newValue: savedImagePath,
-        newIndex: buttonIndex(row, col),
-      );
-    }
-
-    final photoPermission = await Permission.photos.status;
-    "photoPermission: $photoPermission".debugPrint();
-    if (photoPermission.isGranted) {
-      final String? savedImagePath = await pickAndCropImage(row, col);
-      return ImageManager().saveImagePath(
-        currentList: currentList,
-        newValue: savedImagePath,
-        newIndex: buttonIndex(row, col),
-      );
-    } else if (photoPermission.isDenied) {
-      await Permission.photos.request();
-      return currentList;
-    } else {
-      photoPermissionAlert();
-      return currentList;
-    }
+    final String? savedImagePath = await pickAndCropImage(row, col);
+    return ImageManager().saveImagePath(
+      currentList: currentList,
+      newValue: savedImagePath,
+      newIndex: buttonIndex(row, col),
+    );
   }
-} 
+}

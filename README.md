@@ -46,7 +46,6 @@ Buttons, floors and room images are customizable, and the floor images can be re
 - **Environment Variables**: flutter_dotenv
 - **Storage**: shared_preferences
 - **Images**: image_picker, image_cropper, path_provider
-- **Permissions**: permission_handler
 - **Links**: url_launcher
 - **Store Review**: in_app_review
 
@@ -119,7 +118,7 @@ lib/
 ├── audio_manager.dart           # Audio management
 ├── tts_manager.dart             # Text-to-speech management
 ├── image_manager.dart           # Image list and settings persistence
-├── photo_manager.dart           # Gallery selection, cropping and permissions
+├── photo_manager.dart           # Gallery selection and cropping
 ├── analytics_manager.dart       # Firebase Analytics events
 ├── review_manager.dart          # Store review request
 ├── admob_banner.dart            # Banner advertisement management
@@ -242,7 +241,6 @@ This app uses the following third-party components:
 - flutter_native_splash (MIT License)
 - image_picker (BSD 3-Clause License)
 - image_cropper (BSD 3-Clause License)
-- permission_handler (MIT License)
 - path, path_provider (BSD 3-Clause License)
 - intl (BSD 3-Clause License)
 - flutter_localizations (BSD 3-Clause License)

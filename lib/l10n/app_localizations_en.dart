@@ -248,13 +248,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get movingElevator => 'Elevator in use, please wait a moment.';
 
   @override
-  String get photoAccessRequired => 'Photo access is required\n';
-
-  @override
-  String get photoAccessPermission =>
-      'To select a photo, please allow full photo access in settings.';
-
-  @override
   String earnMilesAfterAdTitle(Object NUMBER) {
     return 'Earn $NUMBER EV miles\nby watching ads\n';
   }

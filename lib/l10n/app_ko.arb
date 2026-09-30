@@ -77,8 +77,6 @@
   "nameFurniture": "가구 매장",
   "nameCinema": "영화관",
   "movingElevator": "엘리베이터가 운행 중이므로 잠시 기다려 주십시오.",
-  "photoAccessRequired": "사진 권한이 필요합니다.",
-  "photoAccessPermission": "사진 권한을 허용해주세요.",
   "earnMilesAfterAdTitle": "광고를 보고\n{NUMBER} EV 마일\n얻자!\n",
   "earnMilesAfterAdDesc": "지정된 시간 동안 광고를 보시면 {NUMBER} EV 마일을 획득할 수 있습니다.",
   "notConnectedInternet": "인터넷 연결이 없습니다",

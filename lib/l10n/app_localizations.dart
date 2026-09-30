@@ -568,18 +568,6 @@ abstract class AppLocalizations {
   /// **'Elevator in use, please wait a moment.'**
   String get movingElevator;
 
-  /// No description provided for @photoAccessRequired.
-  ///
-  /// In en, this message translates to:
-  /// **'Photo access is required\n'**
-  String get photoAccessRequired;
-
-  /// No description provided for @photoAccessPermission.
-  ///
-  /// In en, this message translates to:
-  /// **'To select a photo, please allow full photo access in settings.'**
-  String get photoAccessPermission;
-
   /// No description provided for @earnMilesAfterAdTitle.
   ///
   /// In en, this message translates to:

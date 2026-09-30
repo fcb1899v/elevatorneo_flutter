@@ -246,12 +246,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get movingElevator => '电梯运行中，请稍候';
 
   @override
-  String get photoAccessRequired => '需要照片访问权限\n';
-
-  @override
-  String get photoAccessPermission => '请在设置中允许完全访问照片。';
-
-  @override
   String earnMilesAfterAdTitle(Object NUMBER) {
     return '看广告赚取$NUMBER电梯里程!\n';
   }

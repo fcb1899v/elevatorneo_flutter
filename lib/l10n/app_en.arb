@@ -77,8 +77,6 @@
   "nameFurniture": "Furniture",
   "nameCinema": "Cinema",
   "movingElevator": "Elevator in use, please wait a moment.",
-  "photoAccessRequired": "Photo access is required\n",
-  "photoAccessPermission": "To select a photo, please allow full photo access in settings.",
   "earnMilesAfterAdTitle": "Earn {NUMBER} EV miles\nby watching ads\n",
   "earnMilesAfterAdDesc": "To earn {NUMBER} EV miles, please watch the ad for the required time.",
   "notConnectedInternet": "No internet connection",

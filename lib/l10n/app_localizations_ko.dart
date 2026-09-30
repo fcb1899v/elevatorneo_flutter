@@ -246,12 +246,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get movingElevator => '엘리베이터가 운행 중이므로 잠시 기다려 주십시오.';
 
   @override
-  String get photoAccessRequired => '사진 권한이 필요합니다.';
-
-  @override
-  String get photoAccessPermission => '사진 권한을 허용해주세요.';
-
-  @override
   String earnMilesAfterAdTitle(Object NUMBER) {
     return '광고를 보고\n$NUMBER EV 마일\n얻자!\n';
   }

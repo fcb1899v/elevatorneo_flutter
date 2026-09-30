@@ -247,13 +247,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String get movingElevator => 'Ascensor en uso, por favor espere un momento.';
 
   @override
-  String get photoAccessRequired => 'Se requiere permiso de acceso a fotos\n';
-
-  @override
-  String get photoAccessPermission =>
-      'Para seleccionar tu foto, por favor permite el acceso completo a fotos desde la configuración.';
-
-  @override
   String earnMilesAfterAdTitle(Object NUMBER) {
     return 'Gana\n$NUMBER millas EV\nviendo anuncios\n';
   }

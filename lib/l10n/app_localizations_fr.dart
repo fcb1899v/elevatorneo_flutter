@@ -248,14 +248,6 @@ class AppLocalizationsFr extends AppLocalizations {
       'Ascenseur en cours d\'utilisation, veuillez patienter.';
 
   @override
-  String get photoAccessRequired =>
-      'Autorisation d\'accès aux photos requise\n';
-
-  @override
-  String get photoAccessPermission =>
-      'Pour sélectionner votre photo, veuillez autoriser l\'accès complet aux photos depuis les paramètres.';
-
-  @override
   String earnMilesAfterAdTitle(Object NUMBER) {
     return 'Gagnez\n$NUMBER Miles EV\nen regardant des publicités\n';
   }

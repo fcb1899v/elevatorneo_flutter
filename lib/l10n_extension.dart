@@ -144,8 +144,6 @@ extension L10nContextExt on BuildContext {
   String officialPage() =>  AppLocalizations.of(this)!.officialPage;
   String officialShop() => AppLocalizations.of(this)!.officialShop;
   String movingElevator() => AppLocalizations.of(this)!.movingElevator;
-  String photoAccessRequired() => AppLocalizations.of(this)!.photoAccessRequired;
-  String photoAccessPermission() => AppLocalizations.of(this)!.photoAccessPermission;
   String earnMilesAfterAdTitle(String number) => AppLocalizations.of(this)!.earnMilesAfterAdTitle(number);
   String earnMilesAfterAdDesc(String number) => AppLocalizations.of(this)!.earnMilesAfterAdDesc(number);
   String landingPageLink() => (lang() == "ja") ? landingPageJa: landingPageEn;
