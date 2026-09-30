@@ -777,13 +777,17 @@ class SettingsWidget {
             semanticLabel: context.selectPhoto(),
           ),
           SizedBox(width: context.settingsAlertIconMargin()),
-          Text(context.selectPhoto(),
-            style: TextStyle(
-              color: whiteColor,
-              fontSize: context.settingsAlertFontSize(),
-              fontFamily: context.font(),
+          // Scaled down rather than clipped: the label is long in some languages
+          Flexible(child: FittedBox(fit: BoxFit.scaleDown,
+            child: Text(context.selectPhoto(),
+              maxLines: 1,
+              style: TextStyle(
+                color: whiteColor,
+                fontSize: context.settingsAlertFontSize(),
+                fontFamily: context.font(),
+              ),
             ),
-          ),
+          )),
         ]
       ),
     ),
