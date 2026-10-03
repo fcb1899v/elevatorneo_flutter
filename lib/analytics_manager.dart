@@ -103,6 +103,17 @@ class AnalyticsManager {
   static Future<void> upgradePurchased(String source) =>
       _log("upgrade_purchased", {"source": source});
 
+  /// Log that the user closed the store sheet without buying
+  static Future<void> upgradeCancelled(String source) =>
+      _log("upgrade_cancelled", {"source": source});
+
+  /// Log a purchase or restore that threw, with a short fixed reason
+  static Future<void> upgradeFailed({
+    required String source,
+    required String flow,
+    required String reason,
+  }) => _log("upgrade_failed", {"source": source, "flow": flow, "reason": reason});
+
   /// Log a restore attempt and whether it granted the entitlement
   static Future<void> upgradeRestored(bool isPremium) =>
       _log("upgrade_restored", {"is_premium": isPremium ? 1 : 0});

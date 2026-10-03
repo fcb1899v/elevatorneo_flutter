@@ -197,7 +197,21 @@ class PurchaseManager {
       if (e is PlatformException) {
         final errorCode = PurchasesErrorHelper.getErrorCode(e);
         // A user-initiated cancel is not an error worth surfacing
-        if (errorCode == PurchasesErrorCode.purchaseCancelledError) return false;
+        if (errorCode == PurchasesErrorCode.purchaseCancelledError) {
+          await AnalyticsManager.upgradeCancelled(source);
+          return false;
+        }
+        await AnalyticsManager.upgradeFailed(
+          source: source,
+          flow: isRestore ? "restore" : "purchase",
+          reason: errorCode.name,
+        );
+      } else {
+        await AnalyticsManager.upgradeFailed(
+          source: source,
+          flow: isRestore ? "restore" : "purchase",
+          reason: e is StoreUnavailableException ? "store_unavailable" : "other",
+        );
       }
       rethrow;
     }
