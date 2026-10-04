@@ -1,5 +1,6 @@
 // PurchaseManager: the premium unlock, bought once.
 // The SDK starts with the home screen's delayed price prefetch, never at launch (crash risk).
+// A premium launch checks RevenueCat after the splash and resets the key on a refund.
 
 import 'dart:io';
 import 'package:flutter/foundation.dart';
@@ -78,6 +79,27 @@ class PurchaseManager {
   /// Whether the customer holds the active premium entitlement. Purchase and restore both read it
   static bool isPremiumIn(CustomerInfo info) =>
     info.entitlements.active[premiumEntitlementID]?.isActive ?? false;
+
+  /// Asks RevenueCat for the customer. Tests replace it.
+  @visibleForTesting
+  static Future<CustomerInfo> Function() customerInfoSource = _fetchCustomerInfo;
+
+  static Future<CustomerInfo> _fetchCustomerInfo() async {
+    if (!await _ensureConfigured()) throw const StoreUnavailableException("configure");
+    return Purchases.getCustomerInfo();
+  }
+
+  /// Resets a stored purchase RevenueCat no longer grants (a refund); an unreachable RevenueCat keeps it.
+  static Future<void> dropRevokedPremium(bool isPremium, Future<void> Function() reset) async {
+    if (!isPremium) return;
+    try {
+      final granted = isPremiumIn(await customerInfoSource());
+      "premium check: $granted".debugPrint();
+      if (!granted) await reset();
+    } catch (e) {
+      "Premium check failed, the stored value stays: $e".debugPrint();
+    }
+  }
 
   /// The store's localized price, or null when it has nothing to sell.
   ///

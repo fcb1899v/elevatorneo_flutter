@@ -164,9 +164,18 @@ class HomePage extends HookConsumerWidget {
         }
       }
 
+      /// Premium launch: check RevenueCat after the splash, so a refund removes the unlock
+      Future<void> verifyPremium() async {
+        await Future.delayed(pricePrefetchDelay);
+        if (!context.mounted) return;
+        final plan = ref.read(planProvider.notifier);
+        await PurchaseManager.dropRevokedPremium(ref.read(planProvider).isPremium, () => plan.setCurrentPlan(false));
+      }
+
       WidgetsBinding.instance.addPostFrameCallback((_) async {
         await initState();
         unawaited(warmUpTts());
+        unawaited(verifyPremium());
         // Prefetch the price once launch work and the splash are done, plus a delay.
         // Never in the launch path, where it risks a crash; the menu then opens with it.
         if (!context.mounted || ref.read(planProvider).isPremium) return;

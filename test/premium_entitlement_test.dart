@@ -1,7 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:letselevatorneo/constant.dart';
+import 'package:letselevatorneo/plan_provider.dart';
 import 'package:letselevatorneo/purchase_manager.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 /// A CustomerInfo whose active entitlements are exactly [activeIds]
 CustomerInfo _customerWith(List<String> activeIds, {bool isActive = true}) {
@@ -33,5 +36,68 @@ void main() {
     expect(PurchaseManager.isPremiumIn(_customerWith([])), isFalse);
     expect(PurchaseManager.isPremiumIn(
       _customerWith(["elevatorneo_premium"], isActive: false)), isFalse);
+  });
+
+  group("dropRevokedPremium", () {
+    Future<ProviderContainer> launch(bool savedPremium) async {
+      SharedPreferences.setMockInitialValues({"premiumKey": savedPremium});
+      final container = ProviderContainer(overrides: [
+        planProvider.overrideWith(() => PlanNotifier(PlanState(isPremium: savedPremium))),
+      ]);
+      addTearDown(container.dispose);
+      return container;
+    }
+
+    Future<bool> stored() async =>
+      (await SharedPreferences.getInstance()).getBool("premiumKey") ?? false;
+
+    final realSource = PurchaseManager.customerInfoSource;
+    tearDown(() => PurchaseManager.customerInfoSource = realSource);
+
+    test("no active entitlement resets a stored purchase", () async {
+      final container = await launch(true);
+      PurchaseManager.customerInfoSource = () async => _customerWith([]);
+      await PurchaseManager.dropRevokedPremium(
+        container.read(planProvider).isPremium, () => container.read(planProvider.notifier).setCurrentPlan(false));
+      expect(container.read(planProvider).isPremium, isFalse);
+      expect(await stored(), isFalse);
+    });
+
+    test("an active entitlement keeps premium", () async {
+      final container = await launch(true);
+      PurchaseManager.customerInfoSource = () async => _customerWith(["elevatorneo_premium"]);
+      await PurchaseManager.dropRevokedPremium(
+        container.read(planProvider).isPremium, () => container.read(planProvider.notifier).setCurrentPlan(false));
+      expect(container.read(planProvider).isPremium, isTrue);
+      expect(await stored(), isTrue);
+    });
+
+    test("an unreachable RevenueCat keeps a stored purchase", () async {
+      final container = await launch(true);
+      PurchaseManager.customerInfoSource = () async => throw Exception("offline");
+      await PurchaseManager.dropRevokedPremium(
+        container.read(planProvider).isPremium, () => container.read(planProvider.notifier).setCurrentPlan(false));
+      expect(container.read(planProvider).isPremium, isTrue);
+      expect(await stored(), isTrue);
+    });
+
+    test("a build without an API key keeps a stored purchase", () async {
+      final container = await launch(true);
+      await PurchaseManager.dropRevokedPremium(
+        container.read(planProvider).isPremium,
+        () => container.read(planProvider.notifier).setCurrentPlan(false));
+      expect(container.read(planProvider).isPremium, isTrue);
+      expect(await stored(), isTrue);
+    });
+
+    test("a free launch never asks RevenueCat", () async {
+      final container = await launch(false);
+      var asked = false;
+      PurchaseManager.customerInfoSource = () async { asked = true; return _customerWith(["elevatorneo_premium"]); };
+      await PurchaseManager.dropRevokedPremium(
+        container.read(planProvider).isPremium, () => container.read(planProvider.notifier).setCurrentPlan(false));
+      expect(asked, isFalse);
+      expect(container.read(planProvider).isPremium, isFalse);
+    });
   });
 }
