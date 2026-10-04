@@ -256,6 +256,9 @@ const String assetsElevator = "assets/images/elevator/";
 const String assetsMenu = "assets/images/menu/";
 const String assetsRoom = "assets/images/room/";
 const String assetsSettings = "assets/images/settings/";
+const String padlockStar = "${assetsSettings}padlock_star.svg"; // Lock mark, filled lampColor with a black outline baked in
+const double padlockGlyphHeightRatio = 0.845;  // CupertinoIcons.lock_fill's visible height over its icon size
+const double padlockOutlineScale = 359.52 / 329.52;  // padlock_star.svg's viewBox height over the padlock shape's own height
 
 // ===== ELEVATOR UI CONFIGURATION =====
 

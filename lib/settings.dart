@@ -4,6 +4,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:vibration/vibration.dart';
 import 'analytics_manager.dart';
@@ -19,6 +20,18 @@ import 'plan_provider.dart';
 import 'premium_page.dart';
 import 'purchase_manager.dart';
 import 'homepage.dart';
+
+/// The star padlock in a [size] square, its shape matching the glyph height of CupertinoIcons.lock_fill.
+Widget padlockIcon(double size) => SizedBox(
+  width: size,
+  height: size,
+  child: Center(
+    child: SvgPicture.asset(padlockStar,
+      key: const Key('settingsPadlock'),
+      height: size * padlockGlyphHeightRatio * padlockOutlineScale,
+    ),
+  ),
+);
 
 class SettingsPage extends HookConsumerWidget {
   const SettingsPage({super.key});
@@ -536,10 +549,7 @@ class SettingsWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         SizedBox(height: context.settingsLockMargin()),
-        Icon(CupertinoIcons.lock_fill,
-          color: lampColor,
-          size: context.settingsLockIconSize(),
-        ),
+        padlockIcon(context.settingsLockIconSize()),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -808,10 +818,7 @@ class SettingsWidget {
       SizedBox(height: context.settingsAlertLockIconSize() + context.settingsAlertLockSpaceSize()),
       Row(children: [
         const Spacer(flex: 1),
-        Icon(CupertinoIcons.lock_fill,
-          color: lampColor,
-          size: context.settingsAlertLockIconSize()
-        ),
+        padlockIcon(context.settingsAlertLockIconSize()),
         SizedBox(width: context.settingsAlertLockSpaceSize()),
         Image.asset(pointImage,
           height: context.settingsAlertLockIconSize()

@@ -237,6 +237,7 @@ This app uses the following third-party components:
 - url_launcher (BSD 3-Clause License)
 - webview_flutter (BSD 3-Clause License), pulled in by google_mobile_ads
 - cupertino_icons (MIT License)
+- flutter_svg (MIT License), draws the star padlock in settings
 - flutter_launcher_icons (MIT License)
 - flutter_native_splash (MIT License)
 - image_picker (BSD 3-Clause License)
