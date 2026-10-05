@@ -44,14 +44,6 @@ class AdInterstitialManager {
       adLoadCallback: InterstitialAdLoadCallback(
         onAdLoaded: (InterstitialAd ad) {
           'interstitial loaded'.debugPrint();
-          ad.onPaidEvent = (ad, valueMicros, precision, currencyCode) =>
-            AnalyticsManager.adRevenue(
-              format: "interstitial",
-              adUnitId: adUnitId,
-              valueMicros: valueMicros,
-              precision: precision,
-              currencyCode: currencyCode,
-            );
           _interstitialAd = ad;
           _isLoading = false;
           _numAttemptLoad = 0;

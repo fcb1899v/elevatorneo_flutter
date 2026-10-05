@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'analytics_manager.dart';
 import 'constant.dart';
 import 'extension.dart';
 import 'plan_provider.dart';
@@ -100,14 +99,6 @@ class AdBannerWidget extends HookConsumerWidget {
               loadAdBanner();
             });
           },
-          onPaidEvent: (ad, valueMicros, precision, currencyCode) =>
-            AnalyticsManager.adRevenue(
-              format: "banner",
-              adUnitId: bannerUnitId(),
-              valueMicros: valueMicros,
-              precision: precision,
-              currencyCode: currencyCode,
-            ),
         ),
       );
       adBanner.load();

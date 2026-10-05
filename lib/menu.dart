@@ -99,14 +99,6 @@ class MenuPage extends HookConsumerWidget {
               return;
             }
             'ad loaded'.debugPrint();
-            ad.onPaidEvent = (ad, valueMicros, precision, currencyCode) =>
-              AnalyticsManager.adRevenue(
-                format: "rewarded",
-                adUnitId: rewardAdUnitID,
-                valueMicros: valueMicros,
-                precision: precision,
-                currencyCode: currencyCode,
-              );
             isLoadingAd.value = false;
             rewardedAd.value = ad;
             retryAttempt.value = 0;

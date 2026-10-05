@@ -1,8 +1,7 @@
 // ===== AnalyticsManager: Firebase Analytics event logging =====
-// Gameplay, monetization and AdMob paid events for the revenue funnel.
+// Gameplay and monetization events for the revenue funnel.
 
 import 'package:firebase_analytics/firebase_analytics.dart';
-import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'extension.dart';
 
 class AnalyticsManager {
@@ -71,23 +70,6 @@ class AnalyticsManager {
   /// Log that an interstitial was actually shown
   static Future<void> interstitialShown(String placement) =>
       _log("interstitial_shown", {"placement": placement});
-
-  /// Log realized ad revenue for LTV analysis and ROAS bidding
-  /// Called from the AdMob `onPaidEvent` callback of each ad format
-  static Future<void> adRevenue({
-    required String format,
-    required String adUnitId,
-    required double valueMicros,
-    required PrecisionType precision,
-    required String currencyCode,
-  }) => _log("ad_impression", {
-    "ad_platform": "AdMob",
-    "ad_format": format,
-    "ad_unit_name": adUnitId,
-    "currency": currencyCode,
-    "value": valueMicros / 1000000.0,
-    "precision": precision.name,
-  });
 
   // --- Purchase Events ---
 
