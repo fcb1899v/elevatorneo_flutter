@@ -228,10 +228,12 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
             // Handle pending method calls (sent while TTS was initializing)
             synchronized(this@FlutterTtsPlugin) {
                 ttsStatus = status
-                for (call in pendingMethodCalls) {
+                // Run a copy: a call that fails re-adds itself to the list
+                val calls = ArrayList(pendingMethodCalls)
+                pendingMethodCalls.clear()
+                for (call in calls) {
                     call.run()
                 }
-                pendingMethodCalls.clear()
             }
 
             if (status == TextToSpeech.SUCCESS) {
@@ -251,10 +253,12 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
             // Handle pending method calls (sent while TTS was initializing)
             synchronized(this@FlutterTtsPlugin) {
                 ttsStatus = status
-                for (call in pendingMethodCalls) {
+                // Run a copy: a call that fails re-adds itself to the list
+                val calls = ArrayList(pendingMethodCalls)
+                pendingMethodCalls.clear()
+                for (call in calls) {
                     call.run()
                 }
-                pendingMethodCalls.clear()
             }
 
             if (status == TextToSpeech.SUCCESS) {
