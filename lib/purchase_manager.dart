@@ -101,6 +101,19 @@ class PurchaseManager {
     }
   }
 
+  /// Grants a purchase the store already holds for this account, so a new device needs no Restore tap.
+  /// Free users only; an unreachable RevenueCat leaves the app free.
+  static Future<void> restoreOwnedPremium(bool isPremium, Future<void> Function() grant) async {
+    if (isPremium) return;
+    try {
+      final owned = isPremiumIn(await customerInfoSource());
+      "owned premium check: $owned".debugPrint();
+      if (owned) await grant();
+    } catch (e) {
+      "Owned premium check failed, the app stays free: $e".debugPrint();
+    }
+  }
+
   /// The store's localized price, or null when it has nothing to sell.
   ///
   /// Null hides every purchase entry point: the offer is drawn only from a real price.

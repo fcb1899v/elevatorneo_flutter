@@ -162,6 +162,7 @@ Rewarded ad loading and display live in `menu.dart`, not in a separate ad file.
 A single non-consumable purchase, sold through RevenueCat.
 The app checks the entitlement `elevatorneo_premium` (`premiumEntitlementID` in `lib/constant.dart`), which must match the RevenueCat dashboard.
 A premium launch re-checks the entitlement with RevenueCat after the splash and removes the unlock when it is gone (a refund); an unreachable RevenueCat keeps it.
+A free device that opens settings asks RevenueCat once per visit and unlocks premium when the store already holds the purchase (a new device needs no Restore tap); an unreachable RevenueCat leaves the app free.
 
 - Removes the banner ad and opens every lock at once
 - Reached from the fourth menu tile, and from any padlock in settings

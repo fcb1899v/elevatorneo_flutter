@@ -100,4 +100,56 @@ void main() {
       expect(container.read(planProvider).isPremium, isFalse);
     });
   });
+
+  group("restoreOwnedPremium", () {
+    Future<ProviderContainer> launch(bool savedPremium) async {
+      SharedPreferences.setMockInitialValues({"premiumKey": savedPremium});
+      final container = ProviderContainer(overrides: [
+        planProvider.overrideWith(() => PlanNotifier(PlanState(isPremium: savedPremium))),
+      ]);
+      addTearDown(container.dispose);
+      return container;
+    }
+
+    Future<bool> stored() async =>
+      (await SharedPreferences.getInstance()).getBool("premiumKey") ?? false;
+
+    Future<void> run(ProviderContainer c) => PurchaseManager.restoreOwnedPremium(
+      c.read(planProvider).isPremium, () => c.read(planProvider.notifier).setCurrentPlan(true));
+
+    final realSource = PurchaseManager.customerInfoSource;
+    tearDown(() => PurchaseManager.customerInfoSource = realSource);
+
+    test("an owned entitlement on a free device grants premium", () async {
+      final container = await launch(false);
+      PurchaseManager.customerInfoSource = () async => _customerWith(["elevatorneo_premium"]);
+      await run(container);
+      expect(container.read(planProvider).isPremium, isTrue);
+      expect(await stored(), isTrue);
+    });
+
+    test("no entitlement keeps the app free", () async {
+      final container = await launch(false);
+      PurchaseManager.customerInfoSource = () async => _customerWith([]);
+      await run(container);
+      expect(container.read(planProvider).isPremium, isFalse);
+      expect(await stored(), isFalse);
+    });
+
+    test("an unreachable RevenueCat keeps the app free", () async {
+      final container = await launch(false);
+      PurchaseManager.customerInfoSource = () async => throw Exception("offline");
+      await run(container);
+      expect(container.read(planProvider).isPremium, isFalse);
+    });
+
+    test("a premium device never asks RevenueCat", () async {
+      final container = await launch(true);
+      var asked = false;
+      PurchaseManager.customerInfoSource = () async { asked = true; return _customerWith([]); };
+      await run(container);
+      expect(asked, isFalse);
+      expect(container.read(planProvider).isPremium, isTrue);
+    });
+  });
 }

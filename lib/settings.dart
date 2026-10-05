@@ -205,6 +205,10 @@ class SettingsPage extends HookConsumerWidget {
         await initState();
         if (scrollController.hasClients) scrollController.jumpTo(scrollController.position.maxScrollExtent);
         hasScrolledOnce.value = false;
+        // On each settings visit, unlock a purchase the store already holds (new device); never in the launch path
+        if (!context.mounted) return;
+        final plan = ref.read(planProvider.notifier);
+        await PurchaseManager.restoreOwnedPremium(ref.read(planProvider).isPremium, () => plan.setCurrentPlan(true));
         // Reuses the home screen's prefetch, or joins it. The price decides the purchase UI
         if (!context.mounted || ref.read(planProvider).isPremium) return;
         final price = await PurchaseManager.loadPrice();
