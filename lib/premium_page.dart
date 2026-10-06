@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'common_widget.dart';
 import 'constant.dart';
 import 'extension.dart';
+import 'settings.dart' show padlockIcon;
 
 // One plain platform font throughout, since context.font() gives Korean a display face.
 // The PREMIUM board keeps letsgo, its own alphabet.
@@ -220,11 +221,7 @@ class PremiumPage extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            Icons.lock_open,
-            color: lampColor,
-            size: context.premiumBuyFontSize(),
-          ),
+          padlockIcon(context.premiumBuyFontSize()),
           SizedBox(width: context.premiumIconMargin()),
           Text(
             context.premiumBuy(price),
