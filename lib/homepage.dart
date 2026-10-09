@@ -652,11 +652,18 @@ class HomePage extends HookConsumerWidget {
                           SizedBox(height: (row.key != 0) ? context.floorButtonMargin(): context.operationButtonMargin()),
                           Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: row.value.asMap().entries.map((col) => Row(children: [
-                              GestureDetector(
-                                child: home.floorButtonImage(col.value, col.value.isSelected(isAboveSelectedList.value, isUnderSelectedList.value)),
-                                onTap: () => floorSelected(col.value, floorStops[buttonIndex(row.key, col.key)]),
-                                onLongPress: () => floorCanceled(col.value),
-                                onDoubleTap: () => floorCanceled(col.value),
+                              // Selects on touch: an onTap here would wait out the double-tap window first
+                              Listener(
+                                onPointerDown: (_) => floorSelected(col.value, floorStops[buttonIndex(row.key, col.key)]),
+                                child: Semantics(
+                                  // Keeps the tap action that screen readers use, since the gesture detector no longer has onTap
+                                  onTap: () => floorSelected(col.value, floorStops[buttonIndex(row.key, col.key)]),
+                                  child: GestureDetector(
+                                    child: home.floorButtonImage(col.value, col.value.isSelected(isAboveSelectedList.value, isUnderSelectedList.value)),
+                                    onLongPress: () => floorCanceled(col.value),
+                                    onDoubleTap: () => floorCanceled(col.value),
+                                  ),
+                                ),
                               ),
                             ])).toList(),
                           ),
