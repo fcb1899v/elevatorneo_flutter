@@ -1,5 +1,5 @@
 // ===== AdInterstitialManager: NOT IN USE =====
-// Nothing calls this. To re-enable: call from settings.dart/homepage.dart and dispose on purchase.
+// Nothing calls this; to re-enable, call it from settings.dart/homepage.dart and dispose on purchase.
 
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
@@ -63,7 +63,7 @@ class AdInterstitialManager {
 
   // --- Ad Display ---
 
-  /// Show a preloaded interstitial if every capping rule allows it
+  /// Show a preloaded interstitial if every capping rule allows it.
   /// Returns true when an ad was actually shown
   static Future<bool> showIfAllowed({
     required String placement,

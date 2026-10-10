@@ -64,8 +64,8 @@ class MenuPage extends HookConsumerWidget {
     // --- Ad Management Functions ---
     // Functions for handling rewarded ad loading and display
 
-    /// Hand the outcome of a load back to whoever pressed the button and is
-    /// waiting on it. A preload that nobody is waiting for finds no completer
+    /// Hand the outcome of a load back to whoever pressed the button and is waiting on it.
+    /// A preload that nobody is waiting for finds no completer
     void finishPendingLoad(RewardedAd? ad) {
       final pending = pendingLoad.value;
       pendingLoad.value = null;
@@ -161,8 +161,8 @@ class MenuPage extends HookConsumerWidget {
       return completer.future;
     }
 
-    /// Run the consent info update and let the SDK present a form if it wants
-    /// one. This is the only path by which an undecided user reaches the form
+    /// Run the consent info update and let the SDK present a form if it wants one.
+    /// This is the only path by which an undecided user reaches the form
     Future<void> updateConsent() {
       final completer = Completer<void>();
       void done() {
@@ -194,8 +194,8 @@ class MenuPage extends HookConsumerWidget {
       );
     }
 
-    /// The press path: what happens when the user asks for the reward and
-    /// nothing is loaded. It must never end in silence
+    /// The press path: what happens when the user asks for the reward and nothing is loaded.
+    /// It must never end in silence
     Future<RewardedAd?> prepareRewardedAd() async {
       final ready = rewardedAd.value;
       if (ready != null) return ready;
@@ -349,8 +349,8 @@ class MenuPage extends HookConsumerWidget {
       }
     }
 
-    /// Open the upgrade dialog from the fourth menu button. The price is fetched
-    /// again, since an offering or the network can drop meanwhile; empty is said aloud
+    /// Open the upgrade dialog from the fourth menu button.
+    /// The price is fetched again, since an offering or the network can drop meanwhile; empty is said aloud
     Future<void> openUpgrade() async {
       isLoadingData.value = true;
       final price = await PurchaseManager.fetchPrice();
@@ -482,8 +482,8 @@ class MenuWidget {
   // --- Menu Button Components ---
   // UI components for main menu buttons
 
-  /// Lay the buttons out two per row. price is null once premium is owned or with no
-  /// store price; the grid then holds three, one centred on the second row
+  /// Lay the buttons out two per row.
+  /// price is null once premium is owned or with no store price; the grid then holds three, one centred on the second row.
   List<Widget> menuButtonRows({
     required Future<void> Function(int) onTap,
     String? price,
@@ -501,8 +501,8 @@ class MenuWidget {
     ];
   }
 
-  /// Create menu button by index. Each is one 512x512 PNG with the border colour
-  /// baked in (green, silver, yellow, white); the Semantics label is all a reader has
+  /// Create menu button by index.
+  /// Each is one 512x512 PNG with the border colour baked in (green, silver, yellow, white); the Semantics label is all a reader has
   Widget menuButton(int i) => Semantics(
     button: true,
     label: (i == 0) ? context.settings():
@@ -530,11 +530,10 @@ class MenuWidget {
   // --- Navigation Components ---
   // UI components for external link navigation
 
-  /// External links. A plain Row, not a BottomNavigationBar: the bar added its
-  /// own padding under the labels, which left a gap above the ad banner.
+  /// External links.
+  /// A plain Row, not a BottomNavigationBar: the bar added its own padding under the labels, which left a gap above the ad banner.
   ///
-  /// bottomInset is the system inset to take over when nothing is reserved below
-  /// this row, which is the case once premium removes the banner
+  /// bottomInset is the system inset to take over when nothing is reserved below this row, which is the case once premium removes the banner
   Widget bottomMenuLink({required double bottomInset}) => Container(
     color: blackColor,
     // The top keeps what the bar gave it: menuLinksMargin twice plus half the font size.

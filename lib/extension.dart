@@ -127,9 +127,9 @@ extension ContextExt on BuildContext {
     ),
     (route) => false);
   }
-  /// Push over the current screen, keeping it underneath. The purchase page
-  /// has to come back to whatever opened it: the menu, or a settings tab with
-  /// a lock the user just tapped. pushFadeReplacement would erase that
+  /// Push over the current screen, keeping it underneath.
+  /// The purchase page has to come back to whatever opened it: the menu, or a settings tab with a lock the user just tapped.
+  /// pushFadeReplacement would erase that.
   void pushPage(Widget page) {
     AudioManager().playEffectSound(asset: changeSound, volume: 1.0);
     Navigator.push(this, PageRouteBuilder(
@@ -460,9 +460,8 @@ extension ListIntExt on List<int> {
     [this[1], this[0]],
   ];
 
-  /// A button sits between its neighbours, except the two ends. The bottom one
-  /// runs down to min, and the top one up to max; their other limit comes from
-  /// how many buttons have to fit on the far side of the fixed 1F
+  /// A button sits between its neighbours, except the two ends.
+  /// The bottom one runs down to min, and the top one up to max; their other limit comes from how many buttons have to fit on the far side of the fixed 1F
   /// The picker stops at the neighbouring buttons, so no other floor has to move
   int selectFirstFloor(int row, int col) {
     final i = reversedButtonIndex[row][col];

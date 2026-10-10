@@ -71,11 +71,8 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
         methodChannel!!.setMethodCallHandler(this)
         handler = Handler(Looper.getMainLooper())
         bundle = Bundle()
-        // Created here, at engine attach, on purpose. Deferring it to the first
-        // method call was tried on 2026-09-06 and moved the service bind into
-        // the app's initTts(), which the first frame waits on behind the native
-        // splash, so the bind ran in series with the frame instead of alongside
-        // main(). Starting it here lets the bind overlap the Dart-side startup
+        // Created at engine attach on purpose: deferring it to the first method call would put the service bind inside the app's initTts(), which the first frame waits on behind the native splash.
+        // Starting it here lets the bind overlap the Dart-side startup.
         tts = TextToSpeech(context, onInitListenerWithoutCallback)
     }
 

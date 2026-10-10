@@ -43,8 +43,8 @@ const int interstitialMaxPerSession = 3;   // Upper bound within a single sessio
 const int interstitialMinRides = 5;        // Rides required before the first interstitial
 
 /// RevenueCat configuration
-/// Keys are looked up in assets/.env. The entitlement id must equal the dashboard's;
-/// "premium" is taken by another app in the shared project, so this one is prefixed
+/// Keys are looked up in assets/.env.
+/// The entitlement id must equal the dashboard's; it carries an app prefix so it stays unique within the RevenueCat project.
 String revenueCatApiKey = (Platform.isIOS || Platform.isMacOS) ?
   "REVENUE_CAT_IOS_API_KEY":
   "REVENUE_CAT_ANDROID_API_KEY";
@@ -73,8 +73,8 @@ const int bannerRetryBaseSec = 30;     // First banner retry delay; doubles each
 const int bannerRetryMaxSec = 300;     // Ceiling for the banner backoff
 const int rewardedMaxRetry = 3;        // Re-armed by the next button press
 
-/// The consent round trip can hang on a bad network. The reward button waits on
-/// it behind a spinner, so it needs a point at which it gives up and answers
+/// The consent round trip can hang on a bad network.
+/// The reward button waits on it behind a spinner, so it needs a point at which it gives up and answers
 const int consentFormTimeoutSec = 15;
 
 // ===== FLOOR CONFIGURATION =====
@@ -95,10 +95,8 @@ List<bool> initialFloorStops = List.generate(initialFloorNumbers.length, (_) => 
 
 /// How far the top and bottom buttons may travel.
 ///
-/// 1F never moves, so the buttons above it must fit between 1 and the top, and
-/// the buttons below it between the bottom and -1. With ten buttons and 1F at
-/// index 2 that leaves eight above ground and two below: the top cannot go
-/// under 8F, and the bottom cannot rise above B2.
+/// 1F never moves, so the buttons above it must fit between 1 and the top, and the buttons below it between the bottom and -1.
+/// With ten buttons and 1F at index 2 that leaves eight above ground and two below: the top cannot go under 8F, and the bottom cannot rise above B2.
 /// The picker enforces this by stopping at the neighbouring buttons
 const int floorButtonCount = 10;
 const int oneFloorIndex = 2;
@@ -117,20 +115,19 @@ const List<List<int>> reversedButtonIndex = [
 bool isBasement(int row, int col) => (row == 4);
 int buttonCol(int row, int col) => isBasement(row, col) ? (1 - col) : col;
 int buttonIndex(int row, int col) => 2 * (4 - row) + buttonCol(row, col);
-/// How far the two 1F controls are faded. They are dimmed rather than covered:
-/// a black plate over the cell hides the floor number itself
+/// How far the two 1F controls are faded.
+/// They are dimmed rather than covered: a black plate over the cell hides the floor number itself
 const double fixedFloorOpacity = 0.35;
 
 /// CupertinoSwitch fades itself by 0.5 when onChanged is null
-/// (`cupertino/switch.dart` _kDisabledOpacity), so the switch needs a
-/// lighter touch to land on the same 0.35 as the button beside it
+/// (`cupertino/switch.dart` _kDisabledOpacity), so the switch needs a lighter touch to land on the same 0.35 as the button beside it
 const double fixedFloorSwitchOpacity = fixedFloorOpacity * 2;
 
-/// Only 1F is fixed. The top and the bottom move too, within the range above
+/// Only 1F is fixed.
+/// The top and the bottom move too, within the range above
 bool isNotSelectFloor(int row, int col) => (col == 0 && row == 3);
 
-/// The last stop above or below 1F cannot be turned off: the car needs
-/// somewhere to go on each side of the fixed floor
+/// The last stop above or below 1F cannot be turned off: the car needs somewhere to go on each side of the fixed floor
 bool isOnlyStop(List<bool> stops, int index) {
   if (!stops[index]) return false;
   for (int i = 0; i < stops.length; i++) {
@@ -140,8 +137,8 @@ bool isOnlyStop(List<bool> stops, int index) {
   return true;
 }
 
-/// The gap a button may move within: strictly between its neighbours, inside
-/// min..max, and never floor 0. Both the picker and the save use this
+/// The gap a button may move within: strictly between its neighbours, inside min..max, and never floor 0.
+/// Both the picker and the save use this
 bool isInFloorGap(List<int> list, int index, int value) {
   if (value == 0 || value < min || max < value) return false;
   if (index == oneFloorIndex) return false;
@@ -150,9 +147,8 @@ bool isInFloorGap(List<int> list, int index, int value) {
   return true;
 }
 
-/// A saved panel from an older build may break the rule above: before the
-/// pickers were bounded, the basement buttons could be set independently. Repair
-/// what is broken and keep the rest, rather than throw the whole panel away
+/// A saved panel from an older build may break the rule above: before the pickers were bounded, the basement buttons could be set independently.
+/// Repair what is broken and keep the rest, rather than throw the whole panel away
 List<int> normalizedFloorNumbers(List<int> numbers) {
   if (numbers.length != initialFloorNumbers.length) return initialFloorNumbers;
   final list = List<int>.from(numbers)..[oneFloorIndex] = 1;
@@ -163,12 +159,14 @@ List<int> normalizedFloorNumbers(List<int> numbers) {
   for (int i = oneFloorIndex + 1; i < list.length; i++) {
     if (list[i] <= list[i - 1]) list[i] = list[i - 1] + 1;
   }
-  // Pushing can run off either end. Nothing sensible is left to keep there
+  // Pushing can run off either end.
+  // Nothing sensible is left to keep there
   if (list.first < min || max < list.last) return initialFloorNumbers;
   return list;
 }
 
-/// Each side of 1F needs a stop. A save made before that rule may have none
+/// Each side of 1F needs a stop.
+/// A save made before that rule may have none
 List<bool> normalizedFloorStops(List<bool> stops) {
   if (stops.length != initialFloorStops.length) return initialFloorStops;
   final list = List<bool>.from(stops)..[oneFloorIndex] = true;
@@ -275,8 +273,7 @@ const int numberButtonColumnCount = 3;
 const List<String> settingsItemList = ["floor", "number", "button", "style"];
 
 /// Settings tabs that hold something the premium unlock opens.
-/// LETS's number tab is free, so it is not listed. The paywall draws one
-/// icon per entry, which keeps it correct when a tab gains a new feature
+/// The paywall draws one icon per entry, which keeps it correct when a tab gains a new feature
 const List<String> premiumTabList = ["floor", "number", "button", "style"];
 const List<String> backgroundStyleList = ["metal", "white", "wood", "pop"];
 const List<String> glassStyleList = ["not", "use"];
@@ -293,7 +290,8 @@ const List<double> floorButtonNumberSizeFactor = [
   1.0, 1.0, 1.0,
   0.9, 0.9, 1.0,
 ];
-/// Star, heart and cat sit off their geometric centre. Fraction of button size
+/// Star, heart and cat sit off their geometric centre.
+/// Fraction of button size
 const List<double> floorButtonNumberOffset = [
   0.0, 0.0, 0.0,
   0.0, 0.0, 0.0,

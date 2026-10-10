@@ -129,8 +129,8 @@ class PremiumPage extends StatelessWidget {
     );
   }
 
-  /// The indicator board, squared off and unframed like the floor display in
-  /// the app bar. letsgodigital is that display's own alphabet
+  /// The indicator board, squared off and unframed like the floor display in the app bar.
+  /// The font letsgodigital is that display's own alphabet.
   Widget _sign(BuildContext context) => Container(
     width: context.premiumContentWidth(),
     height: context.premiumSignHeight(),
@@ -149,7 +149,8 @@ class PremiumPage extends StatelessWidget {
     ),
   );
 
-  /// The headline benefit, in a framed plate. No icon: the words carry it
+  /// The headline benefit, in a framed plate.
+  /// No icon: the words carry it
   Widget _plate(BuildContext context) => Container(
     width: context.premiumContentWidth(),
     padding: EdgeInsets.symmetric(vertical: context.premiumPlatePadding()),
@@ -170,8 +171,8 @@ class PremiumPage extends StatelessWidget {
     ),
   );
 
-  /// One icon per settings tab the unlock opens. Reading premiumTabList rather
-  /// than a hand-written list is what keeps this page correct over time
+  /// One icon per settings tab the unlock opens.
+  /// Reading premiumTabList rather than a hand-written list is what keeps this page correct over time
   Widget _tabIcons(BuildContext context) => Row(
     mainAxisAlignment: MainAxisAlignment.center,
     children: premiumTabList

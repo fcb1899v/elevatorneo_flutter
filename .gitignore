@@ -92,15 +92,14 @@ ios/Flutter/flutter_export_environment.sh
 # implementation itself. Unit IDs come from .env and constant.dart, so these
 # files hold nothing secret. Both are already tracked; the rule only meant
 # that dropping them from the index would have made them unrecoverable.
-# firebase_options.dart is ignored since 2026-09-12. This does not make its API
+# firebase_options.dart is ignored. This does not make its API
 # keys secret: the same values sit in google-services.json / GoogleService-Info.plist
 # and inside every shipped binary. What it does is keep them out of the file that
-# GitHub's scanner flags. Pushing this file on 2026-09-06 was detected, reported to
-# Google through the secret scanning partner program, and the project was suspended
-# two days later. Run `flutterfire configure` after a fresh clone to regenerate it.
+# GitHub's scanner flags, and a flagged file can get the Firebase project reported.
+# Run `flutterfire configure` after a fresh clone to regenerate it.
 lib/firebase_options.dart
 
-# Anything regenerable stays out (2026-09-19). `flutterfire configure` and the
+# Anything regenerable stays out. `flutterfire configure` and the
 # Firebase console write these back, so tracking them only publishes the
 # project identifiers into a repository that is scanned automatically.
 firebase.json
@@ -111,7 +110,7 @@ firebase.json
 key.properties
 
 # Firebase configuration files (if they contain sensitive data)
-# google-services.json / GoogleService-Info.plist are ignored since 2026-09-12.
+# google-services.json / GoogleService-Info.plist are ignored.
 # Their API key values also ship inside every binary, so this does not make them
 # secret; it keeps them out of a public repo that is scanned automatically. The
 # build needs them, so after a fresh clone download both from the Firebase console
@@ -210,7 +209,7 @@ ios/Flutter/flutter_export_environment.sh
 **/generated_plugin_registrant.*
 **/xcuserdata/
 
-# --- Signing assets (added 2026-09-06) ---
+# --- Signing assets ---
 # None of these are in any repository today. The rules exist so that a
 # certificate exported to the project directory for a one-off cannot be
 # committed by a later `git add -A`. Distribution certificates and the App

@@ -105,8 +105,8 @@ class SettingsPage extends HookConsumerWidget {
       }
     }
 
-    /// Open the upgrade dialog, shared by the lock overlays. The
-    /// price is fetched again since the offering or network can drop; empty is announced
+    /// Open the upgrade dialog, shared by the lock overlays.
+    /// The price is fetched again since the offering or network can drop; empty is announced
     Future<void> openUpgrade(String source) async {
       isLoadingData.value = true;
       final price = await PurchaseManager.fetchPrice();
@@ -133,8 +133,8 @@ class SettingsPage extends HookConsumerWidget {
       ));
     }
 
-    /// Offer the premium unlock when the user taps a locked feature. The tap is
-    /// logged first, always; the offer follows only when the store returned a price
+    /// Offer the premium unlock when the user taps a locked feature.
+    /// The tap is logged first, always; the offer follows only when the store returned a price
     Future<void> showUpgrade(String feature, int requiredPoint) async {
       await AnalyticsManager.unlockBlocked(
         feature: feature,
@@ -209,7 +209,8 @@ class SettingsPage extends HookConsumerWidget {
         if (!context.mounted) return;
         final plan = ref.read(planProvider.notifier);
         await PurchaseManager.restoreOwnedPremium(ref.read(planProvider).isPremium, () => plan.setCurrentPlan(true));
-        // Reuses the home screen's prefetch, or joins it. The price decides the purchase UI
+        // Reuses the home screen's prefetch, or joins it.
+        // The price decides the purchase UI
         if (!context.mounted || ref.read(planProvider).isPremium) return;
         final price = await PurchaseManager.loadPrice();
         if (!context.mounted) return;
@@ -1072,7 +1073,8 @@ class SettingsWidget {
             fontFamily: context.font(),
           ),
         ),
-        // Only the switch is faded for 1F. The Stop label above it stays legible
+        // Only the switch is faded for 1F.
+        // The Stop label above it stays legible
         Opacity(
           opacity: isNotSelectFloor(row, col) ? fixedFloorSwitchOpacity : 1.0,
           child: Transform.scale(

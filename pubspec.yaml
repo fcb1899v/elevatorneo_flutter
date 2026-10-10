@@ -26,7 +26,7 @@ dependencies:
   flutter_launcher_icons: ^0.14.4
   # Text to Speech
   # Fork of pub.dev flutter_tts 4.2.5. Upstream has no Swift Package Manager
-  # support and its last commit was 2026-01-05, so waiting for it would keep
+  # support, so waiting for it would keep
   # CocoaPods in the iOS build. Changes from the published 4.2.5:
   #   ios/flutter_tts/, macos/flutter_tts/   SPM manifests, added
   #   android/build.gradle                   branch on android.builtInKotlin so

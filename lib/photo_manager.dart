@@ -61,9 +61,8 @@ class PhotoManager {
 
   // --- Photo Selection Workflow ---
 
-  /// Complete photo selection workflow. Both platforms use an out-of-process
-  /// system picker (PHPickerViewController on iOS 14+, Android Photo Picker)
-  /// that never requires photo library permission.
+  /// Complete photo selection workflow.
+  /// Both platforms use an out-of-process system picker (PHPickerViewController on iOS 14+, Android Photo Picker) that never requires photo library permission.
   Future<List<String>> selectMyPhoto({
     required int row,
     required int col,

@@ -1,13 +1,11 @@
-// The album-select button inside the floor image picker dialog, at a narrow
-// dialog width, in the language with the longest label (fr).
+// The album-select button inside the floor image picker dialog, at a narrow dialog width, in the language with the longest label (fr).
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:letselevatorneo/l10n/app_localizations.dart';
 import 'package:letselevatorneo/settings.dart';
 
-// Matches the narrowest AlertDialog content width the app renders on an
-// iPhone SE (375 logical px, minus AlertDialog's default insetPadding).
+// Matches the narrowest AlertDialog content width the app renders on an iPhone SE (375 logical px, minus AlertDialog's default insetPadding).
 const _dialogWidth = 280.0;
 
 void main() {

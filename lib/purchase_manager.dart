@@ -1,6 +1,5 @@
 // PurchaseManager: the premium unlock, bought once.
-// The SDK starts with the home screen's delayed price prefetch, never at launch (crash risk).
-// A premium launch checks RevenueCat after the splash and resets the key on a refund.
+// The SDK starts with the home screen's delayed price prefetch, never at launch (crash risk), and a premium launch checks RevenueCat after the splash and resets the key on a refund.
 
 import 'dart:io';
 import 'package:flutter/foundation.dart';
@@ -13,10 +12,8 @@ import 'constant.dart';
 import 'extension.dart';
 import 'plan_provider.dart';
 
-/// The store answered, but there is nothing to sell: no offering,
-/// no package, or the SDK could not start.
-/// Distinct from a purchase that was attempted and failed,
-/// because the message the user reads is different.
+/// The store answered, but there is nothing to sell: no offering, no package, or the SDK could not start.
+/// Distinct from a purchase that was attempted and failed, because the message the user reads is different.
 class StoreUnavailableException implements Exception {
   final String reason;
   const StoreUnavailableException(this.reason);
@@ -76,11 +73,13 @@ class PurchaseManager {
     premiumKey.setSharedPrefBool(prefs, isPremium);
   }
 
-  /// Whether the customer holds the active premium entitlement. Purchase and restore both read it
+  /// Whether the customer holds the active premium entitlement.
+  /// Purchase and restore both read it
   static bool isPremiumIn(CustomerInfo info) =>
     info.entitlements.active[premiumEntitlementID]?.isActive ?? false;
 
-  /// Asks RevenueCat for the customer. Tests replace it.
+  /// Asks RevenueCat for the customer.
+  /// Tests replace it.
   @visibleForTesting
   static Future<CustomerInfo> Function() customerInfoSource = _fetchCustomerInfo;
 
@@ -120,7 +119,8 @@ class PurchaseManager {
   /// Always a network round-trip; the answer, null included, replaces the known price
   static Future<String?> fetchPrice() async => _knownPrice = await priceSource();
 
-  /// The store lookup behind fetchPrice. Tests replace it so a screen's own fetch cannot race their pumps
+  /// The store lookup behind fetchPrice.
+  /// Tests replace it so a screen's own fetch cannot race their pumps
   @visibleForTesting
   static Future<String?> Function() priceSource = _fetchPrice;
 
@@ -167,8 +167,8 @@ class PurchaseManager {
 
   // --- Purchase and Restore ---
 
-  /// Fetches offerings and initiates purchase. The PlatformException is not wrapped:
-  /// buyPremium reads its error code to tell a user cancel from a real failure
+  /// Fetches offerings and initiates purchase.
+  /// The PlatformException is not wrapped: buyPremium reads its error code to tell a user cancel from a real failure
   static Future<bool> _purchasePremium() async {
     if (!await _ensureConfigured()) {
       throw const StoreUnavailableException("configure");
@@ -206,8 +206,8 @@ class PurchaseManager {
     return isPremium;
   }
 
-  /// Purchase/restore entry point for the UI. Returns true when the user ends up
-  /// premium, false on cancellation, and throws on failure
+  /// Purchase/restore entry point for the UI.
+  /// Returns true when the user ends up premium, false on cancellation, and throws on failure
   static Future<bool> buyPremium({required bool isRestore, required String source}) async {
     if (_isPurchasing) return false;
     _isPurchasing = true;

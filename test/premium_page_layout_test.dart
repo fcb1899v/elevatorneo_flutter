@@ -26,8 +26,7 @@ const _size = Size(375, 667);
 const _languages = ["en", "es", "fr", "ja", "ko", "zh"];
 
 /// The lines the engine actually laid out, not the \n count in the source.
-/// RenderParagraph does not expose its metrics on this Flutter version, so the
-/// same span is laid out again at the width the page gave it.
+/// RenderParagraph does not expose its metrics on this Flutter version, so the same span is laid out again at the width the page gave it.
 int _lineCount(WidgetTester tester, String text) {
   final paragraph = tester.renderObject<RenderParagraph>(
     find.descendant(of: find.byType(PremiumPage), matching: find.text(text)),

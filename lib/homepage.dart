@@ -97,8 +97,8 @@ class HomePage extends HookConsumerWidget {
     // --- Initial Data Loading Effect ---
     // Load initial data when the widget is first created
     useEffect(() {
-      /// Game services setup, in the background after the splash is gone. This is
-      /// the only part of startup that needs the network, so nothing waits on it
+      /// Game services setup, in the background after the splash is gone.
+      /// This is the only part of startup that needs the network, so nothing waits on it
       Future<void> gamesInit() async {
         final hasInternet = await gamesManager.checkInternetConnection();
         if (!context.mounted) return;

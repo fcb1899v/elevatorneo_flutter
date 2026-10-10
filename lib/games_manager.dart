@@ -19,8 +19,7 @@ class GamesManager {
     required this.isConnectedInternet
   });
 
-  /// One native sign-in at a time, shared by every caller: on Android a second
-  /// call replaces the first, whose result then never arrives (Auth.kt:61-62)
+  /// One native sign-in at a time, shared by every caller: on Android a second call replaces the first, whose result then never arrives (Auth.kt:61-62)
   static Future<bool>? _signInInFlight;
 
   /// Longest any caller waits on a sign-in; the shared attempt itself goes on

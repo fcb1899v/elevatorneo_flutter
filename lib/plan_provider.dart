@@ -1,5 +1,5 @@
 // ===== PlanProvider: premium entitlement state (ads off, all customization) =====
-// State only; the store lives in purchase_manager.dart. Starts from main.dart's cache.
+// State only: the store lives in purchase_manager.dart, and the state starts from main.dart's cache.
 
 import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';

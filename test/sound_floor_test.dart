@@ -75,12 +75,10 @@ void main() {
     }
   });
 
-  // NEO has no floor 0, so there is no ground-floor branch to test here.
-  // LETS covers that case.
+  // This app has no floor 0, so there is no ground-floor branch to test here.
 
   testWidgets("a top floor below 163 speaks no floor number", (tester) async {
-    // The top button can be renumbered below the structural 163F, so the
-    // roof announcement must key off isTop, not the floor number itself.
+    // The top button can be renumbered below the structural 163F, so the roof announcement must key off isTop, not the floor number itself.
     expect(await _spoken(tester, "en", 120, isTop: true), "");
     expect(await _spoken(tester, "en", 120, isTop: false), isNot(""));
   });

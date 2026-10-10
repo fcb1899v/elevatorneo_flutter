@@ -25,7 +25,7 @@ final isTest = false;
 // final isTest = true;
 
 // --- State Providers ---
-// Riverpod 3: NotifierProvider for mutable state (StateProvider was removed)
+// Riverpod 3 holds mutable state in NotifierProvider, not StateProvider.
 
 final isMenuProvider = NotifierProvider<IsMenuNotifier, bool>(IsMenuNotifier.new);
 final floorNumbersProvider = NotifierProvider<FloorNumbersNotifier, List<int>>(FloorNumbersNotifier.new);
