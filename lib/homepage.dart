@@ -220,6 +220,16 @@ class HomePage extends HookConsumerWidget {
       }
     });
 
+    /// Send the saved miles to the leaderboard once games services are signed in, without holding up the doors.
+    /// Reads the sign-in at each arrival and never starts one; sign-in runs at launch and from the menu
+    void submitMiles(int value) {
+      if (!ref.read(gamesSignInProvider)) {
+        "Miles kept on the device only: games services are not signed in".debugPrint();
+        return;
+      }
+      unawaited(GamesManager(isGamesSignIn: true, isConnectedInternet: ref.read(internetProvider)).gamesSubmitScore(value));
+    }
+
     // --- Elevator Movement Functions ---
     // Functions for controlling elevator movement and navigation logic
 
@@ -270,7 +280,7 @@ class HomePage extends HookConsumerWidget {
                 final newPoint = ref.read(pointProvider);
                 final prefs = await SharedPreferences.getInstance();
                 "pointKey".setSharedPrefInt(prefs, newPoint);
-                await gamesManager.gamesSubmitScore(newPoint);
+                submitMiles(newPoint);
                 if (isEmergency.value) await Future.delayed(Duration(seconds: waitTime.value)).then((_) => isEmergency.value = false);
                 isMoving.value = false;
                 if (!isOutside.value || currentFloor.value == counter.value || isEmergency.value) await audioManager.playEffectSound(asset: openSound, volume: 0.6);
@@ -320,7 +330,7 @@ class HomePage extends HookConsumerWidget {
                 final newPoint = ref.read(pointProvider);
                 final prefs = await SharedPreferences.getInstance();
                 "pointKey".setSharedPrefInt(prefs, newPoint);
-                await gamesManager.gamesSubmitScore(newPoint);
+                submitMiles(newPoint);
                 if (isEmergency.value) await Future.delayed(Duration(seconds: waitTime.value)).then((_) => isEmergency.value = false);
                 isMoving.value = false;
                 if (!isOutside.value || currentFloor.value == counter.value) await audioManager.playEffectSound(asset: openSound, volume: 0.6);
@@ -502,7 +512,7 @@ class HomePage extends HookConsumerWidget {
                 final newPoint = ref.read(pointProvider);
                 final prefs = await SharedPreferences.getInstance();
                 "pointKey".setSharedPrefInt(prefs, newPoint);
-                await gamesManager.gamesSubmitScore(newPoint);
+                submitMiles(newPoint);
                 await Future.delayed(Duration(seconds: waitTime.value));
                 isEmergency.value = false;
                 if (!isOutside.value || currentFloor.value == counter.value) await audioManager.playEffectSound(asset: openSound, volume: 0.6);
