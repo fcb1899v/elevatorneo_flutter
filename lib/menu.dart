@@ -56,10 +56,12 @@ class MenuPage extends HookConsumerWidget {
       isConnectedInternet: isConnectedInternet,
       isGamesSignIn: isGamesSignIn,
     );
-    final gamesManager = useMemoized(() => GamesManager(
-      isGamesSignIn: isGamesSignIn,
-      isConnectedInternet: isConnectedInternet,
-    ));
+    /// Games services with the sign-in and connection as they are now.
+    /// Built at each use, since this menu's own check and sign-in update both while it is open
+    GamesManager currentGamesManager() => GamesManager(
+      isGamesSignIn: ref.read(gamesSignInProvider),
+      isConnectedInternet: ref.read(internetProvider),
+    );
 
     // --- Ad Management Functions ---
     // Functions for handling rewarded ad loading and display
@@ -248,7 +250,7 @@ class MenuPage extends HookConsumerWidget {
       isLoadingData.value = true;
       try {
         requestAdIfAllowed();
-        final hasInternet = await gamesManager.checkInternetConnection();
+        final hasInternet = await currentGamesManager().checkInternetConnection();
         ref.read(internetProvider.notifier).setValue(hasInternet);
         final signedIn = await GamesManager(
           isGamesSignIn: ref.read(gamesSignInProvider),
@@ -307,7 +309,12 @@ class MenuPage extends HookConsumerWidget {
           ref.read(pointProvider.notifier).add(addPoint);
           final newPoint = ref.read(pointProvider);
           "pointKey".setSharedPrefInt(prefs, newPoint);
-          await gamesManager.gamesSubmitScore(newPoint);
+          // Sent only once signed in, and never starts a sign-in: this menu already tried one when it opened
+          if (ref.read(gamesSignInProvider)) {
+            unawaited(currentGamesManager().gamesSubmitScore(newPoint));
+          } else {
+            "Miles kept on the device only: games services are not signed in".debugPrint();
+          }
           await AnalyticsManager.rewardAdEarned(addPoint);
         }
       );
@@ -417,7 +424,7 @@ class MenuPage extends HookConsumerWidget {
         menu.showSnackBar(context.notSignedInGameCenter());
       } else {
         // Leaderboard display
-        await gamesManager.gamesShowLeaderboard();
+        await currentGamesManager().gamesShowLeaderboard();
       }
     }
 
