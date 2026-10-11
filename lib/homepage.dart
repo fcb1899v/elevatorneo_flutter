@@ -223,7 +223,7 @@ class HomePage extends HookConsumerWidget {
     // --- Elevator Movement Functions ---
     // Functions for controlling elevator movement and navigation logic
 
-    /// Record a finished ride: analytics, review timing and interstitial pacing
+    /// Record a finished ride: ride count, analytics and review timing
     /// Called once per arrival, after the destination floor is reached
     Future<void> onArrived() async {
       final rideCount = await ReviewManager.incrementRideCount();
@@ -497,9 +497,15 @@ class HomePage extends HookConsumerWidget {
                 "currentFloor: ${currentFloor.value}, nextFloor: ${nextFloor.value}".debugPrint();
                 (counter.value < nextFloor.value) ? counterUp() : counterDown();
               } else {
+                // The car is already at 1F, so no arrival ends the emergency: finish it the way an arrival does
+                if (!isOutside.value) currentFloor.value = counter.value;
+                await Future.delayed(Duration(seconds: waitTime.value));
+                isEmergency.value = false;
+                if (!isOutside.value || currentFloor.value == counter.value) await audioManager.playEffectSound(asset: openSound, volume: 0.6);
                 if (context.mounted && currentFloor.value == counter.value) await ttsManager.speakText(context.openDoor(), !isOutside.value || currentFloor.value == counter.value);
                 isDoorState.value = openingState;
                 "isDoorState: ${isDoorState.value}".debugPrint();
+                await onArrived();
               }
             });
           }
