@@ -138,6 +138,7 @@ void main() {
     await tester.tap(_floorButton("B12"));
     expect(await waitSpoken(tester, "12th basement", limit: const Duration(seconds: 90)), isNotNull, reason: "the car reaches B12");
     await _pumpFor(tester, const Duration(seconds: 6));
+    final savedAtB12 = (await SharedPreferences.getInstance()).getInt("pointKey") ?? 0;
 
     // Rising to 14F, the display shows B3 for 0.5 s; a press 0.1 s into B3 is judged 0.8 s on, while B1 shows, and the step in progress ends the car at 1F
     await tester.tap(_floorButton("14"));
@@ -157,6 +158,8 @@ void main() {
     await _pumpFor(tester, const Duration(milliseconds: 2500));
     expect(find.byIcon(CupertinoIcons.arrowtriangle_up_fill), findsWidgets, reason: "the view button shows at the open doors");
     expect(await ReviewManager.incrementRideCount(), rides + 2, reason: "the return to 1F counts as a finished ride, as any other arrival does");
+    final savedAt1F = (await SharedPreferences.getInstance()).getInt("pointKey") ?? 0;
+    expect(savedAt1F, greaterThan(savedAtB12), reason: "the miles of the ride up to 1F are saved, as any other arrival saves them");
 
     // Recovered: a floor button moves the car again
     await tester.tap(_floorButton("6"));

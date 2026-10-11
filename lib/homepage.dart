@@ -499,6 +499,10 @@ class HomePage extends HookConsumerWidget {
               } else {
                 // The car is already at 1F, so no arrival ends the emergency: finish it the way an arrival does
                 if (!isOutside.value) currentFloor.value = counter.value;
+                final newPoint = ref.read(pointProvider);
+                final prefs = await SharedPreferences.getInstance();
+                "pointKey".setSharedPrefInt(prefs, newPoint);
+                await gamesManager.gamesSubmitScore(newPoint);
                 await Future.delayed(Duration(seconds: waitTime.value));
                 isEmergency.value = false;
                 if (!isOutside.value || currentFloor.value == counter.value) await audioManager.playEffectSound(asset: openSound, volume: 0.6);
