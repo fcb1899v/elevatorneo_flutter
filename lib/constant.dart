@@ -205,8 +205,10 @@ const int toolTipTime = 10000; //[msec]
 
 // Elevator door timing configuration
 // Various timing settings for door operations and UI elements
-const int initialOpenTime = 10; //[sec]
-const int initialWaitTime =  2; //[sec]
+const int carCallOpenTime = 3;    //[sec] Doors stay open after a stop for a car call
+const int hallCallOpenTime = 5;   //[sec] Doors stay open after a stop for a hall call
+const int emergencyWaitTime = 10; //[sec] Pause before the return to 1F
+const int initialWaitTime =  2;   //[sec]
 const int flashTime = 700;      //[msec]
 const int operationTime = 300;  //[msec]
 

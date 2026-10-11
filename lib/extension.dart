@@ -315,21 +315,25 @@ extension IntExt on int {
       if (j < 0) isUnderSelectedList[j * (-1)] = false;
     }
   }
-  /// Get list of floors from current floor to target floor when moving upward
-  List<int> upFromToNumber(int nextFloor) {
-    List<int> floorList = [];
-    for (int i = this + 1; i < nextFloor + 1; i++) {
-      floorList.add(i);
-    }
-    return floorList;
+  /// Whether this floor lies behind the car's direction of travel
+  /// A car with nothing to do has no direction, so nothing is behind it
+  /// While the car waits on arrival the next floor equals the car's floor, so the ride's start gives the direction
+  bool isBehindCar({
+    required int counter,
+    required int nextFloor,
+    required int departureFloor,
+    required bool isMoving,
+  }) {
+    if (!isMoving && counter == nextFloor) return false;
+    final isUp = (counter != nextFloor) ? nextFloor > counter : counter > departureFloor;
+    return isUp ? this < counter : this > counter;
   }
-  /// Get list of floors from current floor to target floor when moving downward
-  List<int> downFromToNumber(int nextFloor) {
-    List<int> floorList = [];
-    for (int i = this - 1; i > nextFloor - 1; i--) {
-      floorList.add(i);
+  /// The nearest selected floor beyond this one in the direction of travel, or null when there is none
+  int? nearestSelectedAhead(bool isUp, List<bool> isAboveSelectedList, isUnderSelectedList) {
+    for (int k = isUp ? this + 1 : this - 1; isUp ? k <= max : k >= min; k += isUp ? 1 : -1) {
+      if (k != 0 && k.isSelected(isAboveSelectedList, isUnderSelectedList)) return k;
     }
-    return floorList;
+    return null;
   }
   /// Find the next floor to visit when elevator is moving upward
   /// Prioritizes floors above current position, then wraps to lowest selected floor

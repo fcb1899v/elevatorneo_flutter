@@ -64,7 +64,8 @@ class HomePage extends HookConsumerWidget {
     final isWaitingDown = useState(false);                     // Down button waiting state
     final nextDirection = useState("none");                    // Next direction of elevator movement (up, down)
     final waitTime = useState(initialWaitTime);                // Wait time between actions
-    final openTime = useState(initialOpenTime);                // Door open duration
+    final openTime = useState(carCallOpenTime);                // Door open duration
+    final isHallCallStop = useState(false);                    // Whether the car stopped for a hall call
     final animationController = useAnimationController(duration: Duration(milliseconds: flashTime))..repeat(reverse: true);
     final orientation = context.orientation();                 // Screen orientation
 
@@ -239,47 +240,46 @@ class HomePage extends HookConsumerWidget {
     Future<void> counterUp() async {
       if (!isMoving.value && isDoorState.value == closedState) {
         await Future.delayed(Duration(seconds: waitTime.value)).then((_) async {
-          if (!isMoving.value && isDoorState.value == closedState) {
+          // The next floor may have changed during the wait, so the direction is checked again
+          if (!isMoving.value && isDoorState.value == closedState && counter.value < nextFloor.value) {
             isMoving.value = true;
+            isHallCallStop.value = false;
             departureFloor.value = counter.value;
             int count = 0;
             if (context.mounted) await ttsManager.speakText(context.upFloor(), !isOutside.value || currentFloor.value == counter.value);
-            Future.forEach(counter.value.upFromToNumber(nextFloor.value), (int i) async {
-            if (isMoving.value && isDoorState.value == closedState) {
+            // One floor per step, reading the next floor each time, so a changed destination is followed
+            while (isMoving.value && isDoorState.value == closedState && counter.value < nextFloor.value && counter.value < max) {
+              final i = counter.value + 1;
               imageDurationTime.value = i.elevatorSpeed(count, nextFloor.value);
               if (context.mounted) imageTopMargin.value += context.floorHeight();
-              await Future.delayed(Duration(milliseconds: i.elevatorSpeed(count, nextFloor.value))).then((_) async {
-                count++;
-                if (!isOutside.value && !isEmergency.value) ref.read(pointProvider.notifier).add(1);
-                if (counter.value < nextFloor.value && nextFloor.value < max + 1) counter.value = counter.value + 1;
-                if (counter.value == 0) counter.value = 1;
-                if (counter.value == nextFloor.value || counter.value == max) {
-                  if (context.mounted) imageTopMargin.value = context.imageMarginTop(isOutside.value, counter.value, max);
-                  await Future.delayed(Duration(seconds: waitTime.value)).then((_) async {
-                    counter.value.clearLowerFloor(isAboveSelectedList.value, isUnderSelectedList.value);
-                    nextFloor.value = counter.value.upNextFloor(isAboveSelectedList.value, isUnderSelectedList.value);
-                    if (!isOutside.value) currentFloor.value = counter.value;
-                    "isOutside: ${isOutside.value}, currentFloor: ${currentFloor.value}, nextFloor: ${nextFloor.value}".debugPrint();
-                    if (isOutside.value && counter.value == currentFloor.value) isWaitingUp.value = false;
-                    if (isOutside.value && counter.value == currentFloor.value) isWaitingDown.value = false;
-                    final newPoint = ref.read(pointProvider);
-                    final prefs = await SharedPreferences.getInstance();
-                    "pointKey".setSharedPrefInt(prefs, newPoint);
-                    await gamesManager.gamesSubmitScore(newPoint);
-                    if (isEmergency.value) await Future.delayed(Duration(seconds: waitTime.value)).then((_) => isEmergency.value = false);
-                    isMoving.value = false;
-                    if (!isOutside.value || currentFloor.value == counter.value || isEmergency.value) await audioManager.playEffectSound(asset: openSound, volume: 0.6);
-                    if (context.mounted) await ttsManager.speakText(context.openingSound(counter.value, counter.value.roomImageFile(floorNumbers, floorImages), counter.value == floorNumbers.last), !isOutside.value || currentFloor.value == counter.value);
-                    isDoorState.value = openingState;
-                    "isDoorState: ${isDoorState.value}".debugPrint();
-                    await onArrived();
-                  });
-                }
-              });
-            } else {
-              return;
+              await Future.delayed(Duration(milliseconds: i.elevatorSpeed(count, nextFloor.value)));
+              count++;
+              if (!isOutside.value && !isEmergency.value) ref.read(pointProvider.notifier).add(1);
+              counter.value = (i == 0) ? 1 : i;
             }
-          });
+            if (isMoving.value && isDoorState.value == closedState && (counter.value == nextFloor.value || counter.value == max)) {
+              if (context.mounted) imageTopMargin.value = context.imageMarginTop(isOutside.value, counter.value, max);
+              await Future.delayed(Duration(seconds: waitTime.value)).then((_) async {
+                isHallCallStop.value = isOutside.value && counter.value == currentFloor.value && (isWaitingUp.value || isWaitingDown.value);
+                counter.value.clearLowerFloor(isAboveSelectedList.value, isUnderSelectedList.value);
+                nextFloor.value = counter.value.upNextFloor(isAboveSelectedList.value, isUnderSelectedList.value);
+                if (!isOutside.value) currentFloor.value = counter.value;
+                "isOutside: ${isOutside.value}, currentFloor: ${currentFloor.value}, nextFloor: ${nextFloor.value}".debugPrint();
+                if (isOutside.value && counter.value == currentFloor.value) isWaitingUp.value = false;
+                if (isOutside.value && counter.value == currentFloor.value) isWaitingDown.value = false;
+                final newPoint = ref.read(pointProvider);
+                final prefs = await SharedPreferences.getInstance();
+                "pointKey".setSharedPrefInt(prefs, newPoint);
+                await gamesManager.gamesSubmitScore(newPoint);
+                if (isEmergency.value) await Future.delayed(Duration(seconds: waitTime.value)).then((_) => isEmergency.value = false);
+                isMoving.value = false;
+                if (!isOutside.value || currentFloor.value == counter.value || isEmergency.value) await audioManager.playEffectSound(asset: openSound, volume: 0.6);
+                if (context.mounted) await ttsManager.speakText(context.openingSound(counter.value, counter.value.roomImageFile(floorNumbers, floorImages), counter.value == floorNumbers.last), !isOutside.value || currentFloor.value == counter.value);
+                isDoorState.value = openingState;
+                "isDoorState: ${isDoorState.value}".debugPrint();
+                await onArrived();
+              });
+            }
           }
         });
       }
@@ -290,47 +290,46 @@ class HomePage extends HookConsumerWidget {
     Future<void> counterDown() async {
       if (!isMoving.value && isDoorState.value == closedState) {
         await Future.delayed(Duration(seconds: waitTime.value)).then((_) async {
-          if (!isMoving.value && isDoorState.value == closedState) {
+          // The next floor may have changed during the wait, so the direction is checked again
+          if (!isMoving.value && isDoorState.value == closedState && counter.value > nextFloor.value) {
             isMoving.value = true;
+            isHallCallStop.value = false;
             departureFloor.value = counter.value;
             int count = 0;
             if (context.mounted) await ttsManager.speakText(context.downFloor(), !isOutside.value || currentFloor.value == counter.value);
-            Future.forEach(counter.value.downFromToNumber(nextFloor.value), (int i) async {
-              if (isMoving.value && isDoorState.value == closedState) {
-                imageDurationTime.value = i.elevatorSpeed(count, nextFloor.value);
-                if (context.mounted) imageTopMargin.value -= context.floorHeight();
-                await Future.delayed(Duration(milliseconds: i.elevatorSpeed(count, nextFloor.value))).then((_) async {
-                  count++;
-                  if (!isOutside.value && !isEmergency.value) ref.read(pointProvider.notifier).add(1);
-                  if (min - 1 < nextFloor.value && nextFloor.value < counter.value) counter.value = counter.value - 1;
-                  if (counter.value == 0) counter.value = -1;
-                  if (counter.value == nextFloor.value || counter.value == min) {
-                    if (context.mounted) imageTopMargin.value = context.imageMarginTop(isOutside.value, counter.value, max);
-                    await Future.delayed(Duration(seconds: waitTime.value)).then((_) async {
-                      counter.value.clearUpperFloor(isAboveSelectedList.value, isUnderSelectedList.value);
-                      nextFloor.value = counter.value.downNextFloor(isAboveSelectedList.value, isUnderSelectedList.value);
-                      if (!isOutside.value) currentFloor.value = counter.value;
-                      "isOutside: ${isOutside.value}, currentFloor: ${currentFloor.value}, nextFloor: ${nextFloor.value}".debugPrint();
-                      if (isOutside.value && counter.value == currentFloor.value) isWaitingUp.value = false;
-                      if (isOutside.value && counter.value == currentFloor.value) isWaitingDown.value = false;
-                      final newPoint = ref.read(pointProvider);
-                      final prefs = await SharedPreferences.getInstance();
-                      "pointKey".setSharedPrefInt(prefs, newPoint);
-                      await gamesManager.gamesSubmitScore(newPoint);
-                      if (isEmergency.value) await Future.delayed(Duration(seconds: waitTime.value)).then((_) => isEmergency.value = false);
-                      isMoving.value = false;
-                      if (!isOutside.value || currentFloor.value == counter.value) await audioManager.playEffectSound(asset: openSound, volume: 0.6);
-                      if (context.mounted) await ttsManager.speakText(context.openingSound(counter.value, counter.value.roomImageFile(floorNumbers, floorImages), counter.value == floorNumbers.last), !isOutside.value || currentFloor.value == counter.value);
-                      isDoorState.value = openingState;
-                      "isDoorState: ${isDoorState.value}".debugPrint();
-                      await onArrived();
-                    });
-                  }
-                });
-              } else {
-                return;
-              }
-            });
+            // One floor per step, reading the next floor each time, so a changed destination is followed
+            while (isMoving.value && isDoorState.value == closedState && counter.value > nextFloor.value && counter.value > min) {
+              final i = counter.value - 1;
+              imageDurationTime.value = i.elevatorSpeed(count, nextFloor.value);
+              if (context.mounted) imageTopMargin.value -= context.floorHeight();
+              await Future.delayed(Duration(milliseconds: i.elevatorSpeed(count, nextFloor.value)));
+              count++;
+              if (!isOutside.value && !isEmergency.value) ref.read(pointProvider.notifier).add(1);
+              counter.value = (i == 0) ? -1 : i;
+            }
+            if (isMoving.value && isDoorState.value == closedState && (counter.value == nextFloor.value || counter.value == min)) {
+              if (context.mounted) imageTopMargin.value = context.imageMarginTop(isOutside.value, counter.value, max);
+              await Future.delayed(Duration(seconds: waitTime.value)).then((_) async {
+                isHallCallStop.value = isOutside.value && counter.value == currentFloor.value && (isWaitingUp.value || isWaitingDown.value);
+                counter.value.clearUpperFloor(isAboveSelectedList.value, isUnderSelectedList.value);
+                nextFloor.value = counter.value.downNextFloor(isAboveSelectedList.value, isUnderSelectedList.value);
+                if (!isOutside.value) currentFloor.value = counter.value;
+                "isOutside: ${isOutside.value}, currentFloor: ${currentFloor.value}, nextFloor: ${nextFloor.value}".debugPrint();
+                if (isOutside.value && counter.value == currentFloor.value) isWaitingUp.value = false;
+                if (isOutside.value && counter.value == currentFloor.value) isWaitingDown.value = false;
+                final newPoint = ref.read(pointProvider);
+                final prefs = await SharedPreferences.getInstance();
+                "pointKey".setSharedPrefInt(prefs, newPoint);
+                await gamesManager.gamesSubmitScore(newPoint);
+                if (isEmergency.value) await Future.delayed(Duration(seconds: waitTime.value)).then((_) => isEmergency.value = false);
+                isMoving.value = false;
+                if (!isOutside.value || currentFloor.value == counter.value) await audioManager.playEffectSound(asset: openSound, volume: 0.6);
+                if (context.mounted) await ttsManager.speakText(context.openingSound(counter.value, counter.value.roomImageFile(floorNumbers, floorImages), counter.value == floorNumbers.last), !isOutside.value || currentFloor.value == counter.value);
+                isDoorState.value = openingState;
+                "isDoorState: ${isDoorState.value}".debugPrint();
+                await onArrived();
+              });
+            }
           }
         });
       }
@@ -341,7 +340,8 @@ class HomePage extends HookConsumerWidget {
 
     /// Handle floor button selection and deselection
     /// Manages floor button states and triggers elevator movement
-    Future<void> floorSelected(int i, bool selectFlag) async {
+    /// A hall call goes through here too, and is never refused as behind the car
+    Future<void> floorSelected(int i, bool selectFlag, {bool isHallCall = false}) async {
       audioManager.playEffectSound(asset: selectSound, volume: 0.8);
       Vibration.vibrate(duration: vibTime, amplitude: vibAmp);
       if (!isEmergency.value) {
@@ -349,6 +349,8 @@ class HomePage extends HookConsumerWidget {
           if (!isMoving.value && i == nextFloor.value && context.mounted) await ttsManager.speakText(context.pushNumber(), true);
         } else if (!selectFlag) {
           if (context.mounted) await ttsManager.speakText(context.notStop(), true);
+        } else if (!isHallCall && i.isBehindCar(counter: counter.value, nextFloor: nextFloor.value, departureFloor: departureFloor.value, isMoving: isMoving.value)) {
+          "Behind the car, not registered: $i".debugPrint();
         } else if (!i.isSelected(isAboveSelectedList.value, isUnderSelectedList.value)) {
           i.trueSelected(isAboveSelectedList.value, isUnderSelectedList.value);
           if (counter.value < i && i < nextFloor.value) nextFloor.value = i;
@@ -369,15 +371,26 @@ class HomePage extends HookConsumerWidget {
 
     /// Handle floor button deselection
     /// Removes floor from selection and recalculates next destination
+    /// The next stop moves on to the nearest selected floor beyond it; a moving car with none keeps its stop
     Future<void> floorCanceled(int i) async {
       audioManager.playEffectSound(asset: cancelSound, volume: 0.8);
       Vibration.vibrate(duration: vibTime, amplitude: vibAmp);
-      if (i.isSelected(isAboveSelectedList.value, isUnderSelectedList.value) && i != nextFloor.value) {
-        i.falseSelected(isAboveSelectedList.value, isUnderSelectedList.value);
+      if (i.isSelected(isAboveSelectedList.value, isUnderSelectedList.value) && i != counter.value) {
         if (i == nextFloor.value) {
-          nextFloor.value = (counter.value < nextFloor.value) ?
-          counter.value.upNextFloor(isAboveSelectedList.value, isUnderSelectedList.value) :
-          counter.value.downNextFloor(isAboveSelectedList.value, isUnderSelectedList.value);
+          final isUp = nextFloor.value > counter.value;
+          final next = i.nearestSelectedAhead(isUp, isAboveSelectedList.value, isUnderSelectedList.value);
+          // Floors without a button have no room to show, so a moving car must stop at a selected floor
+          if (next == null && isMoving.value) return;
+          i.falseSelected(isAboveSelectedList.value, isUnderSelectedList.value);
+          // A stopped car with nothing ahead turns to a floor still selected behind it, or stays
+          nextFloor.value = next ?? counter.value.nearestSelectedAhead(!isUp, isAboveSelectedList.value, isUnderSelectedList.value) ?? counter.value;
+          if (next == null && nextFloor.value != counter.value) {
+            await Future.delayed(Duration(seconds: waitTime.value)).then((_) {
+              (counter.value < nextFloor.value) ? counterUp() : (counter.value > nextFloor.value) ? counterDown() : null;
+            });
+          }
+        } else {
+          i.falseSelected(isAboveSelectedList.value, isUnderSelectedList.value);
         }
         "currentFloor: ${currentFloor.value}, nextFloor: ${nextFloor.value}".debugPrint();
       }
@@ -405,7 +418,7 @@ class HomePage extends HookConsumerWidget {
     /// Close elevator doors and trigger movement if needed
     /// Handles door closing animation and subsequent elevator movement
     Future<void> doorsClosing() async {
-      if (isWaitingUp.value || isWaitingDown.value) floorSelected(currentFloor.value, true);
+      if (isWaitingUp.value || isWaitingDown.value) floorSelected(currentFloor.value, true, isHallCall: true);
       if (!isMoving.value && !isEmergency.value && isDoorState.value != closedState && isDoorState.value != closingState) {
         if (!isOutside.value || currentFloor.value == counter.value) await audioManager.playEffectSound(asset: closeSound, volume: 0.6);
         if (context.mounted) await ttsManager.speakText(context.closeDoor(), !isOutside.value || currentFloor.value == counter.value);
@@ -475,7 +488,7 @@ class HomePage extends HookConsumerWidget {
               counter.value.clearLowerFloor(isAboveSelectedList.value, isUnderSelectedList.value);
               counter.value.clearUpperFloor(isAboveSelectedList.value, isUnderSelectedList.value);
             });
-            await Future.delayed(Duration(seconds: openTime.value)).then((_) async {
+            await Future.delayed(const Duration(seconds: emergencyWaitTime)).then((_) async {
               if (context.mounted) await ttsManager.speakText(context.return1st(), !isOutside.value || currentFloor.value == counter.value);
             });
             await Future.delayed(Duration(seconds: waitTime.value)).then((_) async {
@@ -522,6 +535,7 @@ class HomePage extends HookConsumerWidget {
           doorsClosing();
         }
       } else {
+        isHallCallStop.value = true;
         doorsOpening();
       }
     }
@@ -539,6 +553,7 @@ class HomePage extends HookConsumerWidget {
           doorsClosing();
         }
       } else {
+        isHallCallStop.value = true;
         doorsOpening();
       }
     }
@@ -547,7 +562,7 @@ class HomePage extends HookConsumerWidget {
     // Automatic door state management and timing adjustments
     useEffect(() {
       waitTime.value = (isOutside.value && counter.value != currentFloor.value) ? 0: initialWaitTime;
-      openTime.value = (isOutside.value && counter.value != currentFloor.value) ? 3: initialOpenTime;
+      openTime.value = isHallCallStop.value ? hallCallOpenTime: carCallOpenTime;
       if (isDoorState.value == openingState) {
         Future.delayed(Duration(seconds: waitTime.value)).then((_) {
           isDoorState.value = openedState;

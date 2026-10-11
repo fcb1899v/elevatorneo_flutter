@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:just_audio/just_audio.dart';
 import 'extension.dart';
 
@@ -5,8 +6,12 @@ import 'extension.dart';
 class AudioManager {
   AudioPlayer? _audioPlayer;
 
+  /// Builds the player; tests replace it with one that ends at once
+  @visibleForTesting
+  static AudioPlayer Function() createPlayer = AudioPlayer.new;
+
   /// Initialize audio player
-  Future<void> _initializePlayer() async => _audioPlayer ??= AudioPlayer();
+  Future<void> _initializePlayer() async => _audioPlayer ??= createPlayer();
 
   /// Play effect sound
   Future<void> playEffectSound({
