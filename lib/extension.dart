@@ -454,6 +454,9 @@ extension IntExt on int {
 // ===== ListIntExt: List<int> helpers for floor and button matrix =====
 extension ListIntExt on List<int> {
 
+  /// Hall lamp direction at a landing: the top floor only goes down and the bottom floor only goes up.
+  String hallLampDirection(int floor, String direction) => (direction == "none") ? direction : (floor == last) ? "down" : (floor == first) ? "up" : direction;
+
   // --- Floor Matrix Helpers ---
   // Methods for converting flat floor number lists to 2D matrix format for UI display
   List<List<int>> floorNumbersList() => [

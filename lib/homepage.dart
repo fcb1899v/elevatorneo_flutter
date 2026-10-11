@@ -648,11 +648,11 @@ class HomePage extends HookConsumerWidget {
                         ): (counter.value != currentFloor.value) ? home.hallLampLightingWidget(
                           number: counter.value,
                           current: currentFloor.value,
-                          nextDirection: nextDirection.value,
+                          nextDirection: floorNumbers.hallLampDirection(currentFloor.value, nextDirection.value),
                         ): home.hallLampFlashingWidget(
                           animationController: animationController,
                           isDoorState: isDoorState.value,
-                          nextDirection: nextDirection.value,
+                          nextDirection: floorNumbers.hallLampDirection(currentFloor.value, nextDirection.value),
                         ),
                         Spacer(),
                         // Emergency button (style 2 configuration)
