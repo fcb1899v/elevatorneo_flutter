@@ -16,6 +16,7 @@ import 'extension.dart';
 import 'constant.dart';
 import 'plan_provider.dart';
 import 'homepage.dart';
+import 'splash_hold.dart';
 import 'menu.dart';
 import 'settings.dart';
 
@@ -133,7 +134,13 @@ class PointNotifier extends Notifier<int> {
 // Sets up UI, loads preferences, initializes Firebase and launches the app
 Future<void> main() async {
   final widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
-  FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
+  splashHold.start();
+  // iOS keeps the native splash; Android draws SplashOverlay as the first Flutter frame instead
+  if (Platform.isAndroid) {
+    await splashHold.loadImage();
+  } else {
+    FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
+  }
   // Configure system UI, orientation, and platform-specific styling
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
@@ -195,7 +202,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) => MaterialApp(
     builder: (BuildContext context, Widget? child) => MediaQuery(
       data: MediaQuery.of(context).copyWith(textScaler: const TextScaler.linear(1)),
-      child: child!,
+      child: SplashOverlay(child: child!),
     ),
     // Multi-language support configuration
     localizationsDelegates: AppLocalizations.localizationsDelegates,

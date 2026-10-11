@@ -1,3 +1,4 @@
+import 'dart:async' show unawaited;
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -7,6 +8,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'constant.dart';
 import 'extension.dart';
 import 'plan_provider.dart';
+import 'splash_hold.dart';
 
 // ===== AdBannerWidget: bottom anchored adaptive banner, skipped for premium =====
 // The UMP flow below owns the ATT prompt; ad requests never wait on that decision.
@@ -136,28 +138,34 @@ class AdBannerWidget extends HookConsumerWidget {
       // isLoadingAd is not reset: a request in flight still owes a callback.
       // Clearing it would let a second request start and orphan the first.
 
-      // Last session's consent is on the device, so this runs alongside the update below.
-      requestAdIfAllowed();
+      // The ad request and the consent form wait for the launch splash to go, so neither starts under it.
+      Future<void> startAds() async {
+        await splashHold.whenRemoved();
+        if (!context.mounted) return;
+        // Last session's consent is on the device, so this runs alongside the update below.
+        requestAdIfAllowed();
 
-      ConsentInformation.instance.requestConsentInfoUpdate(ConsentRequestParameters(
-        // consentDebugSettings: ConsentDebugSettings(
-        //   debugGeography: DebugGeography.debugGeographyEea,
-        //   testIdentifiers: testIdentifiers,
-        // ),
-      ), () async {
-        // The SDK decides whether a form is needed and shows it only then.
-        await ConsentForm.loadAndShowConsentFormIfRequired((formError) async {
-          if (formError != null) {
-            "formError: ${formError.errorCode}: ${formError.message}".debugPrint();
-          }
+        ConsentInformation.instance.requestConsentInfoUpdate(ConsentRequestParameters(
+          // consentDebugSettings: ConsentDebugSettings(
+          //   debugGeography: DebugGeography.debugGeographyEea,
+          //   testIdentifiers: testIdentifiers,
+          // ),
+        ), () async {
+          // The SDK decides whether a form is needed and shows it only then.
+          await ConsentForm.loadAndShowConsentFormIfRequired((formError) async {
+            if (formError != null) {
+              "formError: ${formError.errorCode}: ${formError.message}".debugPrint();
+            }
+            await requestAdIfAllowed();
+          });
+        }, (FormError error) async {
+          // The update failed, but earlier consent stands and canRequestAds may still say yes.
+          // Do not throw away those impressions.
+          "error: ${error.errorCode}: ${error.message}".debugPrint();
           await requestAdIfAllowed();
         });
-      }, (FormError error) async {
-        // The update failed, but earlier consent stands and canRequestAds may still say yes.
-        // Do not throw away those impressions.
-        "error: ${error.errorCode}: ${error.message}".debugPrint();
-        await requestAdIfAllowed();
-      });
+      }
+      unawaited(startAds());
       "bannerAd: ${bannerAd.value}".debugPrint();
       return () => bannerAd.value?.dispose();      // Drop the ad on unmount
     }, [isPremium]);

@@ -8,7 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vibration/vibration.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:flutter_native_splash/flutter_native_splash.dart';
+import 'splash_hold.dart';
 import 'admob_banner.dart';
 import 'analytics_manager.dart';
 import 'games_manager.dart';
@@ -144,7 +144,8 @@ class HomePage extends HookConsumerWidget {
           "Error: $e".debugPrint();
         } finally {
           isLoadingData.value = false;
-          FlutterNativeSplash.remove();
+          // Not awaited: the games, TTS and price setup below start at once
+          unawaited(splashHold.removeWhenReady());
           // No tracking code runs here: the UMP flow in admob_banner.dart owns the prompt.
           // It shows the IDFA explainer and the system ATT dialog on its own.
         }

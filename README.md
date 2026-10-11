@@ -48,6 +48,10 @@ Buttons, floors and room images are customizable, and the floor images can be re
 - **Images**: image_picker, image_cropper, path_provider
 - **Links**: url_launcher
 - **Store Review**: in_app_review
+- **Splash**: flutter_native_splash
+- **Launch splash**: held for at least 3 seconds from launch (`lib/splash_hold.dart`); when initialization takes longer, it goes as soon as that finishes
+- **Launch splash drawing**: iOS keeps the native splash; Android draws the same splash in Flutter (`SplashOverlay`), which blocks touches until it is removed
+- **Ads and consent**: the banner's consent request and ad request start after the launch splash is removed
 
 `flutter_tts` is a path dependency, not the pub.dev package.
 The fork adds Swift Package Manager manifests and an Android Gradle Plugin 9 build, and `pubspec.yaml` records exactly what differs from the published 4.2.5.
