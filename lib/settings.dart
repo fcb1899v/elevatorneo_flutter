@@ -122,14 +122,9 @@ class SettingsPage extends HookConsumerWidget {
       if (!context.mounted) return;
       context.pushPage(PremiumPage(
         price: price,
-        onBuy: () async {
-          context.popPage();
-          await runPurchase(isRestore: false, source: source);
-        },
-        onRestore: () async {
-          context.popPage();
-          await runPurchase(isRestore: true, source: source);
-        },
+        onBuy: () => runPurchase(isRestore: false, source: source),
+        onRestore: () => runPurchase(isRestore: true, source: source),
+        isPremium: () => ref.read(planProvider).isPremium,
       ));
     }
 

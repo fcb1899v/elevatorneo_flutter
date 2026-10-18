@@ -56,6 +56,7 @@ void main() {
           price: "¥500",
           onBuy: () async {},
           onRestore: () async {},
+          isPremium: () => false,
         ),
       ));
       await tester.pump();
@@ -79,7 +80,7 @@ void main() {
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       locale: const Locale("ja"),
-      home: PremiumPage(price: "", onBuy: () async {}, onRestore: () async {}),
+      home: PremiumPage(price: "", onBuy: () async {}, onRestore: () async {}, isPremium: () => false),
     ));
     await tester.pump();
 

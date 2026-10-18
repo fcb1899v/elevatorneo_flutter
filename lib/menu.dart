@@ -373,14 +373,9 @@ class MenuPage extends HookConsumerWidget {
       if (!context.mounted) return;
       context.pushPage(PremiumPage(
         price: price,
-        onBuy: () async {
-          context.popPage();
-          await runPurchase(isRestore: false);
-        },
-        onRestore: () async {
-          context.popPage();
-          await runPurchase(isRestore: true);
-        },
+        onBuy: () => runPurchase(isRestore: false),
+        onRestore: () => runPurchase(isRestore: true),
+        isPremium: () => ref.read(planProvider).isPremium,
       ));
     }
 

@@ -172,6 +172,8 @@ A free device that opens settings asks RevenueCat once per visit and unlocks pre
 - Reached from the fourth menu tile, and from any padlock in settings
 - The tile is dropped once premium is owned, or while no store price is known
 - Restoring is offered on the same page, as the store guidelines require
+- The page stays open until the purchase or restore leaves the user premium, so a cancelled or failed purchase can be retried at once
+- While the store answers, a loading cover takes every tap, and the close button and the back gesture do nothing
 
 ## 📱 Supported Platforms
 

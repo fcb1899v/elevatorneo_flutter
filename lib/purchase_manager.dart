@@ -133,6 +133,10 @@ class PurchaseManager {
     priceSource = _fetchPrice;
   }
 
+  /// Forgets the store SDK start, so each test configures it afresh
+  @visibleForTesting
+  static void resetStore() => _configuring = null;
+
   // --- Price cache ---
 
   /// The last answer fetchPrice got, so a screen opened later needs no round-trip

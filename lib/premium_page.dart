@@ -9,20 +9,52 @@ import 'settings.dart' show padlockIcon;
 
 // One plain platform font throughout, since context.font() gives Korean a display face.
 // The PREMIUM board keeps letsgo, its own alphabet.
-class PremiumPage extends StatelessWidget {
+/// It stays open until the user is premium, so a cancelled or failed purchase can be retried at once.
+class PremiumPage extends StatefulWidget {
   const PremiumPage({
     super.key,
     required this.price,
     required this.onBuy,
     required this.onRestore,
+    required this.isPremium,
   });
 
   final String price;
   final Future<void> Function() onBuy;
   final Future<void> Function() onRestore;
 
+  /// Read once a purchase or restore ends: the page closes only when this is true
+  final bool Function() isPremium;
+
   @override
-  Widget build(BuildContext context) {
+  State<PremiumPage> createState() => _PremiumPageState();
+}
+
+class _PremiumPageState extends State<PremiumPage> {
+  bool _isBusy = false;
+
+  String get price => widget.price;
+
+  /// Runs a purchase or restore with the page locked, then closes the page only if the user ended up premium.
+  /// A second tap while one runs does nothing
+  Future<void> _run(Future<void> Function() action) async {
+    if (_isBusy) return;
+    setState(() => _isBusy = true);
+    try {
+      await action();
+    } finally {
+      if (mounted) {
+        setState(() => _isBusy = false);
+        if (widget.isPremium()) Navigator.of(context).pop();
+      }
+    }
+  }
+
+  // The back gesture and the close button are dead while a purchase runs, so the result lands on this page
+  @override
+  Widget build(BuildContext context) => PopScope(canPop: !_isBusy, child: _scaffold(context));
+
+  Widget _scaffold(BuildContext context) {
     final common = CommonWidget(context);
     return Scaffold(
       // Transparent, so the banner HomePage paints below this route shows through
@@ -42,7 +74,7 @@ class PremiumPage extends StatelessWidget {
                       Align(
                         alignment: Alignment.centerRight,
                         child: IconButton(
-                          onPressed: () => context.popPage(),
+                          onPressed: _isBusy ? null : () => context.popPage(),
                           icon: Icon(
                             Icons.close,
                             color: whiteColor,
@@ -98,7 +130,7 @@ class PremiumPage extends StatelessWidget {
                                 price.isEmpty ? _unavailableNote(context): _buyButton(context),
                                 SizedBox(height: context.premiumGapInner()),
                                 TextButton(
-                                  onPressed: onRestore,
+                                  onPressed: _isBusy ? null : () => _run(widget.onRestore),
                                   child: Text(
                                     context.premiumRestore(),
                                     style: TextStyle(
@@ -118,6 +150,8 @@ class PremiumPage extends StatelessWidget {
                     ],
                   ),
                 ),
+                // Covers the page and takes every tap while the store answers
+                if (_isBusy) common.commonCircularProgressIndicator(),
               ],
             ),
           ),
@@ -206,7 +240,7 @@ class PremiumPage extends StatelessWidget {
 
   /// The only amber frame on the page, so the eye lands on it last and stays
   Widget _buyButton(BuildContext context) => GestureDetector(
-    onTap: onBuy,
+    onTap: _isBusy ? null : () => _run(widget.onBuy),
     child: Container(
       width: context.premiumContentWidth(),
       height: context.premiumBuyHeight(),
