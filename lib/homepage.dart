@@ -692,7 +692,7 @@ class HomePage extends HookConsumerWidget {
                               Listener(
                                 onPointerDown: (_) => floorSelected(col.value, floorStops[buttonIndex(row.key, col.key)]),
                                 child: Semantics(
-                                  // Keeps the tap action that screen readers use, since the gesture detector no longer has onTap
+                                  // Keeps the tap action that screen readers use, because the gesture detector has no onTap
                                   onTap: () => floorSelected(col.value, floorStops[buttonIndex(row.key, col.key)]),
                                   child: GestureDetector(
                                     child: home.floorButtonImage(col.value, col.value.isSelected(isAboveSelectedList.value, isUnderSelectedList.value)),
