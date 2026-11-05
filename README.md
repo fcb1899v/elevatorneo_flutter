@@ -83,7 +83,10 @@ flutter pub get
 **Environment variables.** Copy `assets/.env_example` to `assets/.env` and fill in the values.
 The template lists every key with what it is for, and is the one place that list is maintained.
 `pubspec.yaml` declares `assets/.env`, so the file has to exist or the build fails.
-Debug builds use Google's demo ad units and need no real ids, and the demo unit for an inline adaptive request is not the same id as the fixed-size one.
+Release builds read the production AdMob banner and rewarded ad unit ids from this file, and stop with a reason if one for their platform is missing, is not an ad unit id, or is one of Google's demo units (publisher `ca-app-pub-3940256099942544`).
+They also stop if `assets/.env` holds a key starting with `APPCHECK_`, or if one is passed with `--dart-define` or `--dart-define-from-file`.
+Gradle runs these checks for Android, and the Xcode build phase `Verify release config` runs them for iOS.
+Debug and profile builds use Google's demo ad units, and the demo unit for an inline adaptive request is not the same id as the fixed-size one.
 
 **Android signing, release only.** Copy `android/key.properties.example` to `android/key.properties` and fill it in.
 Nothing in it ships inside the app, and the two passwords are real secrets: together with the keystore they let anyone publish an update Play accepts as coming from you.

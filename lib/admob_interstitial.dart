@@ -1,7 +1,6 @@
 // ===== AdInterstitialManager: NOT IN USE =====
 // Nothing calls this; to re-enable, call it from settings.dart/homepage.dart and dispose on purchase.
 
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'analytics_manager.dart';
 import 'constant.dart';
@@ -15,8 +14,8 @@ class AdInterstitialManager {
   static int _shownCount = 0;
   static DateTime? _lastShownAt;
 
-  /// The ad unit is optional: without it configured in .env the feature is off
-  static String? get _adUnitId => dotenv.maybeGet(interstitialAdUnitID);
+  /// The ad unit comes from interstitialAdUnitID; add its keys to the release checks before using this class.
+  static String? get _adUnitId => interstitialAdUnitID;
 
   /// Whether an interstitial may be shown right now
   static bool _canShow(int rideCount) {

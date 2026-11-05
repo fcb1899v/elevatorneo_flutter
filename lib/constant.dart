@@ -13,26 +13,26 @@ const String appTitle = "LETS ELEVATOR NEO";
 // Ad unit ID configuration
 // Platform-specific ad unit IDs for different build modes
 String rewardAdUnitID =
-  // Production units resolve through .env at the call site.
-  // The demo units are Google's published constants, returned directly.
-  (!kDebugMode && (Platform.isIOS || Platform.isMacOS)) ? dotenv.get("IOS_REWARDED_UNIT_ID"):
-  (!kDebugMode) ? dotenv.get("ANDROID_REWARDED_UNIT_ID"):
+  // Release builds read the production unit from assets/.env, and the release build stops if it is missing or a demo id.
+  // Debug and profile builds use Google's demo unit.
+  (kReleaseMode && (Platform.isIOS || Platform.isMacOS)) ? dotenv.get("IOS_REWARDED_UNIT_ID"):
+  (kReleaseMode) ? dotenv.get("ANDROID_REWARDED_UNIT_ID"):
   (Platform.isIOS || Platform.isMacOS) ? iosRewardedTestId:
   androidRewardedTestId;
 
 String bannerAdUnitID =
-  // Production units resolve through .env at the call site.
-  // The demo units are Google's published constants, returned directly.
-  (!kDebugMode && (Platform.isIOS || Platform.isMacOS)) ? dotenv.get("IOS_BANNER_UNIT_ID"):
-  (!kDebugMode) ? dotenv.get("ANDROID_BANNER_UNIT_ID"):
+  // Release builds read the production unit from assets/.env, and the release build stops if it is missing or a demo id.
+  // Debug and profile builds use Google's demo unit.
+  (kReleaseMode && (Platform.isIOS || Platform.isMacOS)) ? dotenv.get("IOS_BANNER_UNIT_ID"):
+  (kReleaseMode) ? dotenv.get("ANDROID_BANNER_UNIT_ID"):
   (Platform.isIOS || Platform.isMacOS) ? iosBannerTestId:
   androidBannerTestId;
 
 String interstitialAdUnitID =
-  // Production units resolve through .env at the call site.
-  // The demo units are Google's published constants, returned directly.
-  (!kDebugMode && (Platform.isIOS || Platform.isMacOS)) ? dotenv.get("IOS_INTERSTITIAL_UNIT_ID"):
-  (!kDebugMode) ? dotenv.get("ANDROID_INTERSTITIAL_UNIT_ID"):
+  // Nothing shows interstitials (admob_interstitial.dart), so the release checks do not require these keys.
+  // Add both keys to android/app/build.gradle and the Xcode build phase before using them.
+  (kReleaseMode && (Platform.isIOS || Platform.isMacOS)) ? dotenv.get("IOS_INTERSTITIAL_UNIT_ID"):
+  (kReleaseMode) ? dotenv.get("ANDROID_INTERSTITIAL_UNIT_ID"):
   (Platform.isIOS || Platform.isMacOS) ? iosInterstitialTestId:
   androidInterstitialTestId;
 
