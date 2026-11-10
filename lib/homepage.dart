@@ -54,6 +54,7 @@ class HomePage extends HookConsumerWidget {
     final isMoving = useState(false);                          // Elevator movement state
     final isEmergency = useState(false);                       // Emergency mode state
     final isDoorState = useState(closedState);                 // Door state: [opened, closed, opening, closing]
+    final isArriving = useRef(false);                          // True from an arrival until the doors start to open, while its sound and speech play
     final isPressedOperationButtons = useState([false, false, false]); // Operation button states: [open, close, alert]
     final isAboveSelectedList = useState(List.generate(max + 1, (_) => false)); // Floor button selections (above ground)
     final isUnderSelectedList = useState(List.generate(min * (-1) + 1, (_) => false)); // Floor button selections (basement)
@@ -248,10 +249,11 @@ class HomePage extends HookConsumerWidget {
     /// Move elevator upward to the next selected floor
     /// Handles floor-by-floor movement with realistic timing and animations
     Future<void> counterUp() async {
-      if (!isMoving.value && isDoorState.value == closedState) {
+      if (!isMoving.value && isDoorState.value == closedState && !isArriving.value) {
         await Future.delayed(Duration(seconds: waitTime.value)).then((_) async {
           // The next floor may have changed during the wait, so the direction is checked again
-          if (!isMoving.value && isDoorState.value == closedState && counter.value < nextFloor.value) {
+          // No departure while an arrival plays its sound and speech before the doors open
+          if (!isMoving.value && isDoorState.value == closedState && counter.value < nextFloor.value && !isArriving.value) {
             isMoving.value = true;
             isHallCallStop.value = false;
             departureFloor.value = counter.value;
@@ -282,10 +284,12 @@ class HomePage extends HookConsumerWidget {
                 "pointKey".setSharedPrefInt(prefs, newPoint);
                 submitMiles(newPoint);
                 if (isEmergency.value) await Future.delayed(Duration(seconds: waitTime.value)).then((_) => isEmergency.value = false);
+                isArriving.value = true;
                 isMoving.value = false;
                 if (!isOutside.value || currentFloor.value == counter.value || isEmergency.value) await audioManager.playEffectSound(asset: openSound, volume: 0.6);
                 if (context.mounted) await ttsManager.speakText(context.openingSound(counter.value, counter.value.roomImageFile(floorNumbers, floorImages), counter.value == floorNumbers.last), !isOutside.value || currentFloor.value == counter.value);
                 isDoorState.value = openingState;
+                isArriving.value = false;
                 "isDoorState: ${isDoorState.value}".debugPrint();
                 await onArrived();
               });
@@ -298,10 +302,11 @@ class HomePage extends HookConsumerWidget {
     /// Move elevator downward to the next selected floor
     /// Handles floor-by-floor movement with realistic timing and animations
     Future<void> counterDown() async {
-      if (!isMoving.value && isDoorState.value == closedState) {
+      if (!isMoving.value && isDoorState.value == closedState && !isArriving.value) {
         await Future.delayed(Duration(seconds: waitTime.value)).then((_) async {
           // The next floor may have changed during the wait, so the direction is checked again
-          if (!isMoving.value && isDoorState.value == closedState && counter.value > nextFloor.value) {
+          // No departure while an arrival plays its sound and speech before the doors open
+          if (!isMoving.value && isDoorState.value == closedState && counter.value > nextFloor.value && !isArriving.value) {
             isMoving.value = true;
             isHallCallStop.value = false;
             departureFloor.value = counter.value;
@@ -332,10 +337,12 @@ class HomePage extends HookConsumerWidget {
                 "pointKey".setSharedPrefInt(prefs, newPoint);
                 submitMiles(newPoint);
                 if (isEmergency.value) await Future.delayed(Duration(seconds: waitTime.value)).then((_) => isEmergency.value = false);
+                isArriving.value = true;
                 isMoving.value = false;
                 if (!isOutside.value || currentFloor.value == counter.value) await audioManager.playEffectSound(asset: openSound, volume: 0.6);
                 if (context.mounted) await ttsManager.speakText(context.openingSound(counter.value, counter.value.roomImageFile(floorNumbers, floorImages), counter.value == floorNumbers.last), !isOutside.value || currentFloor.value == counter.value);
                 isDoorState.value = openingState;
+                isArriving.value = false;
                 "isDoorState: ${isDoorState.value}".debugPrint();
                 await onArrived();
               });
@@ -514,10 +521,13 @@ class HomePage extends HookConsumerWidget {
                 "pointKey".setSharedPrefInt(prefs, newPoint);
                 submitMiles(newPoint);
                 await Future.delayed(Duration(seconds: waitTime.value));
+                // No departure while the doors are about to open
+                isArriving.value = true;
                 isEmergency.value = false;
                 if (!isOutside.value || currentFloor.value == counter.value) await audioManager.playEffectSound(asset: openSound, volume: 0.6);
                 if (context.mounted && currentFloor.value == counter.value) await ttsManager.speakText(context.openDoor(), !isOutside.value || currentFloor.value == counter.value);
                 isDoorState.value = openingState;
+                isArriving.value = false;
                 "isDoorState: ${isDoorState.value}".debugPrint();
                 await onArrived();
               }
