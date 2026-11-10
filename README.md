@@ -88,10 +88,14 @@ They also stop if `assets/.env` holds a key starting with `APPCHECK_`, or if one
 Gradle runs these checks for Android, and the Xcode build phase `Verify release config` runs them for iOS.
 Debug and profile builds use Google's demo ad units, and the demo unit for an inline adaptive request is not the same id as the fixed-size one.
 
-**Android signing, release only.** Copy `android/key.properties.example` to `android/key.properties` and fill it in.
+**Android signing, release only.** The signing file lives outside the repository, at `~/key/keystore/key.properties` or at the path in the `ANDROID_KEY_PROPERTIES` environment variable.
+Use `android/key.properties.example` as the template.
 Nothing in it ships inside the app, and the two passwords are real secrets: together with the keystore they let anyone publish an update Play accepts as coming from you.
 Keep the keystore outside the repository and back both up.
-A release built without this file falls back to the debug signing config, which produces an artifact Play rejects.
+Only release builds read this file, so debug, profile, `flutter test` and `flutter analyze` do not need it.
+Build the release with `flutter build appbundle`.
+If you run Gradle yourself, give the full task name `assembleRelease` or `bundleRelease`, because an abbreviation such as `bR` stops the build.
+A release build stops with a reason if the file cannot be read, a value is missing, or `storeFile` is not an absolute path.
 
 ### 4. Firebase Configuration
 
