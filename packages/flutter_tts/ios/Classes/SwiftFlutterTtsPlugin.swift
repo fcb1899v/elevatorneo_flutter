@@ -16,6 +16,8 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
   var awaitSynthCompletion: Bool = false
   var autoStopSharedSession: Bool = true
   var speakResult: FlutterResult? = nil
+  // The utterance that owns speakResult, so delegate callbacks for other utterances skip it.
+  var speakUtterance: AVSpeechUtterance? = nil
   var synthResult: FlutterResult? = nil
   
   lazy var audioSession = AVAudioSession.sharedInstance()
@@ -140,6 +142,8 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
     if (self.synthesizer.isPaused) {
       if (self.synthesizer.continueSpeaking()) {
         if self.awaitSpeakCompletion {
+          // Answer the waiting call before replacing it, so its await does not hang.
+          self.speakResult?(0)
           self.speakResult = result
         } else {
           result(1)
@@ -160,7 +164,10 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
 
       self.synthesizer.speak(utterance)
       if self.awaitSpeakCompletion {
+        // Answer the waiting call before replacing it, so its await does not hang.
+        self.speakResult?(0)
         self.speakResult = result
+        self.speakUtterance = utterance
       } else {
         result(1)
       }
@@ -231,6 +238,8 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
         result(0)
     }
     if self.awaitSynthCompletion {
+      // Answer the waiting call before replacing it, so its await does not hang.
+      self.synthResult?(0)
       self.synthResult = result
     } else {
       result(1)
@@ -310,6 +319,11 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
 
   private func stop() {
     self.synthesizer.stopSpeaking(at: AVSpeechBoundary.immediate)
+    // Answer a waiting speak call as interrupted (0), matching Android.
+    if let result = self.speakResult {
+      self.speakResult = nil
+      result(0)
+    }
   }
 
   private func getLanguages(result: FlutterResult) {
@@ -438,7 +452,7 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
         print(error)
       }
     }
-    if self.awaitSpeakCompletion && self.speakResult != nil {
+    if self.awaitSpeakCompletion && self.speakResult != nil && utterance === self.speakUtterance {
         self.speakResult!(1)
         self.speakResult = nil
     }
@@ -463,6 +477,11 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
 
   public func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didCancel utterance: AVSpeechUtterance) {
     self.channel.invokeMethod("speak.onCancel", arguments: nil)
+    // Answer only when the cancelled utterance is the one that owns the waiting call.
+    if self.speakResult != nil && utterance === self.speakUtterance {
+      self.speakResult!(0)
+      self.speakResult = nil
+    }
   }
 
   public func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, willSpeakRangeOfSpeechString characterRange: NSRange, utterance: AVSpeechUtterance) {

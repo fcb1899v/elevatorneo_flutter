@@ -28,12 +28,20 @@ dependencies:
   # Fork of pub.dev flutter_tts 4.2.5. Upstream has no Swift Package Manager
   # support, so waiting for it would keep
   # CocoaPods in the iOS build. Changes from the published 4.2.5:
-  #   ios/flutter_tts/, macos/flutter_tts/   SPM manifests, added
-  #   android/build.gradle                   branch on android.builtInKotlin so
-  #                                          AGP 9 compiles the Kotlin itself
-  #   example/, gen/, test/                  removed; not needed to build
+  #   ios/flutter_tts/                        SPM manifests, added; its Swift is the same
+  #                                           as ios/Classes/
+  #   macos/flutter_tts/                      SPM manifests, added
+  #   android/build.gradle                    branch on android.builtInKotlin so
+  #                                           AGP 9 compiles the Kotlin itself
+  #   android/.../FlutterTtsPlugin.kt         guard on detach, pending calls run from a copy,
+  #                                           and no default-locale probe on init
+  #   ios/Classes/SwiftFlutterTtsPlugin.swift a stopped, cancelled or replaced speech
+  #                                           answers its waiting speak call with 0
+  #   example/                                removed; not needed to build
+  #   gen/                                    removed; not needed to build
+  #   test/                                   removed; not needed to build
   # The Dart sources are unchanged. `diff -rq` against the pub-cache copy shows
-  # exactly the five entries above.
+  # exactly the eight entries above.
   flutter_tts:
     path: packages/flutter_tts
   # Audio Player
