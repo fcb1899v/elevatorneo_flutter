@@ -664,6 +664,18 @@ abstract class AppLocalizations {
   /// **'Buy for {PRICE}'**
   String premiumPrice(Object PRICE);
 
+  /// No description provided for @couponRedeem.
+  ///
+  /// In en, this message translates to:
+  /// **'Redeem code'**
+  String get couponRedeem;
+
+  /// No description provided for @couponInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'This code can\'t be used'**
+  String get couponInvalid;
+
   /// No description provided for @premiumBuy.
   ///
   /// In en, this message translates to:

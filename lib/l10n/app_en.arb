@@ -93,6 +93,8 @@
   "premiumUnlockAll": "Every design and feature,\nyours right now\nno EV miles to collect",
   "premiumOneTime": "A one-time purchase",
   "premiumPrice": "Buy for {PRICE}",
+  "couponRedeem": "Redeem code",
+  "couponInvalid": "This code can't be used",
   "premiumBuy": "Buy",
   "premiumRestore": "Restore",
   "premiumThanks": "Thank you! Everything is unlocked.",

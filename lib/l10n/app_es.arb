@@ -93,6 +93,8 @@
   "premiumUnlockAll": "Todos los diseños y funciones,\ntuyos ahora mismo\nsin acumular millas EV",
   "premiumOneTime": "Una compra única",
   "premiumPrice": "Comprar por {PRICE}",
+  "couponRedeem": "Canjear código",
+  "couponInvalid": "Este código no se puede usar",
   "premiumBuy": "Comprar",
   "premiumRestore": "Restaurar compras",
   "premiumThanks": "¡Gracias! Todo está desbloqueado.",

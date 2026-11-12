@@ -93,6 +93,8 @@
   "premiumUnlockAll": "全てのデザインと機能が\n今すぐ使えます\nEVマイルを貯める必要はありません",
   "premiumOneTime": "1回だけの購入です",
   "premiumPrice": "{PRICE}で購入する",
+  "couponRedeem": "コードを利用",
+  "couponInvalid": "このコードは使えません",
   "premiumBuy": "購入する",
   "premiumRestore": "購入を復元",
   "premiumThanks": "ありがとうございます！すべて解放されました。",

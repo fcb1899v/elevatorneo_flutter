@@ -165,6 +165,8 @@ extension L10nContextExt on BuildContext {
   // Shown when no offer can be made at all (no offering, unapproved product, no network).
   // Distinct from premiumFailed(): nobody has tried to buy yet.
   String premiumUnavailable() => AppLocalizations.of(this)!.premiumUnavailable;
+  String couponRedeem() => AppLocalizations.of(this)!.couponRedeem;
+  String couponInvalid() => AppLocalizations.of(this)!.couponInvalid;
   String notSignedInGameCenter() => AppLocalizations.of(this)!.notSignedInGameCenter(
     (Platform.isIOS || Platform.isMacOS) ? "Game Center": "Play Games"
   );

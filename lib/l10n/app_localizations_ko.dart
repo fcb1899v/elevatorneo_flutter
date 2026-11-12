@@ -303,6 +303,12 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
+  String get couponRedeem => '코드 등록';
+
+  @override
+  String get couponInvalid => '이 코드는 사용할 수 없습니다';
+
+  @override
   String get premiumBuy => '구매';
 
   @override

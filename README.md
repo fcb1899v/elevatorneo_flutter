@@ -32,7 +32,7 @@ Buttons, floors and room images are customizable, and the floor images can be re
 ### Frameworks & Libraries
 - **Flutter**: 3.47.0+
 - **Dart**: 3.13.0+
-- **Firebase**: firebase_core, firebase_analytics
+- **Firebase**: firebase_core, firebase_analytics, firebase_remote_config
 - **Google Mobile Ads**: google_mobile_ads
 - **RevenueCat**: purchases_flutter
 - **Game Services**: games_services, connectivity_plus
@@ -61,7 +61,7 @@ The fork adds Swift Package Manager manifests and an Android Gradle Plugin 9 bui
 - Flutter 3.47.0+ (required by Android Gradle Plugin 9: earlier versions force the Kotlin Gradle Plugin onto modules that AGP 9 compiles itself)
 - Dart 3.13.0+
 - Android Studio / Xcode
-- A Firebase project (Analytics), since `main.dart` calls `Firebase.initializeApp` at startup
+- A Firebase project (Analytics, and Remote Config for coupon codes), since `main.dart` calls `Firebase.initializeApp` at startup
 - A RevenueCat account for the premium purchase
 - `firebase-tools` (`npm i -g firebase-tools`) and `flutterfire_cli` (`dart pub global activate flutterfire_cli`), then `firebase login`
 
@@ -131,6 +131,7 @@ lib/
 ├── image_manager.dart           # Image list and settings persistence
 ├── photo_manager.dart           # Gallery selection and cropping
 ├── analytics_manager.dart       # Firebase Analytics events
+├── coupon_manager.dart          # Coupon code check against Remote Config
 ├── review_manager.dart          # Store review request
 ├── admob_banner.dart            # Banner advertisement management
 ├── admob_interstitial.dart      # Interstitial advertisements (not in use)
@@ -181,6 +182,34 @@ A free device that opens settings asks RevenueCat once per visit and unlocks pre
 - Restoring is offered on the same page, as the store guidelines require
 - The page stays open until the purchase or restore leaves the user premium, so a cancelled or failed purchase can be retried at once
 - While the store answers, a loading cover takes every tap, and the close button and the back gesture do nothing
+
+Once the SDK is configured, every RevenueCat customer info update that carries the premium entitlement unlocks premium on the home screen.
+
+### Coupon codes
+
+A coupon sells the same entitlement at a discounted price.
+
+- **iOS**: an App Store Connect offer code for `elevatorneo_premium_unlock`, redeemed in the App Store (`https://apps.apple.com/redeem?ctx=offercodes&id=6479341144&code=CODE`)
+- **Android**: `CouponManager.check` (`lib/coupon_manager.dart`) matches a typed code, and `PurchaseManager.buyPremium(couponId:)` sells the package of the RevenueCat offering `coupon` (`couponOfferingId` in `lib/purchase_manager.dart`)
+
+RevenueCat setup for Android: the product `elevatorneo_premium_unlock_coupon` is attached to the entitlement `elevatorneo_premium` and placed in an offering with the identifier `coupon`, which must not be the current offering.
+Before the coupon purchase starts, the app sets the subscriber attribute `coupon_id` to the matched code's `id`.
+
+The codes live in the Firebase Remote Config parameter `coupon_codes`, a JSON string:
+
+```json
+{"codes": [{"id": "coupon_001", "sha256": "<lowercase hex SHA-256 of the code>", "expires": "2026-12-31"}]}
+```
+
+- A code is 12 characters from `ABCDEFGHJKLMNPQRSTUVWXYZ23456789`, so 0, O, 1 and I never appear
+- Typed codes are normalized before hashing: full-width ASCII characters (U+FF01 to U+FF5E) become half-width, every space is dropped, and letters are upper-cased
+- The hash of a code is `printf %s CODE | shasum -a 256`
+- A code is valid through its `expires` date, read on the device's calendar
+- An empty parameter rejects every code; a failed fetch with no value already on the device makes the check return `unavailable`
+- Remote Config is fetched only when a code is checked (10 s timeout, at most once an hour)
+
+Analytics events (`lib/analytics_manager.dart`): `couponEntryOpened` logs `coupon_entry_opened` with no parameters, and every `CouponManager.check` logs `coupon_code_checked` with `result` set to `valid`, `invalid` or `unavailable`.
+Register `result` as a custom dimension in GA4 to report it.
 
 ## 📱 Supported Platforms
 
@@ -233,7 +262,7 @@ This app uses the following third-party components:
 
 - Flutter (BSD 3-Clause License)
 - Gradle Wrapper (Apache License 2.0), the `android/gradle/wrapper/gradle-wrapper.jar` committed here
-- firebase_core, firebase_analytics (BSD 3-Clause License)
+- firebase_core, firebase_analytics, firebase_remote_config (BSD 3-Clause License)
 - google_mobile_ads (Apache License 2.0)
 - Google Mobile Ads Android SDK (Android Software Development Kit License): `play-services-ads`, pulled in by google_mobile_ads
 - Google Mobile Ads iOS SDK (proprietary Google binary; its CocoaPods spec declares only a Google copyright notice, with no open-source license): `Google-Mobile-Ads-SDK`, pulled in by google_mobile_ads
@@ -250,6 +279,7 @@ This app uses the following third-party components:
 - in_app_review (MIT License)
 - hooks_riverpod, flutter_hooks (MIT License)
 - url_launcher (BSD 3-Clause License)
+- crypto (BSD 3-Clause License)
 - webview_flutter (BSD 3-Clause License), pulled in by google_mobile_ads
 - cupertino_icons (MIT License)
 - flutter_svg (MIT License), draws the star padlock in settings

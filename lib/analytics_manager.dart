@@ -100,6 +100,15 @@ class AnalyticsManager {
   static Future<void> upgradeRestored(bool isPremium) =>
       _log("upgrade_restored", {"is_premium": isPremium ? 1 : 0});
 
+  // --- Coupon Events ---
+
+  /// Log that the user opened the coupon code entry
+  static Future<void> couponEntryOpened() => _log("coupon_entry_opened");
+
+  /// Log the result of a coupon code check: valid, invalid, or unavailable
+  static Future<void> couponCodeChecked(String result) =>
+      _log("coupon_code_checked", {"result": result});
+
   // --- Review Events ---
 
   /// Log that the in-app store review prompt was requested

@@ -176,6 +176,12 @@ class HomePage extends HookConsumerWidget {
       }
 
       WidgetsBinding.instance.addPostFrameCallback((_) async {
+        // Any RevenueCat customer info update that carries the entitlement unlocks the plan here.
+        PurchaseManager.onPremiumGranted = () {
+          if (context.mounted && !ref.read(planProvider).isPremium) {
+            unawaited(ref.read(planProvider.notifier).setCurrentPlan(true));
+          }
+        };
         await initState();
         unawaited(warmUpTts());
         unawaited(verifyPremium());

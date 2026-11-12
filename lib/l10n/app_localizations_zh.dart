@@ -302,6 +302,12 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String get couponRedeem => '兑换代码';
+
+  @override
+  String get couponInvalid => '此代码无法使用';
+
+  @override
   String get premiumBuy => '购买';
 
   @override

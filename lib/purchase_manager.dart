@@ -44,6 +44,8 @@ class PurchaseManager {
       if (await Purchases.isConfigured) return true;
       await Purchases.setLogLevel(kDebugMode ? LogLevel.debug: LogLevel.warn);
       await Purchases.configure(PurchasesConfiguration(apiKey));
+      // Added once, right after configure; a second configure never adds it again.
+      Purchases.addCustomerInfoUpdateListener(handleCustomerInfo);
       if (Platform.isIOS || Platform.isMacOS) {
         await Purchases.enableAdServicesAttributionTokenCollection();
       }
@@ -57,12 +59,13 @@ class PurchaseManager {
     }
   }
 
-  /// Picks the package to sell: the lifetime one, otherwise the first available
-  static Package? _premiumPackage(Offerings offerings) {
-    final current = offerings.current;
-    if (current == null) return null;
-    if (current.lifetime != null) return current.lifetime;
-    return current.availablePackages.isNotEmpty ? current.availablePackages.first: null;
+  /// The offering a coupon buys from; the dashboard must hold it with the coupon product
+  static const couponOfferingId = "coupon";
+
+  /// Picks the package to sell from one offering: the lifetime one, otherwise the first available
+  static Package? _packageIn(Offering offering) {
+    if (offering.lifetime != null) return offering.lifetime;
+    return offering.availablePackages.isNotEmpty ? offering.availablePackages.first: null;
   }
 
   // --- Entitlement ---
@@ -113,6 +116,18 @@ class PurchaseManager {
     }
   }
 
+  /// Called whenever RevenueCat reports premium, a purchase in this app included; the home screen sets it.
+  static void Function()? onPremiumGranted;
+
+  /// Saves premium and calls onPremiumGranted for each RevenueCat customer info update that carries the entitlement.
+  /// A non-premium update does nothing; a revoke stays with dropRevokedPremium.
+  @visibleForTesting
+  static Future<void> handleCustomerInfo(CustomerInfo info) async {
+    if (!isPremiumIn(info)) return;
+    await _cachePremium(true);
+    onPremiumGranted?.call();
+  }
+
   /// The store's localized price, or null when it has nothing to sell.
   ///
   /// Null hides every purchase entry point: the offer is drawn only from a real price.
@@ -159,7 +174,8 @@ class PurchaseManager {
     try {
       if (!await _ensureConfigured()) return null;
       final Offerings offerings = await Purchases.getOfferings();
-      final package = _premiumPackage(offerings);
+      final current = offerings.current;
+      final package = current == null ? null : _packageIn(current);
       if (package == null) return null;
       "premium price: ${package.storeProduct.priceString}".debugPrint();
       return package.storeProduct.priceString;
@@ -169,11 +185,27 @@ class PurchaseManager {
     }
   }
 
+  /// The coupon offering's localized price, or null. Tests replace it.
+  @visibleForTesting
+  static Future<String?> Function() couponPriceSource = _fetchCouponPrice;
+
+  static Future<String?> _fetchCouponPrice() async {
+    try {
+      if (!await _ensureConfigured()) return null;
+      final offering = (await Purchases.getOfferings()).getOffering(couponOfferingId);
+      if (offering == null) return null;
+      return _packageIn(offering)?.storeProduct.priceString;
+    } catch (e) {
+      "Error fetching coupon price: $e".debugPrint();
+      return null;
+    }
+  }
+
   // --- Purchase and Restore ---
 
   /// Fetches offerings and initiates purchase.
   /// The PlatformException is not wrapped: buyPremium reads its error code to tell a user cancel from a real failure
-  static Future<bool> _purchasePremium() async {
+  static Future<bool> _purchasePremium({String? offeringId}) async {
     if (!await _ensureConfigured()) {
       throw const StoreUnavailableException("configure");
     }
@@ -185,10 +217,11 @@ class PurchaseManager {
     } catch (e) {
       throw StoreUnavailableException("offerings: $e");
     }
-    if (offerings.current == null) {
+    final offering = offeringId == null ? offerings.current : offerings.getOffering(offeringId);
+    if (offering == null) {
       throw const StoreUnavailableException("no offering");
     }
-    final package = _premiumPackage(offerings);
+    final package = _packageIn(offering);
     if (package == null) {
       throw const StoreUnavailableException("no package");
     }
@@ -210,9 +243,19 @@ class PurchaseManager {
     return isPremium;
   }
 
+  /// Tags the purchase with the coupon for RevenueCat; a failure never blocks the purchase
+  static Future<void> _setCouponAttribute(String couponId) async {
+    try {
+      if (!await _ensureConfigured()) return;
+      await Purchases.setAttributes({"coupon_id": couponId});
+    } catch (e) {
+      "Setting coupon_id failed, the purchase goes on: $e".debugPrint();
+    }
+  }
+
   /// Purchase/restore entry point for the UI.
   /// Returns true when the user ends up premium, false on cancellation, and throws on failure
-  static Future<bool> buyPremium({required bool isRestore, required String source}) async {
+  static Future<bool> buyPremium({required bool isRestore, required String source, String? couponId}) async {
     if (_isPurchasing) return false;
     _isPurchasing = true;
     try {
@@ -222,7 +265,12 @@ class PurchaseManager {
         await AnalyticsManager.upgradeRestored(isPremium);
       } else {
         await AnalyticsManager.upgradeStarted(source);
-        isPremium = await _purchasePremium();
+        if (couponId != null) {
+          await _setCouponAttribute(couponId);
+          isPremium = await _purchasePremium(offeringId: couponOfferingId);
+        } else {
+          isPremium = await _purchasePremium();
+        }
         if (isPremium) await AnalyticsManager.upgradePurchased(source);
       }
       // Cache only an upgrade: a restore that finds nothing does not prove there is no premium.

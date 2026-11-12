@@ -302,6 +302,12 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
+  String get couponRedeem => 'コードを利用';
+
+  @override
+  String get couponInvalid => 'このコードは使えません';
+
+  @override
   String get premiumBuy => '購入する';
 
   @override

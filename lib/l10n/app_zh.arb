@@ -93,6 +93,8 @@
   "premiumUnlockAll": "所有设计和功能立即可用\n无需累积电梯里程",
   "premiumOneTime": "一次性购买",
   "premiumPrice": "以{PRICE}购买",
+  "couponRedeem": "兑换代码",
+  "couponInvalid": "此代码无法使用",
   "premiumBuy": "购买",
   "premiumRestore": "恢复购买",
   "premiumThanks": "感谢您！已全部解锁。",

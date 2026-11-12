@@ -93,6 +93,8 @@
   "premiumUnlockAll": "Tous les designs et fonctionnalités,\ntout de suite\nsans accumuler de Miles EV",
   "premiumOneTime": "Achat unique",
   "premiumPrice": "Acheter pour {PRICE}",
+  "couponRedeem": "Utiliser un code",
+  "couponInvalid": "Ce code ne peut pas être utilisé",
   "premiumBuy": "Acheter",
   "premiumRestore": "Restaurer les achats",
   "premiumThanks": "Merci ! Tout est débloqué.",

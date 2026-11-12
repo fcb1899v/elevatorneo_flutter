@@ -305,6 +305,12 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
+  String get couponRedeem => 'Canjear código';
+
+  @override
+  String get couponInvalid => 'Este código no se puede usar';
+
+  @override
   String get premiumBuy => 'Comprar';
 
   @override
