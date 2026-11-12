@@ -102,5 +102,8 @@
   "premiumRestoreFailed": "복원할 구매 내역을 찾을 수 없습니다.",
   "premiumUnavailable": "지금은 구매를 진행할 수 없습니다.\n잠시 후 다시 시도해 주세요.",
   "nameAppliance": "생활가전 매장",
-  "appliance": "생활가전 매장 층에 도착하셨습니다. "
+  "appliance": "생활가전 매장 층에 도착하셨습니다. ",
+  "promoTitle" : "신작 앱 출시",
+  "promoAdventureName" : "렛츠 엘리베이터 어드벤처",
+  "promoStoreButton" : "스토어에서 보기"
 }

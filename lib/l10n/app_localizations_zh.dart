@@ -330,4 +330,13 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get appliance => '家电卖场层。';
+
+  @override
+  String get promoTitle => '新应用上线';
+
+  @override
+  String get promoAdventureName => '操作乐趣电梯冒险';
+
+  @override
+  String get promoStoreButton => '在应用商店中查看';
 }

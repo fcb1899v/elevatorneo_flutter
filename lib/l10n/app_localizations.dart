@@ -723,6 +723,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Appliances floor, '**
   String get appliance;
+
+  /// Heading of the in-app notice that introduces the new app LETS ELEVATOR ADVENTURE.
+  ///
+  /// In en, this message translates to:
+  /// **'Our New App'**
+  String get promoTitle;
+
+  /// Store name of the new app LETS ELEVATOR ADVENTURE. Keep as written.
+  ///
+  /// In en, this message translates to:
+  /// **'LETS ELEVATOR ADVENTURE'**
+  String get promoAdventureName;
+
+  /// Button that opens the new app's store page.
+  ///
+  /// In en, this message translates to:
+  /// **'View in Store'**
+  String get promoStoreButton;
 }
 
 class _AppLocalizationsDelegate

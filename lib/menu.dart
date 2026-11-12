@@ -19,6 +19,9 @@ import 'constant.dart';
 import 'main.dart';
 import 'plan_provider.dart';
 import 'premium_page.dart';
+import 'promo/promo_banner.dart';
+import 'promo/promo_config.dart';
+import 'promo/promo_session.dart';
 import 'purchase_manager.dart';
 import 'settings.dart';
 
@@ -425,6 +428,12 @@ class MenuPage extends HookConsumerWidget {
 
     // --- UI Rendering ---
     // Main menu interface structure
+    // Menu button grid, two per row.
+    // The fourth (purchase) is dropped once premium is owned or while no price is known; with three, one is centred.
+    final menuRows = menu.menuButtonRows(
+      onTap: pressedMenuLink,
+      price: (isPremium || storePrice.isEmpty) ? null: storePrice,
+    );
     return Scaffold(
       // bottom: false so the ad reservation below reaches the true bottom.
       // The banner is drawn by HomePage outside its SafeArea.
@@ -439,14 +448,44 @@ class MenuPage extends HookConsumerWidget {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Spacer(flex: 1),
-                // Menu button grid, two per row.
-                // The fourth (purchase) is dropped once premium is owned or while no price is known; with three, one is centred.
-                ...menu.menuButtonRows(
-                  onTap: pressedMenuLink,
-                  price: (isPremium || storePrice.isEmpty) ? null: storePrice,
-                ),
-                Spacer(flex: 1),
+                // The grid and the notice share the free height.
+                // The notice sits in the strip under the grid; when that strip is short, the grid moves up by the rest.
+                Expanded(child: ValueListenableBuilder<bool>(
+                  valueListenable: PromoSession.adventureInstalled,
+                  builder: (_, installed, _) => LayoutBuilder(builder: (ctx, c) {
+                    // Each row is a button plus its margin on both sides.
+                    final gridHeight = menuRows.length * (ctx.menuButtonSize() + 2 * ctx.menuButtonMargin());
+                    final free = c.maxHeight - gridHeight;
+                    final room = free < 0 ? 0.0: free;
+                    final margin = ctx.menuButtonMargin();
+                    final maxHeight = ctx.promoBannerMaxHeight();
+                    // The notice takes the room above its bottom margin, up to its maximum.
+                    final noticeHeight = room - margin < maxHeight ? room - margin: maxHeight;
+                    final showNotice = PromoSession.platformEnabled()
+                      && PromoConfig.menuEnabled
+                      && !installed
+                      && noticeHeight >= ctx.promoBannerMinHeight();
+                    // Half of the free height below the grid, or what the notice needs with its margin.
+                    final below = showNotice && room / 2 < noticeHeight + margin ? noticeHeight + margin: room / 2;
+                    final above = room - below;
+                    return Column(crossAxisAlignment: CrossAxisAlignment.center, children: [
+                      SizedBox(height: above),
+                      ...menuRows,
+                      SizedBox(height: below, child: showNotice ? Padding(
+                        padding: EdgeInsets.only(bottom: ctx.menuButtonMargin()),
+                        child: Center(child: PromoMenuBanner(
+                          key: const ValueKey('promoMenuBanner'),
+                          height: noticeHeight,
+                          isPremium: isPremium,
+                          patterns: PromoConfig.videoPatterns,
+                          firstPattern: PromoSession.nextPattern ?? PromoConfig.videoPatterns.first,
+                          stillOnly: !PromoConfig.videoEnabled,
+                          onNextPattern: (p) => PromoSession.nextPattern = p,
+                        )),
+                      ): null),
+                    ]);
+                  }),
+                )),
                 // Bottom navigation with external links
                 // Premium drops the banner below, so the row takes the system inset
                 menu.bottomMenuLink(

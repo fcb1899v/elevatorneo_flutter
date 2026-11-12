@@ -102,5 +102,11 @@
   "premiumRestoreFailed": "No purchase was found to restore.",
   "premiumUnavailable": "Purchases are unavailable right now.\nPlease try again later.",
   "nameAppliance": "Appliances",
-  "appliance": "Appliances floor, "
+  "appliance": "Appliances floor, ",
+  "promoTitle" : "Our New App",
+  "promoAdventureName" : "LETS ELEVATOR ADVENTURE",
+  "promoStoreButton" : "View in Store",
+  "@promoTitle" : { "description": "Heading of the in-app notice that introduces the new app LETS ELEVATOR ADVENTURE." },
+  "@promoAdventureName" : { "description": "Store name of the new app LETS ELEVATOR ADVENTURE. Keep as written." },
+  "@promoStoreButton" : { "description": "Button that opens the new app's store page." }
 }

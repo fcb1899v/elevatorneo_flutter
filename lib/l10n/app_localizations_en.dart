@@ -335,4 +335,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get appliance => 'Appliances floor, ';
+
+  @override
+  String get promoTitle => 'Our New App';
+
+  @override
+  String get promoAdventureName => 'LETS ELEVATOR ADVENTURE';
+
+  @override
+  String get promoStoreButton => 'View in Store';
 }

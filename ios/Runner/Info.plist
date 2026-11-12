@@ -37,6 +37,7 @@
 	<array>
 		<string>https</string>
 		<string>http</string>
+		<string>nakajimamasao.appstudio.elevator3d</string>
 	</array>
 	<key>LSMinimumSystemVersion</key>
 	<string>13.0.0</string>

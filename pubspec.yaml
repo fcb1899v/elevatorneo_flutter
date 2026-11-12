@@ -110,6 +110,7 @@ flutter:
     - assets/images/elevator/
     - assets/images/room/
     - assets/images/menu/
+    - assets/images/promo/
     - assets/images/settings/
     - assets/.env
   fonts:

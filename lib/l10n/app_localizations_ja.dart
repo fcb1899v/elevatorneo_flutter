@@ -330,4 +330,13 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get appliance => '生活家電売り場階です。　';
+
+  @override
+  String get promoTitle => '新作アプリのお知らせ';
+
+  @override
+  String get promoAdventureName => 'レッツ・エレベーター・アドベンチャー';
+
+  @override
+  String get promoStoreButton => 'ストアで見る';
 }

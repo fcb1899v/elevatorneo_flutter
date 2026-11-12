@@ -102,5 +102,8 @@
   "premiumRestoreFailed": "Aucun achat à restaurer n'a été trouvé.",
   "premiumUnavailable": "Les achats sont indisponibles.\nRéessayez plus tard.",
   "nameAppliance": "Électroménager",
-  "appliance": "Étage électroménager, "
+  "appliance": "Étage électroménager, ",
+  "promoTitle" : "Notre nouvelle app",
+  "promoAdventureName" : "LETS ELEVATOR ADVENTURE",
+  "promoStoreButton" : "Voir sur le Store"
 }

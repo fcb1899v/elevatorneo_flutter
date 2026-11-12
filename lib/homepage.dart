@@ -22,6 +22,7 @@ import 'image_manager.dart';
 import 'main.dart';
 import 'menu.dart';
 import 'plan_provider.dart';
+import 'promo/promo_session.dart';
 import 'purchase_manager.dart';
 
 class HomePage extends HookConsumerWidget {
@@ -185,6 +186,7 @@ class HomePage extends HookConsumerWidget {
         await initState();
         unawaited(warmUpTts());
         unawaited(verifyPremium());
+        unawaited(PromoSession.start(isPremium: () => ref.read(planProvider).isPremium));
         // Prefetch the price once launch work and the splash are done, plus a delay.
         // Never in the launch path, where it risks a crash; the menu then opens with it.
         if (!context.mounted || ref.read(planProvider).isPremium) return;

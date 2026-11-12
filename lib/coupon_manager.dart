@@ -10,6 +10,7 @@ import 'package:flutter/foundation.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'analytics_manager.dart';
 import 'extension.dart';
+import 'remote_config_setup.dart';
 
 /// The outcome of checking a typed code
 enum CouponCheck { valid, invalid, unavailable }
@@ -119,12 +120,8 @@ class CouponManager {
       () => FirebaseRemoteConfig.instance.getString(configKey);
 
   static Future<void> _fetchRemoteConfig() async {
-    final remoteConfig = FirebaseRemoteConfig.instance;
-    await remoteConfig.setConfigSettings(RemoteConfigSettings(
-      fetchTimeout: const Duration(seconds: 10),
-      minimumFetchInterval: const Duration(hours: 1),
-    ));
-    await remoteConfig.fetchAndActivate();
+    await ensureRemoteConfigReady();
+    await FirebaseRemoteConfig.instance.fetchAndActivate();
   }
 
   /// Fetches the config from Remote Config; on failure, falls back to the last value

@@ -335,4 +335,13 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get appliance => 'Piso de electrodomésticos, ';
+
+  @override
+  String get promoTitle => 'Nuestra nueva app';
+
+  @override
+  String get promoAdventureName => 'LETS ELEVATOR ADVENTURE';
+
+  @override
+  String get promoStoreButton => 'Ver en la tienda';
 }

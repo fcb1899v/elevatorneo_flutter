@@ -87,8 +87,23 @@ extension SizeExt on BuildContext {
   double admobHeight() => (height() < 600) ? 50: (height() < 1000) ? (height() / 8 - 25): 100;
   double admobWidth() => widthResponsible() - 100;
   // Menu
-  double menuButtonSize() => widthResponsible() * 0.28;
+  double menuButtonSize() => widthResponsible() * 0.255;
   double menuButtonMargin() => widthResponsible() * 0.06;
+  // Menu notice for the new app: every size is a fraction of widthResponsible()
+  double promoBannerWidth() => widthResponsible() * 0.95;
+  double promoBannerMinHeight() => widthResponsible() * 0.2732;
+  double promoBannerMaxHeight() => widthResponsible() * 0.3059;
+  double promoBannerBorderWidth() => widthResponsible() * 0.006;
+  double promoBannerPadding() => widthResponsible() * 0.019;
+  double promoBannerRadius() => widthResponsible() * 0.026;
+  double promoVideoRadius() => widthResponsible() * 0.008;
+  double promoVideoTextGap() => widthResponsible() * 0.025;
+  double promoTitleFontSize() => widthResponsible() * 0.032;
+  double promoLineGap() => widthResponsible() * 0.010;
+  double promoButtonHeight() => widthResponsible() * 0.065;
+  double promoButtonFontSize() => widthResponsible() * 0.032;
+  double promoButtonArrowInset() => widthResponsible() * 0.020;
+  double promoNameFontSize(double textWidth) => textWidth / 11.5;
 
   // --- Premium purchase page ---
   // Sized against a 430dp-wide iPhone: content 382dp = 0.888, side margins 24dp = 0.056

@@ -61,7 +61,7 @@ The fork adds Swift Package Manager manifests and an Android Gradle Plugin 9 bui
 - Flutter 3.47.0+ (required by Android Gradle Plugin 9: earlier versions force the Kotlin Gradle Plugin onto modules that AGP 9 compiles itself)
 - Dart 3.13.0+
 - Android Studio / Xcode
-- A Firebase project (Analytics, and Remote Config for coupon codes), since `main.dart` calls `Firebase.initializeApp` at startup
+- A Firebase project (Analytics, and Remote Config for coupon codes and the cross-promo notice), since `main.dart` calls `Firebase.initializeApp` at startup
 - A RevenueCat account for the premium purchase
 - `firebase-tools` (`npm i -g firebase-tools`) and `flutterfire_cli` (`dart pub global activate flutterfire_cli`), then `firebase login`
 
@@ -132,6 +132,16 @@ lib/
 ├── photo_manager.dart           # Gallery selection and cropping
 ├── analytics_manager.dart       # Firebase Analytics events
 ├── coupon_manager.dart          # Coupon code check against Remote Config
+├── remote_config_setup.dart     # Remote Config settings and defaults, applied once
+├── promo/                       # Cross-promo notice for LETS ELEVATOR ADVENTURE
+│   ├── promo_banner.dart        # Notice widget under the menu grid
+│   ├── promo_video.dart         # Muted animated WebP playback and still image
+│   ├── promo_links.dart         # Store links and platform switches
+│   ├── promo_store.dart         # Native store sheet and installed check calls
+│   ├── promo_config.dart        # Remote Config values for the notice
+│   ├── promo_session.dart       # Launch steps and installed check
+│   ├── promo_prefs.dart         # Stored counters
+│   └── promo_buckets.dart       # Analytics event buckets
 ├── review_manager.dart          # Store review request
 ├── admob_banner.dart            # Banner advertisement management
 ├── admob_interstitial.dart      # Interstitial advertisements (not in use)
@@ -206,10 +216,138 @@ The codes live in the Firebase Remote Config parameter `coupon_codes`, a JSON st
 - The hash of a code is `printf %s CODE | shasum -a 256`
 - A code is valid through its `expires` date, read on the device's calendar
 - An empty parameter rejects every code; a failed fetch with no value already on the device makes the check return `unavailable`
-- Remote Config is fetched only when a code is checked (10 s timeout, at most once an hour)
+- Remote Config is fetched when a code is checked, with the settings of `lib/remote_config_setup.dart` (10 s timeout, at most once an hour)
 
 Analytics events (`lib/analytics_manager.dart`): `couponEntryOpened` logs `coupon_entry_opened` with no parameters, and every `CouponManager.check` logs `coupon_code_checked` with `result` set to `valid`, `invalid` or `unavailable`.
 Register `result` as a custom dimension in GA4 to report it.
+
+## 📣 Cross-Promo Notice
+
+The menu shows a silent video notice under the tile grid that promotes LETS ELEVATOR ADVENTURE.
+The whole notice is one button: tapping anywhere on it opens the store page of ADVENTURE.
+On Android it opens the Google Play inline install sheet, and when that cannot be opened it opens the Play store page by URL outside the app.
+On iOS it opens the App Store sheet inside the app, and when that cannot be opened it opens the App Store URL outside the app.
+
+Files: `lib/promo/` holds the notice (`promo_banner.dart`), the video (`promo_video.dart`), the store links and the native calls (`promo_links.dart`, `promo_store.dart`), the Remote Config values (`promo_config.dart`), the launch steps and the installed check (`promo_session.dart`), the stored counters (`promo_prefs.dart`) and the event buckets (`promo_buckets.dart`).
+The menu wiring is in `lib/menu.dart`.
+
+### When the notice is shown
+
+The notice is shown only when all of these hold:
+
+- The platform switch is on.
+  Android uses `promoAndroidEnabled` in `lib/promo/promo_links.dart`.
+  iOS uses `promoIosEnabled`, and also needs a non-empty `promoAdventureIosAppId` and `promoAdventureIosPt`, so it stays off until both are filled in.
+- Remote Config `promo_menu_enabled` is true.
+- ADVENTURE is not installed on the device.
+- The room left under the grid is at least `promoBannerMinHeight()` (`lib/size_extension.dart`).
+  The room is the height of the strip under the grid minus `menuButtonMargin()`.
+  The notice is as tall as that room allows, up to `promoBannerMaxHeight()`.
+  The grid does not move, and when the room is short the notice is left out.
+
+The installed check uses the platform:
+
+- Android asks the native side whether the package `nakajimamasao.appstudio.elevator3d` exists.
+  That package must stay in the `<queries>` block of `android/app/src/main/AndroidManifest.xml`, or Android hides it.
+- iOS calls `canLaunchUrl` on `nakajimamasao.appstudio.elevator3d://`.
+  The same string must stay in `LSApplicationQueriesSchemes` in `ios/Runner/Info.plist`.
+  `promoAdventureIosUrlName` in `promo_links.dart` holds that name, but the link builders do not use it.
+
+The check runs at launch and again each time the app is resumed.
+Once ADVENTURE is found, the notice is removed from the menu.
+
+For development, `flutter run --dart-define=PROMO_FORCE_IOS=true` turns on the iOS notice in a debug build.
+The define has no effect in profile or release builds.
+Until the iOS app ID and provider token are filled in, a tap on the iOS notice does not open a store page.
+
+### Remote Config
+
+The app reads three keys, with the defaults given in `PromoConfig` (`lib/promo/promo_config.dart`).
+The app uses these defaults until a fetch succeeds.
+
+- `promo_menu_enabled` (boolean, default `true`): turns the notice on or off.
+- `promo_video_patterns` (string, default `p1,p2,p3`): the video patterns to play, separated by commas, in play order.
+  Unknown names and repeated names are dropped, and when nothing valid is left all patterns play.
+- `promo_video_enabled` (boolean, default `true`): when false, the notice shows only the still image.
+
+The fetch runs at launch, after the first frame, and only when the platform switch is on.
+The fetch waits at most 10 seconds (`fetchTimeout`).
+The app asks the server only when the last fetch is more than 1 hour old (`minimumFetchInterval`), so a change reaches a device on the first launch after that.
+When the fetch fails or times out, the values stay at their defaults for that launch.
+The menu reads the values when it builds, so a value that arrives later applies on the next build.
+
+`firebase_remote_config` is pinned to `7.0.1` in `pubspec.yaml`, next to the other pinned Firebase packages.
+The pins match the Firebase iOS SDK that `firebase_core` 5.1.0 uses.
+When one Firebase version changes, change `firebase_core`, `firebase_analytics` and `firebase_remote_config` together.
+
+The settings (fetch timeout and interval) and the defaults for all keys, including `coupon_codes`, are set once in `lib/remote_config_setup.dart` (`ensureRemoteConfigReady()`).
+Add a new Remote Config key there, and do not call `setDefaults` from anywhere else, because a second call replaces the first one's defaults.
+
+### Video
+
+The notice plays three patterns, `p1`, `p2` and `p3`, from `assets/images/promo/`.
+Each pattern is an animated WebP at 640x360, 15 fps, with no sound, and each has a `_still` image of its first frame (`p1_still.webp` and so on).
+The list of known pattern names is `PromoConfig.allPatterns`, so a new pattern needs a new file and a new name in that list.
+
+- The frames are decoded one at a time with `dart:ui` `Codec`.
+  No video plugin or audio session is used, so the sound of other apps keeps playing.
+- The animation stops when the app is not in front or when the ticker is off, and it resumes where it stopped.
+- The still image is shown instead of the animation when the device asks for reduced motion or when `promo_video_enabled` is false.
+- Each time a pattern starts, the next pattern is saved, so the next menu opening starts from there.
+
+To make new files, extract the frames at 640x360 and encode them with the commands below.
+Replace the placeholders with your own source file, start time, frame count and crop.
+Crop to 16:9 before scaling.
+
+```bash
+# Extract frames as PNG at 15 fps, cropped to 16:9 and scaled to 640x360
+ffmpeg -ss <start-seconds> -i <source-file> -frames:v <frame-count> \
+  -vf "fps=15,crop=<w>:<h>:<x>:<y>,scale=640:360:flags=lanczos" f%03d.png
+
+# Animated WebP: 67 ms per frame (about 15 fps), loops forever, lossy quality 75, every frame a keyframe
+img2webp -loop 0 -kmax 1 -lossy -q 75 -d 67 f*.png -o p1.webp
+
+# Still image: the first frame
+cwebp -q 80 f001.png -o p1_still.webp
+```
+
+Do not use `-min_size`: it writes partial frames that the Flutter engine cannot decode, and the animation stops.
+`test/promo_assets_test.dart` decodes every frame of the bundled files, so run it after re-encoding.
+
+Check each animated file with `webpmux -info`: the frame duration should be 67 ms and the loop count 0.
+The size budget is 640 KB for each animated file and 1.92 MB for all six files together.
+The code does not check the budget.
+
+### Analytics events
+
+The events go through `AnalyticsManager` (the Cross-Promo Events section of `lib/analytics_manager.dart`) to Firebase Analytics.
+Counts are sent as bucket names from `lib/promo/promo_buckets.dart` (for example launch count `1`, `2`, `3_5`, `6_20` or `21_plus`), and booleans are sent as `0` or `1`.
+
+- `cross_promo_shown`: sent each time the notice appears on the menu, with the launch, ride, day and shown-count buckets.
+- `cross_promo_video_played`: sent once per pattern run, with `completed` set to `1` after the last frame or `0` when the notice leaves before it.
+  Pausing does not end a run.
+- `cross_promo_tapped`: sent after each tap, once the store open has been tried, with `open_method` set to `sheet`, `market`, `url` or `none`, and `opened`.
+- `cross_promo_store_returned`: sent once after a tap, when the user comes back from the store.
+  On iOS the sheet reports `storeClosed`; the other methods count the app resuming.
+- `cross_promo_view_ended`: sent when the notice leaves the menu, with the visible time bucket and whether it was tapped.
+- `cross_promo_target_found`: sent once per device, the first time ADVENTURE is seen installed.
+
+### Native channel
+
+The Dart side and the native side talk over the method channel `nakajimamasao.appstudio/store_promo`.
+
+- Android (`MainActivity.kt`): `isInstalled` with no arguments returns a boolean.
+  `openPlay` with a `url` argument opens the Play inline install and returns `false` when no activity can take the intent.
+  The intent targets the package `com.android.vending`.
+- iOS (`AppDelegate.swift`): `openAppStore` with `appId`, `ct` and `pt` shows the store sheet and returns whether the product loaded.
+  The native side sends `storeClosed` to Dart when the user closes the sheet.
+
+The store links are built in `promo_links.dart`:
+
+- Android inline install: `https://play.google.com/d?id=nakajimamasao.appstudio.elevator3d&referrer=...`, where the referrer carries `utm_source` (the app name), `utm_medium=in_app` and `utm_campaign` (the placement, `menu`).
+- Android store page: the same package and referrer on `https://play.google.com/store/apps/details`.
+- iOS store page: `https://apps.apple.com/app/id<appId>?pt=<pt>&ct=promo_menu&mt=8`.
+
 
 ## 📱 Supported Platforms
 

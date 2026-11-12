@@ -102,5 +102,8 @@
   "premiumRestoreFailed": "復元できる購入が見つかりませんでした。",
   "premiumUnavailable": "いま購入手続きを開始できません。\n時間をおいてもう一度お試しください。",
   "nameAppliance": "生活家電",
-  "appliance": "生活家電売り場階です。　"
+  "appliance": "生活家電売り場階です。　",
+  "promoTitle" : "新作アプリのお知らせ",
+  "promoAdventureName" : "レッツ・エレベーター・アドベンチャー",
+  "promoStoreButton" : "ストアで見る"
 }

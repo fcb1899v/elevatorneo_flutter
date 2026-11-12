@@ -2,18 +2,22 @@
 // Gameplay and monetization events for the revenue funnel.
 
 import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:flutter/foundation.dart';
 import 'extension.dart';
 
 class AnalyticsManager {
 
-  static final FirebaseAnalytics _analytics = FirebaseAnalytics.instance;
+  /// The real sender, replaced in tests with a recorder, since widget tests never start Firebase
+  @visibleForTesting
+  static Future<void> Function(String name, Map<String, Object>? parameters) send =
+      (name, parameters) => FirebaseAnalytics.instance.logEvent(name: name, parameters: parameters);
 
   // --- Internal Helper ---
 
   /// Log an event and swallow any failure so analytics never breaks the app
   static Future<void> _log(String name, [Map<String, Object>? params]) async {
     try {
-      await _analytics.logEvent(name: name, parameters: params);
+      await send(name, params);
       "Analytics: $name ${params ?? ""}".debugPrint();
     } catch (e) {
       "Analytics error: $name: $e".debugPrint();
@@ -113,6 +117,154 @@ class AnalyticsManager {
 
   /// Log that the in-app store review prompt was requested
   static Future<void> reviewRequested() => _log("review_requested");
+
+  // --- Cross-Promo Events ---
+
+  /// Log that the cross-promo was shown in the menu, once per open
+  /// Bucketed values are sent as strings, and booleans as 0 or 1
+  static Future<void> crossPromoShown({
+    required String placement,
+    required bool isPremium,
+    required String lang,
+    required String launchCount,
+    required String rideCount,
+    required String daysSinceFirstLaunch,
+    required String shownCount,
+    required String firstPattern,
+    required String videoMode,
+  }) => _log("cross_promo_shown", _promoShownParams(
+    placement: placement,
+    isPremium: isPremium,
+    lang: lang,
+    launchCount: launchCount,
+    rideCount: rideCount,
+    daysSinceFirstLaunch: daysSinceFirstLaunch,
+    shownCount: shownCount,
+    firstPattern: firstPattern,
+    videoMode: videoMode,
+  ));
+
+  /// Log that a video pattern finished, or stopped when the menu closed
+  static Future<void> crossPromoVideoPlayed({
+    required String pattern,
+    required bool completed,
+    required bool isPremium,
+  }) => _log("cross_promo_video_played", {
+    "target": "adventure",
+    "pattern": pattern,
+    "completed": completed ? 1 : 0,
+    "is_premium": isPremium ? 1 : 0,
+  });
+
+  /// Log that the cross-promo was tapped and the store opening has started
+  /// The open result is sent as "none" by the caller when nothing opened
+  static Future<void> crossPromoTapped({
+    required String placement,
+    required bool isPremium,
+    required String lang,
+    required String launchCount,
+    required String rideCount,
+    required String daysSinceFirstLaunch,
+    required String shownCount,
+    required String firstPattern,
+    required String videoMode,
+    required String videoPattern,
+    required String videoPosition,
+    required String patternsSeen,
+    required String targetArea,
+    required String visible,
+    required String openMethod,
+    required bool opened,
+  }) => _log("cross_promo_tapped", {
+    ..._promoShownParams(
+      placement: placement,
+      isPremium: isPremium,
+      lang: lang,
+      launchCount: launchCount,
+      rideCount: rideCount,
+      daysSinceFirstLaunch: daysSinceFirstLaunch,
+      shownCount: shownCount,
+      firstPattern: firstPattern,
+      videoMode: videoMode,
+    ),
+    "video_pattern": videoPattern,
+    "video_position": videoPosition,
+    "patterns_seen": patternsSeen,
+    "target_area": targetArea,
+    "visible": visible,
+    "open_method": openMethod,
+    "opened": opened ? 1 : 0,
+  });
+
+  /// Log that the cross-promo left the screen when the menu closed
+  static Future<void> crossPromoViewEnded({
+    required String placement,
+    required String visible,
+    required bool tapped,
+    required String patternsSeen,
+    required bool isPremium,
+  }) => _log("cross_promo_view_ended", {
+    "target": "adventure",
+    "placement": placement,
+    "visible": visible,
+    "tapped": tapped ? 1 : 0,
+    "patterns_seen": patternsSeen,
+    "is_premium": isPremium ? 1 : 0,
+  });
+
+  /// Log that the user came back from the store after the cross-promo tap
+  static Future<void> crossPromoStoreReturned({
+    required String placement,
+    required String videoPattern,
+    required String openMethod,
+    required String away,
+  }) => _log("cross_promo_store_returned", {
+    "target": "adventure",
+    "placement": placement,
+    "video_pattern": videoPattern,
+    "open_method": openMethod,
+    "away": away,
+  });
+
+  /// Log the first time the target app is found installed on this device
+  static Future<void> crossPromoTargetFound({
+    required bool tappedBefore,
+    required String lastPlacement,
+    required String lastPattern,
+    required String sinceTap,
+    required bool isPremium,
+  }) => _log("cross_promo_target_found", {
+    "target": "adventure",
+    "tapped_before": tappedBefore ? 1 : 0,
+    "last_placement": lastPlacement,
+    "last_pattern": lastPattern,
+    "since_tap": sinceTap,
+    "is_premium": isPremium ? 1 : 0,
+  });
+
+  /// Shared parameters of the shown and tapped events
+  static Map<String, Object> _promoShownParams({
+    required String placement,
+    required bool isPremium,
+    required String lang,
+    required String launchCount,
+    required String rideCount,
+    required String daysSinceFirstLaunch,
+    required String shownCount,
+    required String firstPattern,
+    required String videoMode,
+  }) => {
+    "target": "adventure",
+    "placement": placement,
+    "is_premium": isPremium ? 1 : 0,
+    "lang": lang,
+    "launch_count": launchCount,
+    "ride_count": rideCount,
+    "days_since_first_launch": daysSinceFirstLaunch,
+    "shown_count": shownCount,
+    "first_pattern": firstPattern,
+    "video_mode": videoMode,
+  };
 
   // No ATT event on purpose: UMP owns the prompt, so there is no answer callback.
   // Reading the status at launch would only record notDetermined.
