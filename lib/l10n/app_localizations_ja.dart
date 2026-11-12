@@ -135,34 +135,34 @@ class AppLocalizationsJa extends AppLocalizations {
   String get supermarket => 'スーパー階です。　';
 
   @override
-  String get station => '駅改札階です。　';
+  String get station => '駅の改札階です。　';
 
   @override
   String get parking => '駐車場階です。　';
 
   @override
-  String get apparel => '洋服階です。　';
+  String get apparel => '洋服売り場階です。　';
 
   @override
-  String get electronics => 'デジタル家電階です。　';
+  String get electronics => 'デジタル家電売り場階です。　';
 
   @override
-  String get outdoor => 'アウトドア用品階です。　';
+  String get outdoor => 'アウトドア用品売り場階です。　';
 
   @override
-  String get bookstore => '本屋階です。　';
+  String get bookstore => '書店階です。　';
 
   @override
-  String get candy => '駄菓子屋階です。　';
+  String get candy => '駄菓子売り場階です。　';
 
   @override
-  String get toy => 'おもちゃ階です。　';
+  String get toy => 'おもちゃ売り場階です。　';
 
   @override
   String get luxury => '高級ブティック階です。　';
 
   @override
-  String get sports => 'スポーツ用品階です。　';
+  String get sports => 'スポーツ用品売り場階です。　';
 
   @override
   String get gym => 'ジム階です。　';
@@ -171,7 +171,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get sweets => 'パティスリー階です。　';
 
   @override
-  String get furniture => '家具階です。　';
+  String get furniture => '家具売り場階です。　';
 
   @override
   String get cinema => '映画館階です。　';
@@ -323,5 +323,5 @@ class AppLocalizationsJa extends AppLocalizations {
   String get nameAppliance => '生活家電';
 
   @override
-  String get appliance => '生活家電階です。　';
+  String get appliance => '生活家電売り場階です。　';
 }
