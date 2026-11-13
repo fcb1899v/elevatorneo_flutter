@@ -65,6 +65,11 @@ android {
         disable 'InvalidPackage'
         checkReleaseBuilds false
     }
+    // Flutter passes flutter_assets to AGP as an asset source, and AGP's default ignore list (".*") would drop assets/.env.
+    // This is AGP's default list without ".*".
+    androidResources {
+        ignoreAssetsPatterns.addAll(["!.svn", "!.git", "!.ds_store", "!*.scc", "<dir>_*", "!CVS", "!thumbs.db", "!picasa.ini", "!*~"])
+    }
 
     sourceSets {
         main.java.srcDirs += 'src/main/kotlin'
