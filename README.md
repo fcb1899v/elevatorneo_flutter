@@ -351,7 +351,7 @@ The store links are built in `promo_links.dart`:
 
 ## 📱 Supported Platforms
 
-- **Android**: API 24+ (`flutter.minSdkVersion`), compiled and targeted at API 37
+- **Android**: API 29+ (Android 10, `minSdkVersion 29` in `android/app/build.gradle`), compiled and targeted at API 37
 - **iOS**: iOS 15.0+ (`IPHONEOS_DEPLOYMENT_TARGET`)
 
 ## 🔧 Development
