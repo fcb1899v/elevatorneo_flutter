@@ -2,6 +2,7 @@
 // Settings, rewarded ad with retry, leaderboard, external links, banner, connectivity.
 
 import 'dart:async';
+import 'dart:math' as math;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -20,7 +21,10 @@ import 'main.dart';
 import 'plan_provider.dart';
 import 'premium_page.dart';
 import 'promo/promo_banner.dart';
+import 'promo/promo_card_text.dart';
 import 'promo/promo_config.dart';
+import 'promo/promo_layout.dart';
+import 'promo/promo_prefs.dart';
 import 'promo/promo_session.dart';
 import 'purchase_manager.dart';
 import 'settings.dart';
@@ -44,6 +48,10 @@ class MenuPage extends HookConsumerWidget {
     final isLoadingAd = useState(false);                      // Guards against duplicate in-flight loads
     final cancelToken = useMemoized(() => Completer<void>(), []); // Cancellation token for cleanup
     final isLoadingData = useState(false);                    // Data loading state
+    // The card is hidden once its close button is pressed in this opening.
+    final adventureDismissed = useState(false);
+    // Whether the saved close count and date allow the card; read once per opening.
+    final cardAllowed = useMemoized(() => PromoPrefs.adventureNoticeAllowed());
     // The price the store returned, empty until it answers.
     // The purchase button is drawn from it, and watching brings it in when a prefetch lands.
     final storePrice = ref.watch(planProvider).priceString;
@@ -448,43 +456,88 @@ class MenuPage extends HookConsumerWidget {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                // The grid and the notice share the free height.
-                // The notice sits in the strip under the grid; when that strip is short, the grid moves up by the rest.
-                Expanded(child: ValueListenableBuilder<bool>(
-                  valueListenable: PromoSession.adventureInstalled,
-                  builder: (_, installed, _) => LayoutBuilder(builder: (ctx, c) {
-                    // Each row is a button plus its margin on both sides.
-                    final gridHeight = menuRows.length * (ctx.menuButtonSize() + 2 * ctx.menuButtonMargin());
-                    final free = c.maxHeight - gridHeight;
-                    final room = free < 0 ? 0.0: free;
-                    final margin = ctx.menuButtonMargin();
-                    final maxHeight = ctx.promoBannerMaxHeight();
-                    // The notice takes the room above its bottom margin, up to its maximum.
-                    final noticeHeight = room - margin < maxHeight ? room - margin: maxHeight;
-                    final showNotice = PromoSession.platformEnabled()
-                      && PromoConfig.menuEnabled
-                      && !installed
-                      && noticeHeight >= ctx.promoBannerMinHeight();
-                    // Half of the free height below the grid, or what the notice needs with its margin.
-                    final below = showNotice && room / 2 < noticeHeight + margin ? noticeHeight + margin: room / 2;
-                    final above = room - below;
-                    return Column(crossAxisAlignment: CrossAxisAlignment.center, children: [
-                      SizedBox(height: above),
-                      ...menuRows,
-                      SizedBox(height: below, child: showNotice ? Padding(
-                        padding: EdgeInsets.only(bottom: ctx.menuButtonMargin()),
-                        child: Center(child: PromoMenuBanner(
-                          key: const ValueKey('promoMenuBanner'),
-                          height: noticeHeight,
-                          isPremium: isPremium,
-                          patterns: PromoConfig.videoPatterns,
-                          firstPattern: PromoSession.nextPattern ?? PromoConfig.videoPatterns.first,
-                          stillOnly: !PromoConfig.videoEnabled,
-                          onNextPattern: (p) => PromoSession.nextPattern = p,
-                        )),
-                      ): null),
-                    ]);
-                  }),
+                // The home screen's app bar above this page is the header band of the notice spec, so none is added here.
+                // The grid and the notice take their sizes from PromoLayout; the rest is left below.
+                Expanded(child: ListenableBuilder(
+                  listenable: Listenable.merge([PromoSession.adventureInstalled, PromoSession.installedChecked]),
+                  builder: (_, _) => FutureBuilder<bool>(
+                    future: cardAllowed,
+                    builder: (_, allowed) {
+                      final layout = PromoLayout(
+                        screenWidth: context.width(),
+                        screenHeight: context.height(),
+                        // The status band of the view: the Scaffold of the home screen has already removed it from this context.
+                        topInset: MediaQueryData.fromView(View.of(context)).padding.top,
+                        bottomRowHeight: isPremium
+                          ? 0.075 * math.min(context.height(), 1000) + MediaQuery.viewPaddingOf(context).bottom
+                          : context.admobHeight(),
+                      );
+                      Widget grid(double rowGap) => Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          for (var i = 0; i < menuRows.length; i++) ...[
+                            if (i > 0) SizedBox(height: rowGap),
+                            menuRows[i],
+                          ],
+                        ],
+                      );
+                      PromoCardPlan? plan;
+                      final lang = context.lang();
+                      // The card waits for every condition, the installed check included, so it is never built and then removed.
+                      final wanted = PromoSession.platformEnabled()
+                        && PromoSession.installedChecked.value
+                        && PromoConfig.menuEnabled
+                        && !PromoSession.adventureInstalled.value
+                        && (allowed.data ?? false)
+                        && !adventureDismissed.value
+                        && layout.remainder >= 0
+                        && layout.videoHeight > 0;
+                      if (wanted) {
+                        final candidate = planPromoCard(
+                          layout: layout,
+                          lang: lang,
+                          fontFamily: context.font(),
+                          heading: context.promoHeading(),
+                          body: context.promoBody(),
+                          bodyShort: context.promoBodyShort(),
+                        );
+                        if (candidate.showCard) plan = candidate;
+                      }
+                      if (plan == null) {
+                        // Without the card, the grid sits in the middle of the strip.
+                        return Center(child: grid(context.height() * 0.04));
+                      }
+                      // The column keeps the card's slot; the banner is laid over it, starting the close area's overhang above the slot.
+                      // A press in that overhang reaches the close button and leaves the grid's presses alone.
+                      final gapAboveCard = layout.gap + layout.remainder / 2;
+                      final cardTop = layout.gap + layout.gridHeight + gapAboveCard;
+                      return Stack(fit: StackFit.expand, children: [
+                        Column(children: [
+                          SizedBox(height: layout.gap),
+                          grid(layout.gap),
+                          SizedBox(height: gapAboveCard),
+                          SizedBox(height: layout.cardHeight),
+                          const Expanded(child: SizedBox.shrink()),
+                        ]),
+                        Positioned(
+                          top: cardTop - layout.closeAreaOverhang,
+                          left: 0,
+                          right: 0,
+                          child: Center(child: PromoMenuBanner(
+                            key: const ValueKey('promoMenuBanner'),
+                            layout: layout,
+                            plan: plan,
+                            isPremium: isPremium,
+                            patterns: PromoConfig.videoPatterns,
+                            firstPattern: PromoSession.nextPattern ?? PromoConfig.videoPatterns.first,
+                            stillOnly: !PromoConfig.videoEnabled,
+                            onNextPattern: (p) => PromoSession.nextPattern = p,
+                            onDismiss: () => adventureDismissed.value = true,
+                          )),
+                        ),
+                      ]);
+                    },
+                  ),
                 )),
                 // Bottom navigation with external links
                 // Premium drops the banner below, so the row takes the system inset
@@ -554,7 +607,6 @@ class MenuWidget {
       width: context.menuButtonSize(),
       height: context.menuButtonSize(),
       margin: EdgeInsets.symmetric(
-        vertical: context.menuButtonMargin(),
         horizontal: context.menuButtonMargin(),
       ),
       // The purchase button's PREMIUM caption is baked into the PNG, like adReward's +1000.
@@ -577,12 +629,10 @@ class MenuWidget {
   /// bottomInset is the system inset to take over when nothing is reserved below this row, which is the case once premium removes the banner
   Widget bottomMenuLink({required double bottomInset}) => Container(
     color: blackColor,
-    // The top keeps what the bar gave it: menuLinksMargin twice plus half the font size.
-    // The underside matches; the rest the bar added is gone, which was the gap
+    // The band is 0.02u margin, 0.12u icon, 0.01u gap, and a 1.42-line text row, with a margin below.
     padding: EdgeInsets.only(
-      top: context.menuLinksMargin() * 2 + context.menuLinksTitleSize() / 2,
-      bottom: context.menuLinksMargin() * 2 + context.menuLinksTitleSize() / 2
-        + bottomInset,
+      top: context.menuLinksMargin() * 2,
+      bottom: context.menuLinksMargin() * 2 + bottomInset,
     ),
     // The bar clamped text scaling and ellipsized.
     // Without both, a large system font setting overflows the row.
@@ -617,6 +667,7 @@ class MenuWidget {
                     style: TextStyle(
                       color: lampColor,
                       fontSize: context.menuLinksTitleSize(),
+                      height: 1.42,
                       fontWeight: FontWeight.bold,
                     ),
                   ),

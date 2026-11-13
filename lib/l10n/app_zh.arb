@@ -103,7 +103,10 @@
   "premiumUnavailable": "目前无法进行购买。\n请稍后再试。",
   "nameAppliance": "家电卖场",
   "appliance": "家电卖场层。",
-  "promoTitle" : "新应用上线",
+  "promoHeading" : "你可能还喜欢",
   "promoAdventureName" : "操作乐趣电梯冒险",
-  "promoStoreButton" : "在应用商店中查看"
+  "promoButton" : "了解更多",
+  "promoBody" : "尽情呼叫、乘坐、按下按钮，在摩天大楼里冒险的超逼真3D电梯模拟器",
+  "promoBodyShort" : "超逼真3D电梯模拟器",
+  "promoClose" : "关闭"
 }

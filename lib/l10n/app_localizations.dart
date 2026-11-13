@@ -727,8 +727,8 @@ abstract class AppLocalizations {
   /// Heading of the in-app notice that introduces the new app LETS ELEVATOR ADVENTURE.
   ///
   /// In en, this message translates to:
-  /// **'Our New App'**
-  String get promoTitle;
+  /// **'Recommended'**
+  String get promoHeading;
 
   /// Store name of the new app LETS ELEVATOR ADVENTURE. Keep as written.
   ///
@@ -739,8 +739,26 @@ abstract class AppLocalizations {
   /// Button that opens the new app's store page.
   ///
   /// In en, this message translates to:
-  /// **'View in Store'**
-  String get promoStoreButton;
+  /// **'Learn more'**
+  String get promoButton;
+
+  /// No description provided for @promoBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Call it, ride it and press the buttons as much as you like on a skyscraper adventure. A realistic 3D elevator simulator.'**
+  String get promoBody;
+
+  /// No description provided for @promoBodyShort.
+  ///
+  /// In en, this message translates to:
+  /// **'A realistic 3D elevator simulator'**
+  String get promoBodyShort;
+
+  /// No description provided for @promoClose.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get promoClose;
 }
 
 class _AppLocalizationsDelegate

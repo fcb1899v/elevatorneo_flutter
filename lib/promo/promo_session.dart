@@ -30,6 +30,10 @@ class PromoSession {
   /// True once ADVENTURE is found on this device. The menu hides the notice while true.
   static final ValueNotifier<bool> adventureInstalled = ValueNotifier(false);
 
+  /// True once the installed check has ended, after the Remote Config fetch before it.
+  /// The menu builds no notice before that, so an installed device never sees one for a moment.
+  static final ValueNotifier<bool> installedChecked = ValueNotifier(false);
+
   /// The pattern to play first, read at launch so the menu can start at once.
   static String? nextPattern;
 
@@ -42,7 +46,7 @@ class PromoSession {
   static String Function() platformSource = () => Platform.operatingSystem;
 
   static bool _started = false;
-  static bool _refreshing = false;
+  static Future<void>? _refreshing;
   static bool Function()? _isPremium;
   static _PromoLifecycleObserver? _observer;
 
@@ -83,10 +87,13 @@ class PromoSession {
   }
 
   /// Checks whether ADVENTURE is installed and logs the first find. Never throws.
-  static Future<void> refreshInstalled() async {
-    // A call made while another check runs is dropped, so the first find is logged once.
-    if (_refreshing || !platformEnabled()) return;
-    _refreshing = true;
+  /// A call made while another check runs waits for that check, so the first find is logged once.
+  static Future<void> refreshInstalled() {
+    if (!platformEnabled()) return Future.value();
+    return _refreshing ??= _refresh().whenComplete(() => _refreshing = null);
+  }
+
+  static Future<void> _refresh() async {
     try {
       final installed = await PromoStore.isAdventureInstalled();
       adventureInstalled.value = installed;
@@ -105,7 +112,7 @@ class PromoSession {
     } catch (e) {
       'PromoSession: refresh error: $e'.debugPrint();
     } finally {
-      _refreshing = false;
+      installedChecked.value = true;
     }
   }
 
@@ -113,11 +120,12 @@ class PromoSession {
   @visibleForTesting
   static void reset() {
     adventureInstalled.value = false;
+    installedChecked.value = false;
     nextPattern = null;
     platformOverride = null;
     platformSource = () => Platform.operatingSystem;
     _started = false;
-    _refreshing = false;
+    _refreshing = null;
     _isPremium = null;
     final observer = _observer;
     if (observer != null) WidgetsBinding.instance.removeObserver(observer);

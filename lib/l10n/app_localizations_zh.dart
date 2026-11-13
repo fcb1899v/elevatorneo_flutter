@@ -332,11 +332,20 @@ class AppLocalizationsZh extends AppLocalizations {
   String get appliance => '家电卖场层。';
 
   @override
-  String get promoTitle => '新应用上线';
+  String get promoHeading => '你可能还喜欢';
 
   @override
   String get promoAdventureName => '操作乐趣电梯冒险';
 
   @override
-  String get promoStoreButton => '在应用商店中查看';
+  String get promoButton => '了解更多';
+
+  @override
+  String get promoBody => '尽情呼叫、乘坐、按下按钮，在摩天大楼里冒险的超逼真3D电梯模拟器';
+
+  @override
+  String get promoBodyShort => '超逼真3D电梯模拟器';
+
+  @override
+  String get promoClose => '关闭';
 }

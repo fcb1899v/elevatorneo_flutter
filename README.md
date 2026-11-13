@@ -134,13 +134,15 @@ lib/
 ├── coupon_manager.dart          # Coupon code check against Remote Config
 ├── remote_config_setup.dart     # Remote Config settings and defaults, applied once
 ├── promo/                       # Cross-promo notice for LETS ELEVATOR ADVENTURE
-│   ├── promo_banner.dart        # Notice widget under the menu grid
+│   ├── promo_banner.dart        # Notice card under the menu grid, with its close button
+│   ├── promo_layout.dart        # Card sizes from the screen size
+│   ├── promo_card_text.dart     # Heading and body fitting, and whether the card fits
 │   ├── promo_video.dart         # Muted animated WebP playback and still image
 │   ├── promo_links.dart         # Store links and platform switches
 │   ├── promo_store.dart         # Native store sheet and installed check calls
 │   ├── promo_config.dart        # Remote Config values for the notice
 │   ├── promo_session.dart       # Launch steps and installed check
-│   ├── promo_prefs.dart         # Stored counters
+│   ├── promo_prefs.dart         # Stored counters and close records
 │   └── promo_buckets.dart       # Analytics event buckets
 ├── review_manager.dart          # Store review request
 ├── admob_banner.dart            # Banner advertisement management
@@ -165,6 +167,7 @@ assets/
 │   ├── button/                 # Button images
 │   ├── elevator/               # Elevator images
 │   ├── room/                   # Room background images
+│   ├── promo/                  # Cross-promo notice videos, stills and the ADVENTURE logo
 │   └── settings/               # Settings screen images
 ├── audios/                     # Audio files
 ├── fonts/                      # Font files
@@ -223,12 +226,15 @@ Register `result` as a custom dimension in GA4 to report it.
 
 ## 📣 Cross-Promo Notice
 
-The menu shows a silent video notice under the tile grid that promotes LETS ELEVATOR ADVENTURE.
-The whole notice is one button: tapping anywhere on it opens the store page of ADVENTURE.
+The menu shows a notice card under the tile grid that promotes LETS ELEVATOR ADVENTURE.
+On the left is a silent video at 3:4, shown whole inside its box (`BoxFit.contain`).
+On the right, from top to bottom, are a heading, the ADVENTURE name logo, a short description and a button.
+A round close button sits at the top right of the card.
+The card is one button: tapping anywhere on it except the close button opens the store page of ADVENTURE.
 On Android it opens the Google Play inline install sheet, and when that cannot be opened it opens the Play store page by URL outside the app.
 On iOS it opens the App Store sheet inside the app, and when that cannot be opened it opens the App Store URL outside the app.
 
-Files: `lib/promo/` holds the notice (`promo_banner.dart`), the video (`promo_video.dart`), the store links and the native calls (`promo_links.dart`, `promo_store.dart`), the Remote Config values (`promo_config.dart`), the launch steps and the installed check (`promo_session.dart`), the stored counters (`promo_prefs.dart`) and the event buckets (`promo_buckets.dart`).
+Files: `lib/promo/` holds the card (`promo_banner.dart`), its sizes (`promo_layout.dart`), its text fitting (`promo_card_text.dart`), the video (`promo_video.dart`), the store links and the native calls (`promo_links.dart`, `promo_store.dart`), the Remote Config values (`promo_config.dart`), the launch steps and the installed check (`promo_session.dart`), the stored counters and close records (`promo_prefs.dart`) and the event buckets (`promo_buckets.dart`).
 The menu wiring is in `lib/menu.dart`.
 
 ### When the notice is shown
@@ -239,11 +245,13 @@ The notice is shown only when all of these hold:
   Android uses `promoAndroidEnabled` in `lib/promo/promo_links.dart`.
   iOS uses `promoIosEnabled`, and also needs a non-empty `promoAdventureIosAppId` and `promoAdventureIosPt`, so it stays off until both are filled in.
 - Remote Config `promo_menu_enabled` is true.
-- ADVENTURE is not installed on the device.
-- The room left under the grid is at least `promoBannerMinHeight()` (`lib/size_extension.dart`).
-  The room is the height of the strip under the grid minus `menuButtonMargin()`.
-  The notice is as tall as that room allows, up to `promoBannerMaxHeight()`.
-  The grid does not move, and when the room is short the notice is left out.
+- The installed check below has ended and found that ADVENTURE is not installed on the device.
+  The check runs after the Remote Config fetch at launch, and no card is built before it ends (`PromoSession.installedChecked` in `lib/promo/promo_session.dart`).
+- The card has not been closed today, and has been closed fewer than three times on this device (see "Close button" below).
+- The card fits on the screen (see "Card size and text" below).
+
+With the card, the tile grid sits at the top of the space and the card under it.
+Without the card, the grid is centred in the space with wider gaps between its rows.
 
 The installed check uses the platform:
 
@@ -259,6 +267,34 @@ Once ADVENTURE is found, the notice is removed from the menu.
 For development, `flutter run --dart-define=PROMO_FORCE_IOS=true` turns on the iOS notice in a debug build.
 The define has no effect in profile or release builds.
 Until the iOS app ID and provider token are filled in, a tap on the iOS notice does not open a store page.
+
+### Card size and text
+
+Every size of the card comes from `PromoLayout` (`lib/promo/promo_layout.dart`), which works only from the screen width and height, so the card keeps its proportions on every device.
+The card is centred and as wide as the screen allows, up to a cap.
+The video is as tall as both the room under the grid and a minimum width for the text column allow, and the text column takes the rest of the card's width.
+
+`planPromoCard` (`lib/promo/promo_card_text.dart`) measures the text with the app's font and decides what the column shows:
+
+- The heading (`promoHeading`) stays on one line and shrinks to fit in Japanese and Chinese, and takes up to two lines in the other languages.
+  A heading that needs more than two lines leaves the card out.
+- The body is the full text (`promoBody`) when it fits, then the short text (`promoBodyShort`), and otherwise no body.
+  A body fits when the space left between the rows of the column stays above a fixed minimum.
+- When even the heading, the logo and the button do not fit with that spacing, the card is not shown.
+- Japanese breaks lines only between the phrases in `jaBodyPhrases` and `jaBodyShortPhrases`, which must join to exactly the texts in `app_ja.arb`; otherwise the body is measured as one line.
+  The other languages break where Flutter's text layout breaks.
+- The card ignores the system font size setting, so the drawn text matches the measured text.
+
+The card's texts are the `promoHeading`, `promoBody`, `promoBodyShort`, `promoButton`, `promoAdventureName` and `promoClose` keys in `lib/l10n/app_*.arb`.
+The name logo shows the app name, so `promoAdventureName` is read only by screen readers, as part of the card's label.
+`promoClose` is the screen reader label of the close button.
+
+### Close button
+
+Tapping the close button removes the card at once and never opens the store.
+The card stays away for the rest of that day by the device's local date, and comes back the next time the menu opens on a later day.
+After the third close, the card is not shown on that device again.
+The close count and the date of the last close are stored under `adventureDismissCountKey` and `adventureDismissedDateKey` (`lib/promo/promo_prefs.dart`), and the app never resets the count.
 
 ### Remote Config
 
@@ -286,8 +322,10 @@ Add a new Remote Config key there, and do not call `setDefaults` from anywhere e
 ### Video
 
 The notice plays three patterns, `p1`, `p2` and `p3`, from `assets/images/promo/`.
-Each pattern is an animated WebP at 640x360, 15 fps, with no sound, and each has a `_still` image of its first frame (`p1_still.webp` and so on).
+Each pattern is an animated WebP at 864x1152 (3:4) with no sound, and each has a `_still` image of its first frame at the same size (`p1_still.webp` and so on).
+Frames are 67 ms apart (about 15 fps), and where the same picture repeats, `img2webp` merges it into one longer frame.
 The list of known pattern names is `PromoConfig.allPatterns`, so a new pattern needs a new file and a new name in that list.
+The name logo is `assets/images/promo/adventure_logo.png`, a 708x200 PNG; the card sizes it for that aspect ratio, so a replacement has to keep it.
 
 - The frames are decoded one at a time with `dart:ui` `Codec`.
   No video plugin or audio session is used, so the sound of other apps keeps playing.
@@ -295,14 +333,14 @@ The list of known pattern names is `PromoConfig.allPatterns`, so a new pattern n
 - The still image is shown instead of the animation when the device asks for reduced motion or when `promo_video_enabled` is false.
 - Each time a pattern starts, the next pattern is saved, so the next menu opening starts from there.
 
-To make new files, extract the frames at 640x360 and encode them with the commands below.
+To make new files, extract the frames at 864x1152 and encode them with the commands below.
 Replace the placeholders with your own source file, start time, frame count and crop.
-Crop to 16:9 before scaling.
+Crop to 3:4 before scaling.
 
 ```bash
-# Extract frames as PNG at 15 fps, cropped to 16:9 and scaled to 640x360
+# Extract frames as PNG at 15 fps, cropped to 3:4 and scaled to 864x1152
 ffmpeg -ss <start-seconds> -i <source-file> -frames:v <frame-count> \
-  -vf "fps=15,crop=<w>:<h>:<x>:<y>,scale=640:360:flags=lanczos" f%03d.png
+  -vf "fps=15,crop=<w>:<h>:<x>:<y>,scale=864:1152:flags=lanczos" f%03d.png
 
 # Animated WebP: 67 ms per frame (about 15 fps), loops forever, lossy quality 75, every frame a keyframe
 img2webp -loop 0 -kmax 1 -lossy -q 75 -d 67 f*.png -o p1.webp
@@ -312,24 +350,24 @@ cwebp -q 80 f001.png -o p1_still.webp
 ```
 
 Do not use `-min_size`: it writes partial frames that the Flutter engine cannot decode, and the animation stops.
-`test/promo_assets_test.dart` decodes every frame of the bundled files, so run it after re-encoding.
+`test/promo_assets_test.dart` decodes every frame of the bundled files and checks that each is 864x1152, so run it after re-encoding.
 
-Check each animated file with `webpmux -info`: the frame duration should be 67 ms and the loop count 0.
-The size budget is 640 KB for each animated file and 1.92 MB for all six files together.
-The code does not check the budget.
+Check each animated file with `webpmux -info`: every frame duration should be a multiple of 67 ms and the loop count 0.
 
 ### Analytics events
 
 The events go through `AnalyticsManager` (the Cross-Promo Events section of `lib/analytics_manager.dart`) to Firebase Analytics.
 Counts are sent as bucket names from `lib/promo/promo_buckets.dart` (for example launch count `1`, `2`, `3_5`, `6_20` or `21_plus`), and booleans are sent as `0` or `1`.
 
-- `cross_promo_shown`: sent each time the notice appears on the menu, with the launch, ride, day and shown-count buckets.
+- `cross_promo_shown`: sent each time the notice appears on the menu, with the launch, ride, day and shown-count buckets, the language, the first pattern, `video_mode` (`video` or `still`) and `body_form`.
+  `body_form` is the body the card shows: `full`, `short` or `none`.
 - `cross_promo_video_played`: sent once per pattern run, with `completed` set to `1` after the last frame or `0` when the notice leaves before it.
   Pausing does not end a run.
-- `cross_promo_tapped`: sent after each tap, once the store open has been tried, with `open_method` set to `sheet`, `market`, `url` or `none`, and `opened`.
+- `cross_promo_tapped`: sent after each tap, once the store open has been tried, with the values of `cross_promo_shown`, the pattern and position of the video, the patterns seen, the visible time, `target_area` (`video`, `text` or `button`), `open_method` set to `sheet`, `market`, `url` or `none`, and `opened`.
+- `cross_promo_dismissed`: sent when the close button removes the card, with the values of `cross_promo_shown`, `method` set to `close_x`, `dismiss_count` (this device's close count including this close), and the pattern and position of the video, the patterns seen and the visible time at that moment.
 - `cross_promo_store_returned`: sent once after a tap, when the user comes back from the store.
   On iOS the sheet reports `storeClosed`; the other methods count the app resuming.
-- `cross_promo_view_ended`: sent when the notice leaves the menu, with the visible time bucket and whether it was tapped.
+- `cross_promo_view_ended`: sent when the notice leaves the menu, with the visible time bucket, the patterns seen, whether it was tapped, and `dismissed` set to `1` when the close button removed it.
 - `cross_promo_target_found`: sent once per device, the first time ADVENTURE is seen installed.
 
 ### Native channel

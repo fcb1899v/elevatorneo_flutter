@@ -338,11 +338,21 @@ class AppLocalizationsFr extends AppLocalizations {
   String get appliance => 'Étage électroménager, ';
 
   @override
-  String get promoTitle => 'Notre nouvelle app';
+  String get promoHeading => 'Recommandé';
 
   @override
   String get promoAdventureName => 'LETS ELEVATOR ADVENTURE';
 
   @override
-  String get promoStoreButton => 'Voir sur le Store';
+  String get promoButton => 'Découvrir';
+
+  @override
+  String get promoBody =>
+      'Appelez l\'ascenseur, montez, appuyez sur les boutons à volonté et partez à l\'aventure dans un gratte-ciel. Simulateur 3D ultra-réaliste.';
+
+  @override
+  String get promoBodyShort => 'Simulateur d\'ascenseur 3D ultra-réaliste';
+
+  @override
+  String get promoClose => 'Fermer';
 }

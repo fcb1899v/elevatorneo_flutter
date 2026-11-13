@@ -171,7 +171,7 @@ class PromoVideoState extends State<PromoVideo> with WidgetsBindingObserver {
   Widget build(BuildContext context) {
     return ExcludeSemantics(
       child: SizedBox.expand(
-        child: RawImage(image: _image, fit: BoxFit.cover),
+        child: RawImage(image: _image, fit: BoxFit.contain),
       ),
     );
   }

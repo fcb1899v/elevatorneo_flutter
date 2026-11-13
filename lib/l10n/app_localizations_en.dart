@@ -337,11 +337,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get appliance => 'Appliances floor, ';
 
   @override
-  String get promoTitle => 'Our New App';
+  String get promoHeading => 'Recommended';
 
   @override
   String get promoAdventureName => 'LETS ELEVATOR ADVENTURE';
 
   @override
-  String get promoStoreButton => 'View in Store';
+  String get promoButton => 'Learn more';
+
+  @override
+  String get promoBody =>
+      'Call it, ride it and press the buttons as much as you like on a skyscraper adventure. A realistic 3D elevator simulator.';
+
+  @override
+  String get promoBodyShort => 'A realistic 3D elevator simulator';
+
+  @override
+  String get promoClose => 'Close';
 }

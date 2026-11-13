@@ -132,6 +132,7 @@ class AnalyticsManager {
     required String shownCount,
     required String firstPattern,
     required String videoMode,
+    required String bodyForm,
   }) => _log("cross_promo_shown", _promoShownParams(
     placement: placement,
     isPremium: isPremium,
@@ -142,6 +143,7 @@ class AnalyticsManager {
     shownCount: shownCount,
     firstPattern: firstPattern,
     videoMode: videoMode,
+    bodyForm: bodyForm,
   ));
 
   /// Log that a video pattern finished, or stopped when the menu closed
@@ -168,6 +170,7 @@ class AnalyticsManager {
     required String shownCount,
     required String firstPattern,
     required String videoMode,
+    required String bodyForm,
     required String videoPattern,
     required String videoPosition,
     required String patternsSeen,
@@ -186,6 +189,7 @@ class AnalyticsManager {
       shownCount: shownCount,
       firstPattern: firstPattern,
       videoMode: videoMode,
+      bodyForm: bodyForm,
     ),
     "video_pattern": videoPattern,
     "video_position": videoPosition,
@@ -203,6 +207,7 @@ class AnalyticsManager {
     required bool tapped,
     required String patternsSeen,
     required bool isPremium,
+    bool dismissed = false,
   }) => _log("cross_promo_view_ended", {
     "target": "adventure",
     "placement": placement,
@@ -210,6 +215,45 @@ class AnalyticsManager {
     "tapped": tapped ? 1 : 0,
     "patterns_seen": patternsSeen,
     "is_premium": isPremium ? 1 : 0,
+    "dismissed": dismissed ? 1 : 0,
+  });
+
+  /// Log that the card's close button removed the card, with the video and visibility at that time
+  static Future<void> crossPromoDismissed({
+    required String placement,
+    required bool isPremium,
+    required String lang,
+    required String launchCount,
+    required String rideCount,
+    required String daysSinceFirstLaunch,
+    required String shownCount,
+    required String firstPattern,
+    required String videoMode,
+    required String bodyForm,
+    required String dismissCount,
+    required String videoPattern,
+    required String videoPosition,
+    required String patternsSeen,
+    required String visible,
+  }) => _log("cross_promo_dismissed", {
+    ..._promoShownParams(
+      placement: placement,
+      isPremium: isPremium,
+      lang: lang,
+      launchCount: launchCount,
+      rideCount: rideCount,
+      daysSinceFirstLaunch: daysSinceFirstLaunch,
+      shownCount: shownCount,
+      firstPattern: firstPattern,
+      videoMode: videoMode,
+      bodyForm: bodyForm,
+    ),
+    "method": "close_x",
+    "dismiss_count": dismissCount,
+    "video_pattern": videoPattern,
+    "video_position": videoPosition,
+    "patterns_seen": patternsSeen,
+    "visible": visible,
   });
 
   /// Log that the user came back from the store after the cross-promo tap
@@ -253,6 +297,7 @@ class AnalyticsManager {
     required String shownCount,
     required String firstPattern,
     required String videoMode,
+    required String bodyForm,
   }) => {
     "target": "adventure",
     "placement": placement,
@@ -264,6 +309,7 @@ class AnalyticsManager {
     "shown_count": shownCount,
     "first_pattern": firstPattern,
     "video_mode": videoMode,
+    "body_form": bodyForm,
   };
 
   // No ATT event on purpose: UMP owns the prompt, so there is no answer callback.

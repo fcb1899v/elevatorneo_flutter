@@ -103,7 +103,10 @@
   "premiumUnavailable": "Las compras no están disponibles.\nInténtalo de nuevo más tarde.",
   "nameAppliance": "Electrodomésticos",
   "appliance": "Piso de electrodomésticos, ",
-  "promoTitle" : "Nuestra nueva app",
+  "promoHeading" : "Recomendado",
   "promoAdventureName" : "LETS ELEVATOR ADVENTURE",
-  "promoStoreButton" : "Ver en la tienda"
+  "promoButton" : "Ver más",
+  "promoBody" : "Llama al ascensor, súbete y toca los botones cuanto quieras en una aventura por un rascacielos. Simulador 3D ultrarrealista.",
+  "promoBodyShort" : "Simulador de ascensor 3D ultrarrealista",
+  "promoClose" : "Cerrar"
 }

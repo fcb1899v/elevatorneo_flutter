@@ -103,7 +103,10 @@
   "premiumUnavailable": "Les achats sont indisponibles.\nRéessayez plus tard.",
   "nameAppliance": "Électroménager",
   "appliance": "Étage électroménager, ",
-  "promoTitle" : "Notre nouvelle app",
+  "promoHeading" : "Recommandé",
   "promoAdventureName" : "LETS ELEVATOR ADVENTURE",
-  "promoStoreButton" : "Voir sur le Store"
+  "promoButton" : "Découvrir",
+  "promoBody" : "Appelez l'ascenseur, montez, appuyez sur les boutons à volonté et partez à l'aventure dans un gratte-ciel. Simulateur 3D ultra-réaliste.",
+  "promoBodyShort" : "Simulateur d'ascenseur 3D ultra-réaliste",
+  "promoClose" : "Fermer"
 }

@@ -119,4 +119,17 @@ void main() {
     await PromoSession.start(isPremium: () => false);
     expect(nativeCalls, ['isInstalled']);
   });
+
+  test('the installed check marks itself done, whatever the answer', () async {
+    expect(PromoSession.installedChecked.value, isFalse);
+    installedAnswer = true;
+    await PromoSession.refreshInstalled();
+    expect(PromoSession.installedChecked.value, isTrue);
+    PromoSession.reset();
+    PromoSession.platformSource = () => 'android';
+    expect(PromoSession.installedChecked.value, isFalse);
+    installedAnswer = false;
+    await PromoSession.refreshInstalled();
+    expect(PromoSession.installedChecked.value, isTrue);
+  });
 }

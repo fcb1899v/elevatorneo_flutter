@@ -332,11 +332,21 @@ class AppLocalizationsJa extends AppLocalizations {
   String get appliance => '生活家電売り場階です。　';
 
   @override
-  String get promoTitle => '新作アプリのお知らせ';
+  String get promoHeading => 'おすすめ';
 
   @override
   String get promoAdventureName => 'レッツ・エレベーター・アドベンチャー';
 
   @override
-  String get promoStoreButton => 'ストアで見る';
+  String get promoButton => '詳しく見る';
+
+  @override
+  String get promoBody =>
+      '好きなだけ、呼んで、乗って、ボタンを押して、高層ビルを冒険できる超リアルな3Dエレベーターシミュレーター';
+
+  @override
+  String get promoBodyShort => '超リアルな3Dエレベーターシミュレーター';
+
+  @override
+  String get promoClose => '閉じる';
 }

@@ -23,6 +23,7 @@ void main() {
     "shown_count": "2",
     "first_pattern": "p2",
     "video_mode": "video",
+    "body_form": "full",
   };
 
   test("crossPromoShown sends the ten shown parameters", () async {
@@ -36,6 +37,7 @@ void main() {
       shownCount: "2",
       firstPattern: "p2",
       videoMode: "video",
+      bodyForm: "full",
     );
     expect(events, [
       {"name": "cross_promo_shown", "params": shownParams},
@@ -68,6 +70,7 @@ void main() {
       shownCount: "2",
       firstPattern: "p2",
       videoMode: "video",
+      bodyForm: "full",
       videoPattern: "p3",
       videoPosition: "2_5s",
       patternsSeen: "2",
@@ -104,6 +107,7 @@ void main() {
       shownCount: "1",
       firstPattern: "p1",
       videoMode: "still",
+      bodyForm: "full",
       videoPattern: "p1",
       videoPosition: "0_2s",
       patternsSeen: "1",
@@ -117,13 +121,14 @@ void main() {
     expect(params["open_method"], "none");
   });
 
-  test("crossPromoViewEnded sends placement, visible, tapped and is_premium as 0 or 1", () async {
+  test("crossPromoViewEnded sends placement, visible, tapped, dismissed and is_premium as 0 or 1", () async {
     await AnalyticsManager.crossPromoViewEnded(
       placement: "menu",
       visible: "3_10s",
       tapped: false,
       patternsSeen: "3_plus",
       isPremium: false,
+      dismissed: true,
     );
     expect(events, [
       {
@@ -135,6 +140,52 @@ void main() {
           "tapped": 0,
           "patterns_seen": "3_plus",
           "is_premium": 0,
+          "dismissed": 1,
+        },
+      },
+    ]);
+  });
+
+  test("crossPromoViewEnded sends dismissed 0 when the card was not closed", () async {
+    await AnalyticsManager.crossPromoViewEnded(
+      placement: "menu",
+      visible: "lt1s",
+      tapped: true,
+      patternsSeen: "1",
+      isPremium: true,
+    );
+    expect((events.single["params"] as Map)["dismissed"], 0);
+  });
+
+  test("crossPromoDismissed sends the shown parameters plus method close_x and the close parameters", () async {
+    await AnalyticsManager.crossPromoDismissed(
+      placement: "menu",
+      isPremium: false,
+      lang: "ja",
+      launchCount: "3_5",
+      rideCount: "2_5",
+      daysSinceFirstLaunch: "8_30",
+      shownCount: "2",
+      firstPattern: "p2",
+      videoMode: "video",
+      bodyForm: "full",
+      dismissCount: "2",
+      videoPattern: "p3",
+      videoPosition: "2_5s",
+      patternsSeen: "2",
+      visible: "1_3s",
+    );
+    expect(events, [
+      {
+        "name": "cross_promo_dismissed",
+        "params": {
+          ...shownParams,
+          "method": "close_x",
+          "dismiss_count": "2",
+          "video_pattern": "p3",
+          "video_position": "2_5s",
+          "patterns_seen": "2",
+          "visible": "1_3s",
         },
       },
     ]);

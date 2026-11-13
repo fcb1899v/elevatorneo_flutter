@@ -333,11 +333,21 @@ class AppLocalizationsKo extends AppLocalizations {
   String get appliance => '생활가전 매장 층에 도착하셨습니다. ';
 
   @override
-  String get promoTitle => '신작 앱 출시';
+  String get promoHeading => '추천 앱';
 
   @override
   String get promoAdventureName => '렛츠 엘리베이터 어드벤처';
 
   @override
-  String get promoStoreButton => '스토어에서 보기';
+  String get promoButton => '더 알아보기';
+
+  @override
+  String get promoBody =>
+      '마음껏 호출하고, 타고, 버튼을 눌러 고층 빌딩에서 모험하는 정말 리얼한 3D 엘리베이터 시뮬레이터';
+
+  @override
+  String get promoBodyShort => '정말 리얼한 3D 엘리베이터 시뮬레이터';
+
+  @override
+  String get promoClose => '닫기';
 }

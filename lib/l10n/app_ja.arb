@@ -103,7 +103,10 @@
   "premiumUnavailable": "いま購入手続きを開始できません。\n時間をおいてもう一度お試しください。",
   "nameAppliance": "生活家電",
   "appliance": "生活家電売り場階です。　",
-  "promoTitle" : "新作アプリのお知らせ",
+  "promoHeading" : "おすすめ",
   "promoAdventureName" : "レッツ・エレベーター・アドベンチャー",
-  "promoStoreButton" : "ストアで見る"
+  "promoButton" : "詳しく見る",
+  "promoBody" : "好きなだけ、呼んで、乗って、ボタンを押して、高層ビルを冒険できる超リアルな3Dエレベーターシミュレーター",
+  "promoBodyShort" : "超リアルな3Dエレベーターシミュレーター",
+  "promoClose" : "閉じる"
 }

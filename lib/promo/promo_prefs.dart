@@ -34,6 +34,13 @@ class PromoPrefs {
   /// Whether the "found" event was sent. Once true it stays true.
   static const String adventureFoundLoggedKey = 'adventureFoundLoggedKey';
 
+  /// Number of times the notice was closed with its close button.
+  /// It never decreases.
+  static const String adventureDismissCountKey = 'adventureDismissCountKey';
+
+  /// Day of the last close, written as `yyyy-MM-dd` in the device's local time.
+  static const String adventureDismissedDateKey = 'adventureDismissedDateKey';
+
   /// Records one app launch: adds 1 to the launch count and writes the first launch date if missing.
   static Future<void> recordLaunch({DateTime? now}) async {
     final prefs = await SharedPreferences.getInstance();
@@ -135,6 +142,40 @@ class PromoPrefs {
   static Future<void> markAdventureFoundLogged() async {
     final prefs = await SharedPreferences.getInstance();
     adventureFoundLoggedKey.setSharedPrefBool(prefs, true);
+  }
+
+  /// Adds 1 to the dismiss count, writes the day of [now], and returns the new count.
+  static Future<int> recordAdventureDismiss({DateTime? now}) async {
+    final prefs = await SharedPreferences.getInstance();
+    final count = adventureDismissCountKey.getSharedPrefInt(prefs, 0) + 1;
+    adventureDismissCountKey.setSharedPrefInt(prefs, count);
+    adventureDismissedDateKey.setSharedPrefString(prefs, dayText(now ?? DateTime.now()));
+    return count;
+  }
+
+  /// Returns true when the notice may be built now: closed fewer than three times, and not closed today.
+  static Future<bool> adventureNoticeAllowed({DateTime? now}) async {
+    final prefs = await SharedPreferences.getInstance();
+    final count = adventureDismissCountKey.getSharedPrefInt(prefs, 0);
+    final date = adventureDismissedDateKey.getSharedPrefString(prefs, '');
+    return !dismissBlocks(count: count, dismissedDate: date, now: now ?? DateTime.now());
+  }
+
+  /// Whether a stored dismiss count and day keep the notice away at [now].
+  ///
+  /// Only "the same day" counts, so a close at night is followed by the notice the next morning.
+  static bool dismissBlocks({
+    required int count,
+    required String dismissedDate,
+    required DateTime now,
+  }) => count >= 3 || (dismissedDate.isNotEmpty && dismissedDate == dayText(now));
+
+  /// The calendar day of [d] as `yyyy-MM-dd`, in the device's local time.
+  static String dayText(DateTime d) {
+    final y = d.year.toString().padLeft(4, '0');
+    final m = d.month.toString().padLeft(2, '0');
+    final day = d.day.toString().padLeft(2, '0');
+    return '$y-$m-$day';
   }
 
   static void _writeFirstLaunchDateIfMissing(SharedPreferences prefs, DateTime now) {

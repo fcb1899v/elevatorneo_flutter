@@ -8,7 +8,7 @@ import 'package:letselevatorneo/promo/promo_config.dart';
 
 void main() {
   for (final name in PromoConfig.allPatterns) {
-    testWidgets('promo animation $name decodes every frame at 640x360', (tester) async {
+    testWidgets('promo animation $name decodes every frame at 864x1152 (3:4)', (tester) async {
       final bytes = (await rootBundle.load('assets/images/promo/$name.webp')).buffer.asUint8List();
       await tester.runAsync(() async {
         final codec = await ui.instantiateImageCodec(bytes);
@@ -17,8 +17,8 @@ void main() {
           for (var i = 0; i < codec.frameCount; i++) {
             final frame = await codec.getNextFrame();
             final image = frame.image;
-            expect(image.width, 640, reason: '$name frame ${i + 1} width');
-            expect(image.height, 360, reason: '$name frame ${i + 1} height');
+            expect(image.width, 864, reason: '$name frame ${i + 1} width');
+            expect(image.height, 1152, reason: '$name frame ${i + 1} height');
             totalMs += frame.duration.inMilliseconds;
             image.dispose();
           }
@@ -29,15 +29,15 @@ void main() {
       });
     });
 
-    testWidgets('promo still ${name}_still decodes at 640x360', (tester) async {
+    testWidgets('promo still ${name}_still decodes at 864x1152 (3:4)', (tester) async {
       final bytes = (await rootBundle.load('assets/images/promo/${name}_still.webp')).buffer.asUint8List();
       await tester.runAsync(() async {
         final codec = await ui.instantiateImageCodec(bytes);
         try {
           expect(codec.frameCount, 1, reason: '${name}_still frame count');
           final frame = await codec.getNextFrame();
-          expect(frame.image.width, 640, reason: '${name}_still width');
-          expect(frame.image.height, 360, reason: '${name}_still height');
+          expect(frame.image.width, 864, reason: '${name}_still width');
+          expect(frame.image.height, 1152, reason: '${name}_still height');
           frame.image.dispose();
         } finally {
           codec.dispose();
