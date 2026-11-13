@@ -7,19 +7,44 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'constant.dart';
 import 'extension.dart';
 
+/// Bundled images stay as asset paths; anything else is a photo in Documents
+bool isBundledImage(String value) => value.contains(assetsRoom);
+
+/// The form saved to storage: bundled paths as-is, photos as a file name only
+String storedImagePath(String value) {
+  if (isBundledImage(value)) return value;
+  return path.basename(value);
+}
+
+/// The form read from storage: photos joined to the current Documents path
+String resolvedImagePath(String stored, String documentsPath) {
+  if (isBundledImage(stored)) return stored;
+  return path.join(documentsPath, path.basename(stored));
+}
+
+Future<String> _defaultDocumentsPath() async {
+  return (await getApplicationDocumentsDirectory()).path;
+}
+
 class ImageManager {
+  ImageManager({Future<String> Function()? documentsPathProvider})
+      : _documentsPath = documentsPathProvider ?? _defaultDocumentsPath;
+
+  // Injected so tests can point Documents at a temporary folder
+  final Future<String> Function() _documentsPath;
 
   // --- Image List Management ---
 
   /// Load and validate floor image list from storage
   Future<List<String>> getImagesList() async {
     final prefs = await SharedPreferences.getInstance();
-    final directory = await getApplicationDocumentsDirectory();
-    final images = prefs.getStringList("floorsKey");
-    if (images == null) return initialFloorImages;
+    final documentsPath = await _documentsPath();
+    final stored = prefs.getStringList("floorsKey");
+    if (stored == null) return initialFloorImages;
+    final images = List<String>.from(stored);
     for (int i = 0; i < images.length; i++) {
-      if (!(images[i].contains("assets/images/room/"))) {
-        final newPath = path.join(directory.path, images[i]);
+      if (!isBundledImage(images[i])) {
+        final newPath = resolvedImagePath(images[i], documentsPath);
         images[i] = (await File(newPath).exists()) ? newPath: initialFloorImages[i];
         "newPath[$i]: ${images[i]}".debugPrint();
       }
@@ -69,8 +94,9 @@ class ImageManager {
   }) async {
     if (newValue != null) {
       final prefs = await SharedPreferences.getInstance();
-      final newList = List<String>.from(currentList);
-      newList[newIndex] = newValue;
+      // Every entry is stored in the file-name form, not only the one replaced
+      final newList = currentList.map(storedImagePath).toList();
+      newList[newIndex] = storedImagePath(newValue);
       "newPath: $newValue".debugPrint();
       "floorsKey".setSharedPrefListString(prefs, newList);
       final images = await getImagesList();
