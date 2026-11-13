@@ -46,6 +46,10 @@ Buttons, floors and room images are customizable, and the floor images can be re
 - **Environment Variables**: flutter_dotenv
 - **Storage**: shared_preferences
 - **Images**: image_picker, image_cropper, path_provider
+- **Floor images**: the moving floor column keeps the height of every floor but places panels only for the few floors around the car (`lib/floor_window.dart`)
+- **Floor image store**: the pictures those panels show are held app-wide (`lib/floor_image_store.dart`), and the loading spinner stays until they are read, at launch and on returning from settings
+- **Floor photos**: a photo is saved at most 1512 × 2688 (`lib/photo_manager.dart`), and only photos are decoded at the size they are drawn: the room's width at the largest zoom (`floorImageMaxScale`) on the floor column, and the thumbnail's width in settings
+- **Saved photo paths**: a photo is copied into the app's Documents folder and stored by file name only, while bundled images keep their asset path; on reading, the file name is joined to the current Documents path, and a missing file falls back to that slot's initial bundled image (`lib/image_manager.dart`)
 - **Links**: url_launcher
 - **Store Review**: in_app_review
 - **Splash**: flutter_native_splash
@@ -129,6 +133,8 @@ lib/
 ├── audio_manager.dart           # Audio management
 ├── tts_manager.dart             # Text-to-speech management
 ├── image_manager.dart           # Image list and settings persistence
+├── floor_window.dart            # Which floors around the car get a panel, and the photo decode width
+├── floor_image_store.dart       # Floor images held app-wide
 ├── photo_manager.dart           # Gallery selection and cropping
 ├── analytics_manager.dart       # Firebase Analytics events
 ├── coupon_manager.dart          # Coupon code check against Remote Config

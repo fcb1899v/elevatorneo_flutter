@@ -8,6 +8,7 @@ import 'audio_manager.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'l10n/app_localizations.dart' show AppLocalizations;
 import 'constant.dart';
+import 'floor_window.dart';
 
 part 'l10n_extension.dart';
 part 'size_extension.dart';
@@ -91,10 +92,14 @@ extension StringExt on String {
   }
 
   // --- Image Path Helpers ---
-  // Methods for creating and managing image assets and file-based images
-  Image cropperImage() => Image.file(File(this), fit: BoxFit.cover);
-  Image fittedAssetImage() => Image.asset(this, fit: BoxFit.cover);
-  Image roomImage() => contains("image_cropper") ? cropperImage(): fittedAssetImage();
+  // The provider for a room path, with a photo decoded to [photoWidth] pixels wide when given.
+  ImageProvider imageProvider({int? photoWidth}) {
+    if (!contains("image_cropper")) return AssetImage(this);
+    final file = FileImage(File(this));
+    return photoWidth == null ? file: ResizeImage(file, width: photoWidth);
+  }
+  // The key of a room path's provider: a photo's provider also depends on its decode width.
+  String providerKey(int photoWidth) => contains("image_cropper") ? "$this|$photoWidth": this;
 
   // --- Elevator Style Helpers ---
   // Methods for generating elevator component image paths based on style and configuration
@@ -254,11 +259,6 @@ extension IntExt on int {
   String pressedAlertButton() => "${assetsButton}phone${this + 1}Pressed.png";
   String pressedUpButton() => "${assetsButton}up${this + 1}Pressed.png";
   String pressedDownButton() => "${assetsButton}down${this + 1}Pressed.png";
-
-  // --- Elevator Inside Image Generation ---
-  // Methods for generating elevator interior images for all floor levels
-  List<Image> insideImages(String elevatorStyle) =>
-      [for (int i = min; i <= max; i++) if (i != 0) ((this == i) ? elevatorStyle.insideElevator(): imageDark).fittedAssetImage()];
 
   // --- Display Helpers ---
   // Methods for formatting display text and symbols for elevator status
@@ -446,9 +446,6 @@ extension IntExt on int {
   // Methods for managing room images and floor-to-room mappings
   bool isButtonContain(List<int> floorNumbers) => floorNumbers.contains(this);
   String roomImageFile(List<int> floorNumbers, List<String> rooms) => rooms[floorNumbers.indexOf(this)];
-  Image roomImage(List<int> floorNumbers, List<String> rooms) =>
-    (!isButtonContain(floorNumbers)) ? imageFloor.fittedAssetImage():
-      roomImageFile(floorNumbers, rooms).roomImage();
 }
 
 // ===== ListIntExt: List<int> helpers for floor and button matrix =====
@@ -501,9 +498,14 @@ extension ListStringExt on List<String> {
     [this[2], this[3]],
     [this[1], this[0]],
   ];
-  // Methods for generating floor images and managing room image selections
-  List<Image> floorImages(List<int> floorNumbers) =>
-      [for (int i = min; i <= max; i++) if (i != 0) i.roomImage(floorNumbers, this)];
+  // Every picture the floor column can show, each under one key shared by the store and the panels.
+  // Keys are the paths, a photo's key also has its decode width (see providerKey).
+  Map<String, ImageProvider> floorImageProviders(String elevatorStyle, int photoWidth) => {
+    for (final room in this) room.providerKey(photoWidth): room.imageProvider(photoWidth: photoWidth),
+    imageFloor: imageFloor.imageProvider(),
+    imageDark: imageDark.imageProvider(),
+    elevatorStyle.insideElevator(): elevatorStyle.insideElevator().imageProvider(),
+  };
 
   // --- Room Image Selection ---
   // Methods for managing room image availability and selection logic

@@ -681,7 +681,10 @@ class SettingsWidget {
                   width: context.settingsFloorImageWidth(),
                   height: context.settingsFloorImageHeight(),
                   child: Stack(children: [
-                    roomImages.roomsList()[row.key][col.key].roomImage(),
+                    Image(
+                      image: roomImages.roomsList()[row.key][col.key].imageProvider(photoWidth: context.settingsFloorImageCacheWidth()),
+                      fit: BoxFit.cover,
+                    ),
                     if (isImageOn[row.key][col.key] && !isLocked(changePointList[row.key][col.key])) Container(color: transpLampColor),
                   ]),
                 ),

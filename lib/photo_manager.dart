@@ -10,6 +10,12 @@ import 'constant.dart';
 import 'extension.dart';
 import 'image_manager.dart';
 
+/// Largest size of a saved photo, in pixels.
+/// Both are given to the cropper, or it keeps the full size.
+/// 1512 x 2688 is 9:16, and the widest screen the app supports (iPad Pro 13) needs at most 1507.
+const int photoSaveMaxWidth = 1512;
+const int photoSaveMaxHeight = 2688;
+
 class PhotoManager {
 
   final BuildContext context;
@@ -26,6 +32,8 @@ class PhotoManager {
         sourcePath: pickedFile.path,
         compressFormat: ImageCompressFormat.jpg,
         compressQuality: 100,
+        maxWidth: photoSaveMaxWidth,
+        maxHeight: photoSaveMaxHeight,
         aspectRatio: const CropAspectRatio(ratioX: 9, ratioY: 16),
         uiSettings: [
           AndroidUiSettings(

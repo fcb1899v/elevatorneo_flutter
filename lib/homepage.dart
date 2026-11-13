@@ -18,6 +18,8 @@ import 'tts_manager.dart';
 import 'common_widget.dart';
 import 'extension.dart';
 import 'constant.dart';
+import 'floor_image_store.dart';
+import 'floor_window.dart';
 import 'image_manager.dart';
 import 'main.dart';
 import 'menu.dart';
@@ -74,6 +76,12 @@ class HomePage extends HookConsumerWidget {
     // --- Manager Instances ---
     // Service managers for handling various app functionalities
     final imageManager = useMemoized(() => ImageManager());
+    // The same providers go to the panels and to the store, so they are built once per change
+    final photoWidth = context.roomPhotoWidth();
+    final floorImageProviders = useMemoized(
+      () => floorImages.floorImageProviders(backgroundStyle, photoWidth),
+      [floorImages, backgroundStyle, photoWidth],
+    );
     final ttsManager = useMemoized(() => TtsManager(context: context));
     final audioManager = useMemoized(() => AudioManager());
     final gamesManager = useMemoized(() => GamesManager(
@@ -88,6 +96,7 @@ class HomePage extends HookConsumerWidget {
       floorNumbers: floorNumbers,
       floorStops: floorStops,
       floorImages: floorImages,
+      imageProviders: floorImageProviders,
       buttonStyle: buttonStyle,
       buttonShape: buttonShape,
       backgroundStyle: backgroundStyle,
@@ -142,6 +151,13 @@ class HomePage extends HookConsumerWidget {
           ref.read(floorImagesProvider.notifier).setValue(images);
           if (context.mounted) {
             imageTopMargin.value = context.imageMarginTop(isOutside.value, counter.value, max);
+            // The spinner stays until the images the column shows are read
+            final holdWatch = Stopwatch()..start();
+            await floorImageStore.hold(
+              images.floorImageProviders(ref.read(backgroundStyleProvider), context.roomPhotoWidth()),
+              createLocalImageConfiguration(context),
+            );
+            debugPrint("Floor images held in ${holdWatch.elapsedMilliseconds} ms");
           }
         } catch (e) {
           "Error: $e".debugPrint();
@@ -197,6 +213,17 @@ class HomePage extends HookConsumerWidget {
       return null;
     }, []);
 
+
+    // --- Photo Width Effect ---
+    // A new screen size changes the width the photos are decoded to; hold the new set without waiting
+    final lastPhotoWidth = useRef<int?>(null);
+    useEffect(() {
+      final previous = lastPhotoWidth.value;
+      lastPhotoWidth.value = photoWidth;
+      if (previous == null || previous == photoWidth) return null;
+      unawaited(floorImageStore.hold(floorImageProviders, createLocalImageConfiguration(context)));
+      return null;
+    }, [photoWidth]);
 
     // --- Orientation Change Effect ---
     // Handle screen orientation changes and update UI accordingly
@@ -639,11 +666,13 @@ class HomePage extends HookConsumerWidget {
           child: Stack(children: [
             InteractiveViewer(
             minScale: 1.0,
-            maxScale: 1.5,
+            maxScale: floorImageMaxScale,
             child: Stack(children: [
               // Background room images with elevator movement animation
               home.floorImagesWidget(
                 currentFloorNumber: currentFloor.value,
+                counter: counter.value,
+                screenHeight: context.height(),
                 isOutside: isOutside.value,
                 margin: imageTopMargin.value,
                 duration: imageDurationTime.value,
@@ -801,6 +830,7 @@ class HomeWidget {
   final List<int> floorNumbers;
   final List<bool> floorStops;
   final List<String> floorImages;
+  final Map<String, ImageProvider> imageProviders;
   final int buttonStyle;
   final String buttonShape;
   final String glassStyle;
@@ -813,6 +843,7 @@ class HomeWidget {
     required this.floorNumbers,
     required this.floorStops,
     required this.floorImages,
+    required this.imageProviders,
     required this.buttonStyle,
     required this.buttonShape,
     required this.glassStyle,
@@ -935,6 +966,8 @@ class HomeWidget {
   /// Animated floor images for inside/outside elevator views
   AnimatedPositioned floorImagesWidget({
     required int currentFloorNumber,
+    required int counter,
+    required double screenHeight,
     required bool isOutside,
     required double margin,
     required int duration,
@@ -942,48 +975,80 @@ class HomeWidget {
     duration: Duration(milliseconds: duration),
     top: margin,
     left: context.doorMarginLeft() + context.sideSpacerWidth(),
-    child: Column(
-      children: floorImages.floorImages(floorNumbers).reversed.map((img) => Column(
-        children: [
-          SizedBox(
-            width: context.roomWidth(),
-            height: context.roomHeight(),
-            child: img,
-          ),
-          SizedBox(
-            width: context.roomWidth(),
-            height: (context.floorHeight() - context.roomHeight()),
-            child: Image.asset(imageDark,
-              width: double.infinity,
-              fit: BoxFit.fitWidth
-            ),
-          ),
-        ],
-      )).toList(),
-    )
+    child: floorColumn(
+      counter: counter,
+      lowerOffset: cabinWindowLowerOffset,
+      slotOf: cabinPanelSlot,
+      panelOf: (floor) => floorPanel(
+        floor.isButtonContain(floorNumbers) ? floor.roomImageFile(floorNumbers, floorImages): imageFloor,
+      ),
+    ),
   ): AnimatedPositioned(
     duration: Duration(milliseconds: duration),
     bottom: margin,
     left: context.doorMarginLeft() + context.sideSpacerWidth(),
+    child: floorColumn(
+      counter: counter,
+      lowerOffset: hallLowerOffset(screenHeight / context.widthResponsible()),
+      slotOf: hallPanelSlot,
+      panelOf: (floor) => floorPanel(
+        (floor == currentFloorNumber) ? backgroundStyle.insideElevator(): imageDark,
+      ),
+    ),
+  );
+
+  /// The column's box: as tall as all floors, with only the window's panels placed in it
+  Widget floorColumn({
+    required int counter,
+    required int lowerOffset,
+    required int Function(int floor) slotOf,
+    required Widget Function(int floor) panelOf,
+  }) {
+    final window = floorWindow(counter, lowerOffset, floorWindowUpperOffset);
+    final keyCount = floorWindowUpperOffset - lowerOffset + 1;
+    return SizedBox(
+      width: context.roomWidth(),
+      height: floorCount * context.floorHeight(),
+      child: Stack(children: [
+        for (final floor in window)
+          Positioned(
+            key: ValueKey(panelKey(floor, keyCount)),
+            top: slotOf(floor) * context.floorHeight(),
+            left: 0,
+            child: panelOf(floor),
+          ),
+      ]),
+    );
+  }
+
+  /// Width the room photos are decoded to; the same value the store is held with
+  int get photoWidth => context.roomPhotoWidth();
+
+  /// One floor's panel: its room picture above the dark band, drawn with the shared provider
+  Widget floorPanel(String picturePath) => SizedBox(
+    width: context.roomWidth(),
+    height: context.floorHeight(),
     child: Column(
-      children: currentFloorNumber.insideImages(backgroundStyle).map((img) => Column(
-        children: [
-          SizedBox(
-            width: context.roomWidth(),
-            height: context.roomHeight(),
-            child: img,
+      children: [
+        SizedBox(
+          width: context.roomWidth(),
+          height: context.roomHeight(),
+          child: Image(
+            image: imageProviders[picturePath.providerKey(photoWidth)] ?? picturePath.imageProvider(photoWidth: photoWidth),
+            fit: BoxFit.cover,
           ),
-          SizedBox(
-            width: context.roomWidth(),
-            height: (context.floorHeight() - context.roomHeight()),
-            child: Image.asset(imageDark,
-                width: double.infinity,
-                fit: BoxFit.fitWidth
-            ),
+        ),
+        SizedBox(
+          width: context.roomWidth(),
+          height: (context.floorHeight() - context.roomHeight()),
+          child: Image(
+            image: imageProviders[imageDark] ?? imageDark.imageProvider(),
+            width: double.infinity,
+            fit: BoxFit.fitWidth,
           ),
-        ],
-      )).toList(),
-    )
+        ),
+      ],
+    ),
   );
 
   /// Black overlay for emergency mode and hiding elements

@@ -41,6 +41,8 @@ extension SizeExt on BuildContext {
   double changeMarginTop() => widthResponsible() * 0.145;
   double roomWidth() => widthResponsible() * 0.73;
   double roomHeight() => roomWidth() * 16/9;
+  // Decode width of a room photo on the moving column, at the largest zoom
+  int roomPhotoWidth() => roomCacheWidth(roomWidth(), MediaQuery.devicePixelRatioOf(this));
   double floorHeight() => widthResponsible() * 1.57;
   double sideFrameWidth() => widthResponsible() * 0.024;
   double sideSpacerWidth() => (width() - elevatorWidth()) / 2;
@@ -152,6 +154,8 @@ extension SizeExt on BuildContext {
   double settingsFloorImageHeight() => height() * 0.19;
   double settingsFloorImageWidth() => settingsFloorImageHeight() * 9 / 16;
   double settingsFloorImageMargin() => height() * 0.01;
+  // Decode width of a settings thumbnail: the same photo is never drawn bigger here
+  int settingsFloorImageCacheWidth() => (settingsFloorImageWidth() * MediaQuery.devicePixelRatioOf(this)).ceil();
   double settingsArrowMarginTop() => height() * 0.03;
   // Change button number
   double settingsButtonSize() => height() * 0.07;
