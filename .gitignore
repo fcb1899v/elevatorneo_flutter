@@ -103,6 +103,7 @@ lib/firebase_options.dart
 # Firebase console write these back, so tracking them only publishes the
 # project identifiers into a repository that is scanned automatically.
 firebase.json
+.firebaserc
 
 # Keystore files
 **/*.keystore
