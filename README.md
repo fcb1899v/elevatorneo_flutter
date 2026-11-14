@@ -24,6 +24,7 @@ Buttons, floors and room images are customizable, and the floor images can be re
 - **Firebase Integration**: Analytics
 - **Audio & Vibration Feedback**: Sounds, spoken announcements and haptics
 - **Customizable Settings**: Floors, floor numbers, button shapes and styles
+- **Floor Buttons**: A floor button registers its floor the moment a finger touches it (screen readers use their tap action), and a long press or a double tap cancels it, except the moving car's next stop when no selected floor lies beyond it
 - **Top Floor Display**: The top floor always displays as R, whatever floor number it is set to
 - **Top Floor Announcement**: Arriving at the top floor speaks only the room name, not a floor number, for the same reason
 
