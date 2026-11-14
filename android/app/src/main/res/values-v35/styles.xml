@@ -7,6 +7,8 @@
          it needs from values-v31/styles.xml, which is the definition API 35 would
          otherwise fall back to.
 
+         The LaunchTheme keeps the three windowSplashScreen* items of values-v31, because dropping them would silently replace the splash icon with the launcher icon.
+
          Removed here because the backing API is @Deprecated in android.jar 35/36/37:
            - android:windowTranslucentStatus     -> WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS
            - android:windowTranslucentNavigation -> WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION
@@ -26,6 +28,9 @@
         <item name="android:forceDarkAllowed">false</item>
         <item name="android:windowFullscreen">false</item>
         <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
+        <item name="android:windowSplashScreenBackground">#F7B249</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/android12splash</item>
+        <item name="android:windowSplashScreenIconBackgroundColor">#F7B249</item>
         <!-- Draw behind the system bars via FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS (not deprecated)
              instead of the deprecated translucent flags. Theme.Light.NoTitleBar inherits
              false from the base platform Theme, so this must be set explicitly. -->
