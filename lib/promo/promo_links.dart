@@ -14,12 +14,14 @@ const String promoAdventureIosUrlName = 'nakajimamasao.appstudio.elevator3d';
 
 /// Numeric iOS app ID of LETS ELEVATOR ADVENTURE (the number after `id`).
 ///
-/// Empty until the owner reads it from App Store Connect. iOS links stay off while empty.
+/// Copied from App Store Connect; empty until then.
+/// iOS links stay off while empty.
 const String promoAdventureIosAppId = '';
 
 /// iOS provider token (`pt`) for the App Store link.
 ///
-/// Empty until the owner reads it from App Analytics. iOS links stay off while empty.
+/// Copied from App Analytics; empty until then.
+/// iOS links stay off while empty.
 const String promoAdventureIosPt = '';
 
 /// Whether the promo is shown on Android.

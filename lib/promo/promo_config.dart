@@ -1,6 +1,6 @@
 /// Remote Config switches for the LETS ELEVATOR ADVENTURE cross-promo.
 ///
-/// The values let the owner change the menu notice without an app update.
+/// The values change the menu notice without an app update.
 /// The defaults are the values shipped in the app, so the promo still works offline.
 library;
 
