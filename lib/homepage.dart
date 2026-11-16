@@ -70,6 +70,7 @@ class HomePage extends HookConsumerWidget {
     final waitTime = useState(initialWaitTime);                // Wait time between actions
     final openTime = useState(carCallOpenTime);                // Door open duration
     final isHallCallStop = useState(false);                    // Whether the car stopped for a hall call
+    final isClosingAnnounced = useRef(false);                  // True while the close sound and speech play, so a second close call does not repeat them
     final animationController = useAnimationController(duration: Duration(milliseconds: flashTime))..repeat(reverse: true);
     final orientation = context.orientation();                 // Screen orientation
 
@@ -472,8 +473,14 @@ class HomePage extends HookConsumerWidget {
     Future<void> doorsClosing() async {
       if (isWaitingUp.value || isWaitingDown.value) floorSelected(currentFloor.value, true, isHallCall: true);
       if (!isMoving.value && !isEmergency.value && isDoorState.value != closedState && isDoorState.value != closingState) {
-        if (!isOutside.value || currentFloor.value == counter.value) await audioManager.playEffectSound(asset: closeSound, volume: 0.6);
-        if (context.mounted) await ttsManager.speakText(context.closeDoor(), !isOutside.value || currentFloor.value == counter.value);
+        if (isClosingAnnounced.value) return;
+        isClosingAnnounced.value = true;
+        try {
+          if (!isOutside.value || currentFloor.value == counter.value) await audioManager.playEffectSound(asset: closeSound, volume: 0.6);
+          if (context.mounted) await ttsManager.speakText(context.closeDoor(), !isOutside.value || currentFloor.value == counter.value);
+        } finally {
+          isClosingAnnounced.value = false;
+        }
         isDoorState.value = closingState;
         "isDoorState: ${isDoorState.value}".debugPrint();
         await Future.delayed(Duration(seconds: waitTime.value)).then((_) async {
