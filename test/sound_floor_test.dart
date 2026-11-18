@@ -67,12 +67,60 @@ void main() {
       expect(await _spoken(tester, "es", e.key), startsWith(e.value));
       expect(await _spoken(tester, "es", e.key), isNot(contains("vigésimo")));
     }
-    const fr = {100: "centième ", 101: "centième premier ",
-                110: "centième dixième ", 119: "centième dix-neuvième "};
+    const fr = {100: "centième ", 101: "cent unième ",
+                110: "cent dixième ", 119: "cent dix-neuvième "};
     for (final e in fr.entries) {
       expect(await _spoken(tester, "fr", e.key), startsWith(e.value));
-      expect(await _spoken(tester, "fr", e.key), isNot(contains("vingtième")));
     }
+    // 101 to 119 must not fall back to the hundreds-only "centième" or the tens word
+    for (var floor = 101; floor <= 119; floor++) {
+      expect(await _spoken(tester, "fr", floor), isNot(contains("centième")));
+      expect(await _spoken(tester, "fr", floor), isNot(contains("vingtième")));
+    }
+  });
+
+  // Whole French strings, so a wrong word cannot pass as a fragment match.
+  testWidgets("fr ordinals match the table exactly", (tester) async {
+    const table = {
+      1: "premier", 2: "deuxième", 9: "neuvième", 10: "dixième", 16: "seizième",
+      17: "dix-septième", 20: "vingtième", 21: "vingt et unième", 22: "vingt-deuxième",
+      30: "trentième", 35: "trente-cinquième", 41: "quarante et unième",
+      59: "cinquante-neuvième", 60: "soixantième", 61: "soixante et unième",
+      70: "soixante-dixième", 71: "soixante et onzième", 72: "soixante-douzième",
+      77: "soixante-dix-septième", 80: "quatre-vingtième", 81: "quatre-vingt-unième",
+      90: "quatre-vingt-dixième", 91: "quatre-vingt-onzième",
+      99: "quatre-vingt-dix-neuvième", 100: "centième", 101: "cent unième",
+      110: "cent dixième", 119: "cent dix-neuvième", 121: "cent vingt et unième",
+      154: "cent cinquante-quatrième", 163: "cent soixante-troisième",
+    };
+    for (final e in table.entries) {
+      expect(await _spoken(tester, "fr", e.key), "${e.value} étage, ",
+        reason: "fr floor ${e.key}");
+    }
+  });
+
+  // A French ordinal must be built once; "ième" appearing twice means two ordinals were stacked.
+  testWidgets("fr floors 2 to 163 carry exactly one ième", (tester) async {
+    for (var floor = 2; floor <= 163; floor++) {
+      final said = await _spoken(tester, "fr", floor);
+      expect("ième".allMatches(said).length, 1, reason: "fr floor $floor says \"$said\"");
+    }
+    expect(await _spoken(tester, "fr", 1), "premier étage, ");
+  });
+
+  // Spanish "piso" is masculine, so the not-stop line must read "este piso".
+  testWidgets("es notStop uses the masculine este piso", (tester) async {
+    late String said;
+    await tester.pumpWidget(MaterialApp(
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      locale: const Locale("es"),
+      home: Builder(builder: (context) {
+        said = context.notStop();
+        return const SizedBox.shrink();
+      }),
+    ));
+    expect(said, "No se detiene en este piso.");
   });
 
   // This app has no floor 0, so there is no ground-floor branch to test here.

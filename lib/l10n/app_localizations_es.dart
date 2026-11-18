@@ -67,7 +67,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get downFloor => 'Bajando.';
 
   @override
-  String get notStop => 'No se detiene en esta piso.';
+  String get notStop => 'No se detiene en este piso.';
 
   @override
   String get emergency => 'Parada de emergencia para revisión.';

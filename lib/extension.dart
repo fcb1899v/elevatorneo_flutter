@@ -204,46 +204,37 @@ extension IntExt on int {
   String esRankNumberOver100() =>
       (this % 100 == 0) ? 'centésimo ':
       'centésimo ${(this % 100).esRankNumber()} ';
-  // French ordinal number generation for floor announcements
-  String frRankNumber() => //1~199
-    (this == 0) ? '':
-    (this == 1) ? 'premier ' :
-    (this == 2) ? 'deuxième ' :
-    (this == 3) ? 'troisième ' :
-    (this == 4) ? 'quatrième ' :
-    (this == 5) ? 'cinquième ' :
-    (this == 6) ? 'sixième ' :
-    (this == 7) ? 'septième ' :
-    (this == 8) ? 'huitième ' :
-    (this == 9) ? 'neuvième ' :
-    (this == 10) ? 'dixième ' :
-    (this == 11) ? 'onzième ' :
-    (this == 12) ? 'douzième ' :
-    (this == 13) ? 'treizième ' :
-    (this == 14) ? 'quatorzième ' :
-    (this == 15) ? 'quinzième ' :
-    (this == 16) ? 'seizième ' :
-    (this == 17) ? 'dix-septième ' :
-    (this == 18) ? 'dix-huitième ' :
-    (this == 19) ? 'dix-neuvième ' :
-    (this == 20) ? 'vingtième ':
-    (this < 100) ? frRankNumberOver20():
-    frRankNumberOver100();
-  String frRankNumberOver20() =>
-    (this < 100) ? "${
-      (this < 30) ? 'vingtième ':
-      (this < 40) ? 'trentième ':
-      (this < 50) ? 'quarantième ':
-      (this < 60) ? 'cinquantième ':
-      (this < 70) ? 'soixantième ':
-      (this < 80) ? 'soixante-dixième ':
-      (this < 90) ? 'quatre-vingtième ':
-      'quatre-vingt-dixième '
-    } ${(this % 10).frRankNumber()} ":
-    frRankNumberOver100();
-  String frRankNumberOver100() =>
-    (this % 100 == 0) ? 'centième ':
-    'centième ${(this % 100).frRankNumber()} ';
+  // French ordinal for floor announcements: 1..199, with a trailing space
+  String frRankNumber() {
+    if (this == 0) return '';
+    if (this == 1) return 'premier ';
+    if (this == 100) return 'centième ';
+    if (this < 100) return '${_frOrdinalWord()} ';
+    return 'cent ${(this - 100)._frOrdinalWord()} ';
+  }
+  // Ordinal word for 1..99; "unième" closes a compound (vingt et unième, cent unième)
+  String _frOrdinalWord() {
+    const ordinals = [
+      '', 'unième', 'deuxième', 'troisième', 'quatrième', 'cinquième',
+      'sixième', 'septième', 'huitième', 'neuvième', 'dixième', 'onzième',
+      'douzième', 'treizième', 'quatorzième', 'quinzième', 'seizième',
+      'dix-septième', 'dix-huitième', 'dix-neuvième',
+    ];
+    const tensOrdinals = {
+      20: 'vingtième', 30: 'trentième', 40: 'quarantième',
+      50: 'cinquantième', 60: 'soixantième', 80: 'quatre-vingtième',
+    };
+    if (this < 20) return ordinals[this];
+    // 70s and 90s count on from 60 and 80 (soixante-dixième, quatre-vingt-onzième)
+    final base = this < 60 ? this ~/ 10 * 10 : (this < 80 ? 60 : 80);
+    final head = this < 30 ? 'vingt' : this < 40 ? 'trente' : this < 50 ? 'quarante'
+        : this < 60 ? 'cinquante' : this < 80 ? 'soixante' : 'quatre-vingt';
+    final r = this - base;
+    if (r == 0) return tensOrdinals[base]!;
+    // "et" joins 21, 31, 41, 51, 61, 71 only; 81 and 91 take a hyphen
+    if (this < 80 && (r == 1 || r == 11)) return '$head et ${ordinals[r]}';
+    return '$head-${ordinals[r]}';
+  }
 
   // --- Settings & Button Helpers ---
   // Methods for managing settings UI and button image paths based on style configurations
