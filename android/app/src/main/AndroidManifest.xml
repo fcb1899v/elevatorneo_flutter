@@ -6,6 +6,8 @@
         android:maxSdkVersion="32" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="28" />
+    <!-- Portrait is set in Dart; declaring the feature optional keeps tablets and other large screens eligible on Google Play -->
+    <uses-feature android:name="android.hardware.screen.portrait" android:required="false" />
     <queries>
         <!-- LETS ELEVATOR ADVENTURE, checked for the in-app store promo -->
         <package android:name="nakajimamasao.appstudio.elevator3d" />
